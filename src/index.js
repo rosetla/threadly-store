@@ -2,15 +2,9 @@ export default {
 
     async fetch(request, env) {
 
-        const url =
-            new URL(request.url);
-
-        const pathname =
-            url.pathname;
-
-        const method =
-            request.method;
-
+        const url = new URL(request.url);
+        const pathname = url.pathname;
+        const method = request.method;
 
 
         /* =====================================================
@@ -32,7 +26,6 @@ export default {
         }
 
 
-
         function errorResponse(
             message,
             status = 400
@@ -49,17 +42,6 @@ export default {
         }
 
 
-
-        function isValidId(value) {
-
-            return /^\d+$/.test(
-                String(value)
-            );
-
-        }
-
-
-
         function normalizeString(
             value,
             maxLength = 10000
@@ -74,13 +56,11 @@ export default {
 
             }
 
-
             return String(value)
                 .trim()
                 .slice(0, maxLength);
 
         }
-
 
 
         function normalizeSlug(value) {
@@ -96,11 +76,9 @@ export default {
                 )
                 .replace(
                     /^-+|-+$/g,
-                    ""
-                );
+                    "");
 
         }
-
 
 
         function isValidStatus(status) {
@@ -109,25 +87,12 @@ export default {
                 "active",
                 "draft",
                 "inactive"
-            ].includes(
-                status
-            );
+            ].includes(status);
 
         }
 
 
-
-        function isValidCategory(
-            category
-        ) {
-
-            /*
-             * Category is intentionally
-             * kept flexible.
-             *
-             * Add/remove categories here
-             * when the store grows.
-             */
+        function isValidCategory(category) {
 
             return [
                 "",
@@ -137,45 +102,24 @@ export default {
                 "music",
                 "animals",
                 "other"
-            ].includes(
-                category
+            ].includes(category);
+
+        }
+
+
+        function isValidPrice(price) {
+
+            return (
+                typeof price === "number" &&
+                Number.isFinite(price) &&
+                price >= 0 &&
+                price <= 100000
             );
 
         }
 
 
-
-        function isValidPrice(price) {
-
-            if (
-                typeof price !== "number" ||
-                !Number.isFinite(price)
-            ) {
-
-                return false;
-
-            }
-
-
-            if (
-                price < 0 ||
-                price > 100000
-            ) {
-
-                return false;
-
-            }
-
-
-            return true;
-
-        }
-
-
-
-        function isValidImageUrl(
-            image
-        ) {
+        function isValidImageUrl(image) {
 
             if (!image) {
 
@@ -183,12 +127,10 @@ export default {
 
             }
 
-
             try {
 
                 const parsed =
                     new URL(image);
-
 
                 return [
                     "http:",
@@ -206,14 +148,26 @@ export default {
         }
 
 
+        function isValidHexColor(hex) {
+
+            if (!hex) {
+
+                return true;
+
+            }
+
+            return /^#[0-9a-fA-F]{6}$/.test(
+                hex
+            );
+
+        }
+
 
         /* =====================================================
            PRODUCT FIELDS
            ===================================================== */
 
-        function getProductFields(
-            body
-        ) {
+        function getProductFields(body) {
 
             const name =
                 normalizeString(
@@ -224,8 +178,7 @@ export default {
 
             const slug =
                 normalizeSlug(
-                    body.slug ||
-                    body.name
+                    body.slug || body.name
                 );
 
 
@@ -237,9 +190,7 @@ export default {
 
 
             const price =
-                Number(
-                    body.price
-                );
+                Number(body.price);
 
 
             const image =
@@ -294,15 +245,417 @@ export default {
         }
 
 
+        /* =====================================================
+           VARIANT HELPERS
+           ===================================================== */
+
+        function normalizeVariants(
+            variants
+        ) {
+
+            if (!Array.isArray(variants)) {
+
+                return [];
+
+            }
+
+
+            return variants
+                .map(function(variant) {
+
+                    const colorName =
+                        normalizeString(
+                            variant.color_name,
+                            100
+                        );
+
+
+                    const colorHex =
+                        normalizeString(
+                            variant.color_hex,
+                            20
+                        );
+
+
+                    const image =
+                        normalizeString(
+                            variant.image,
+                            2000
+                        );
+
+
+                    const printifyVariantId =
+                        normalizeString(
+                            variant.printify_variant_id,
+                            200
+                        );
+
+
+                    const status =
+                        normalizeString(
+                            variant.status || "active",
+                            30
+                        ).toLowerCase();
+
+
+                    const size =
+                        normalizeString(
+                            variant.size || "M",
+                            20
+                        ).toUpperCase();
+
+
+                    return {
+
+                        color_name:
+                            colorName,
+
+                        color_hex:
+                            colorHex,
+
+                        image,
+
+                        printify_variant_id:
+                            printifyVariantId,
+
+                        status,
+
+                        size
+
+                    };
+
+                })
+                .filter(function(variant) {
+
+                    return (
+                        variant.color_name &&
+                        variant.size
+                    );
+
+                });
+
+        }
+
+
+        function validateVariants(
+            variants
+        ) {
+
+            const seen = new Set();
+
+
+            for (
+                const variant
+                of variants
+            ) {
+
+                if (
+                    !variant.color_name
+                ) {
+
+                    return "Variant color is required.";
+
+                }
+
+
+                if (
+                    !variant.size
+                ) {
+
+                    return "Variant size is required.";
+
+                }
+
+
+                if (
+                    !isValidHexColor(
+                        variant.color_hex
+                    )
+                ) {
+
+                    return (
+                        "Invalid color hex for " +
+                        variant.color_name +
+                        "."
+                    );
+
+                }
+
+
+                if (
+                    !isValidImageUrl(
+                        variant.image
+                    )
+                ) {
+
+                    return (
+                        "Variant image must be a valid HTTP or HTTPS URL."
+                    );
+
+                }
+
+
+                if (
+                    !isValidStatus(
+                        variant.status
+                    )
+                ) {
+
+                    return (
+                        "Invalid variant status."
+                    );
+
+                }
+
+
+                const key =
+                    (
+                        variant.color_name
+                            .toLowerCase()
+                            .trim()
+                    ) +
+                    "|" +
+                    (
+                        variant.size
+                            .toUpperCase()
+                            .trim()
+                    );
+
+
+                if (seen.has(key)) {
+
+                    return (
+                        "Duplicate variant: " +
+                        variant.color_name +
+                        " / " +
+                        variant.size
+                    );
+
+                }
+
+
+                seen.add(key);
+
+            }
+
+
+            return null;
+
+        }
+
+
+        /* =====================================================
+           GET VARIANTS
+           ===================================================== */
+
+        async function getVariants(
+            productId,
+            includeInactive = true
+        ) {
+
+            let query = `
+
+                SELECT
+
+                    id,
+
+                    product_id,
+
+                    color_name,
+
+                    color_hex,
+
+                    image,
+
+                    printify_variant_id,
+
+                    status,
+
+                    size,
+
+                    created_at
+
+                FROM product_variants
+
+                WHERE product_id = ?
+
+            `;
+
+
+            if (!includeInactive) {
+
+                query += `
+                    AND status = 'active'
+                `;
+
+            }
+
+
+            query += `
+
+                ORDER BY
+                    color_name ASC,
+                    size ASC,
+                    id ASC
+
+            `;
+
+
+            const result =
+                await env.DB
+                    .prepare(query)
+                    .bind(productId)
+                    .all();
+
+
+            return result.results || [];
+
+        }
+
+
+        /* =====================================================
+           REPLACE VARIANTS
+           
+           Product update will replace the complete
+           variant list for that product.
+           ===================================================== */
+
+        async function replaceVariants(
+            productId,
+            variants
+        ) {
+
+            await env.DB
+                .prepare(`
+                    DELETE FROM product_variants
+                    WHERE product_id = ?
+                `)
+                .bind(productId)
+                .run();
+
+
+            for (
+                const variant
+                of variants
+            ) {
+
+                await env.DB
+                    .prepare(`
+
+                        INSERT INTO product_variants (
+
+                            product_id,
+
+                            color_name,
+
+                            color_hex,
+
+                            image,
+
+                            printify_variant_id,
+
+                            status,
+
+                            size
+
+                        )
+
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+
+                    `)
+                    .bind(
+
+                        productId,
+
+                        variant.color_name,
+
+                        variant.color_hex || null,
+
+                        variant.image || null,
+
+                        variant.printify_variant_id || null,
+
+                        variant.status,
+
+                        variant.size
+
+                    )
+                    .run();
+
+            }
+
+        }
+
+
+        /* =====================================================
+           GET PRODUCT WITH VARIANTS
+           ===================================================== */
+
+        async function getProduct(
+            productId,
+            includeInactiveVariants = true
+        ) {
+
+            const product =
+                await env.DB
+                    .prepare(`
+
+                        SELECT
+
+                            id,
+
+                            name,
+
+                            slug,
+
+                            description,
+
+                            price,
+
+                            image,
+
+                            category,
+
+                            printify_product_id,
+
+                            status,
+
+                            created_at
+
+                        FROM products
+
+                        WHERE id = ?
+
+                    `)
+                    .bind(productId)
+                    .first();
+
+
+            if (!product) {
+
+                return null;
+
+            }
+
+
+            product.variants =
+                await getVariants(
+                    productId,
+                    includeInactiveVariants
+                );
+
+
+            return product;
+
+        }
+
 
         /* =====================================================
            PUBLIC API
            ===================================================== */
 
-
         /* =====================================================
            GET ALL ACTIVE PRODUCTS
-           
            GET /api/products
            ===================================================== */
 
@@ -316,30 +669,62 @@ export default {
                 const result =
                     await env.DB
                         .prepare(`
+
                             SELECT
+
                                 id,
+
                                 name,
+
                                 slug,
+
                                 description,
+
                                 price,
+
                                 image,
+
                                 category,
+
                                 printify_product_id,
+
                                 status,
+
                                 created_at
+
                             FROM products
+
                             WHERE status = 'active'
+
                             ORDER BY id DESC
+
                         `)
                         .all();
+
+
+                const products =
+                    result.results || [];
+
+
+                for (
+                    const product
+                    of products
+                ) {
+
+                    product.variants =
+                        await getVariants(
+                            product.id,
+                            false
+                        );
+
+                }
 
 
                 return json({
 
                     success: true,
 
-                    products:
-                        result.results || []
+                    products
 
                 });
 
@@ -361,10 +746,8 @@ export default {
         }
 
 
-
         /* =====================================================
            GET SINGLE ACTIVE PRODUCT
-
            GET /api/products/:id
            ===================================================== */
 
@@ -388,30 +771,16 @@ export default {
             try {
 
                 const product =
-                    await env.DB
-                        .prepare(`
-                            SELECT
-                                id,
-                                name,
-                                slug,
-                                description,
-                                price,
-                                image,
-                                category,
-                                printify_product_id,
-                                status,
-                                created_at
-                            FROM products
-                            WHERE id = ?
-                            AND status = 'active'
-                        `)
-                        .bind(
-                            productId
-                        )
-                        .first();
+                    await getProduct(
+                        productId,
+                        false
+                    );
 
 
-                if (!product) {
+                if (
+                    !product ||
+                    product.status !== "active"
+                ) {
 
                     return errorResponse(
                         "Product not found.",
@@ -447,19 +816,23 @@ export default {
         }
 
 
-
         /* =====================================================
            ADMIN API
            ===================================================== */
 
 
         /* =====================================================
-           ADMIN: GET ALL PRODUCTS
+           ADMIN PRODUCT MATCH
+           ===================================================== */
 
-           GET /api/admin/products
-           
-           IMPORTANT:
-           This returns active, draft and inactive.
+        const adminProductMatch =
+            pathname.match(
+                /^\/api\/admin\/products\/(\d+)$/
+            );
+
+
+        /* =====================================================
+           ADMIN GET ALL PRODUCTS
            ===================================================== */
 
         if (
@@ -472,29 +845,60 @@ export default {
                 const result =
                     await env.DB
                         .prepare(`
+
                             SELECT
+
                                 id,
+
                                 name,
+
                                 slug,
+
                                 description,
+
                                 price,
+
                                 image,
+
                                 category,
+
                                 printify_product_id,
+
                                 status,
+
                                 created_at
+
                             FROM products
+
                             ORDER BY id DESC
+
                         `)
                         .all();
+
+
+                const products =
+                    result.results || [];
+
+
+                for (
+                    const product
+                    of products
+                ) {
+
+                    product.variants =
+                        await getVariants(
+                            product.id,
+                            true
+                        );
+
+                }
 
 
                 return json({
 
                     success: true,
 
-                    products:
-                        result.results || []
+                    products
 
                 });
 
@@ -516,18 +920,9 @@ export default {
         }
 
 
-
         /* =====================================================
-           ADMIN: GET SINGLE PRODUCT
-
-           GET /api/admin/products/:id
+           ADMIN GET SINGLE PRODUCT
            ===================================================== */
-
-        const adminProductMatch =
-            pathname.match(
-                /^\/api\/admin\/products\/(\d+)$/
-            );
-
 
         if (
             adminProductMatch &&
@@ -543,26 +938,10 @@ export default {
             try {
 
                 const product =
-                    await env.DB
-                        .prepare(`
-                            SELECT
-                                id,
-                                name,
-                                slug,
-                                description,
-                                price,
-                                image,
-                                category,
-                                printify_product_id,
-                                status,
-                                created_at
-                            FROM products
-                            WHERE id = ?
-                        `)
-                        .bind(
-                            productId
-                        )
-                        .first();
+                    await getProduct(
+                        productId,
+                        true
+                    );
 
 
                 if (!product) {
@@ -601,10 +980,8 @@ export default {
         }
 
 
-
         /* =====================================================
-           ADMIN: CREATE PRODUCT
-
+           ADMIN CREATE PRODUCT
            POST /api/admin/products
            ===================================================== */
 
@@ -632,264 +1009,16 @@ export default {
 
 
             const fields =
-                getProductFields(
-                    body
+                getProductFields(body);
+
+
+            const variants =
+                normalizeVariants(
+                    body.variants
                 );
 
 
-
-            /* ================================================
-               VALIDATION
-               ================================================ */
-
-            if (!fields.name) {
-
-                return errorResponse(
-                    "Product name is required.",
-                    400
-                );
-
-            }
-
-
-            if (
-                !fields.slug
-            ) {
-
-                return errorResponse(
-                    "A valid slug is required.",
-                    400
-                );
-
-            }
-
-
-            if (
-                !isValidPrice(
-                    fields.price
-                )
-            ) {
-
-                return errorResponse(
-                    "Invalid product price.",
-                    400
-                );
-
-            }
-
-
-            if (
-                !isValidImageUrl(
-                    fields.image
-                )
-            ) {
-
-                return errorResponse(
-                    "Image must be a valid HTTP or HTTPS URL.",
-                    400
-                );
-
-            }
-
-
-            if (
-                !isValidCategory(
-                    fields.category
-                )
-            ) {
-
-                return errorResponse(
-                    "Invalid product category.",
-                    400
-                );
-
-            }
-
-
-            if (
-                !isValidStatus(
-                    fields.status
-                )
-            ) {
-
-                return errorResponse(
-                    "Invalid product status.",
-                    400
-                );
-
-            }
-
-
-
-            /* ================================================
-               INSERT
-               ================================================ */
-
-            try {
-
-                const result =
-                    await env.DB
-                        .prepare(`
-                            INSERT INTO products (
-                                name,
-                                slug,
-                                description,
-                                price,
-                                image,
-                                category,
-                                printify_product_id,
-                                status
-                            )
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        `)
-                        .bind(
-
-                            fields.name,
-
-                            fields.slug,
-
-                            fields.description,
-
-                            fields.price,
-
-                            fields.image || null,
-
-                            fields.category || null,
-
-                            fields.printify_product_id || null,
-
-                            fields.status
-
-                        )
-                        .run();
-
-
-                const productId =
-                    result.meta
-                        ?.last_row_id;
-
-
-                const product =
-                    await env.DB
-                        .prepare(`
-                            SELECT
-                                id,
-                                name,
-                                slug,
-                                description,
-                                price,
-                                image,
-                                category,
-                                printify_product_id,
-                                status,
-                                created_at
-                            FROM products
-                            WHERE id = ?
-                        `)
-                        .bind(
-                            productId
-                        )
-                        .first();
-
-
-                return json({
-
-                    success: true,
-
-                    message:
-                        "Product created successfully.",
-
-                    product
-
-                }, 201);
-
-            } catch (error) {
-
-                console.error(
-                    "ADMIN CREATE PRODUCT error:",
-                    error
-                );
-
-
-                /*
-                 * SQLite UNIQUE constraint
-                 * for slug.
-                 */
-
-                if (
-                    String(
-                        error.message
-                    )
-                    .toLowerCase()
-                    .includes(
-                        "unique"
-                    )
-                ) {
-
-                    return errorResponse(
-                        "A product with this slug already exists.",
-                        409
-                    );
-
-                }
-
-
-                return errorResponse(
-                    "Failed to create product.",
-                    500
-                );
-
-            }
-
-        }
-
-
-
-        /* =====================================================
-           ADMIN: UPDATE PRODUCT
-
-           PUT /api/admin/products/:id
-           ===================================================== */
-
-        if (
-            adminProductMatch &&
-            method === "PUT"
-        ) {
-
-            const productId =
-                Number(
-                    adminProductMatch[1]
-                );
-
-
-            let body;
-
-
-            try {
-
-                body =
-                    await request.json();
-
-            } catch {
-
-                return errorResponse(
-                    "Invalid JSON body.",
-                    400
-                );
-
-            }
-
-
-            const fields =
-                getProductFields(
-                    body
-                );
-
-
-
-            /* ================================================
-               VALIDATION
-               ================================================ */
+            /* VALIDATION */
 
             if (!fields.name) {
 
@@ -967,29 +1096,291 @@ export default {
             }
 
 
+            const variantError =
+                validateVariants(
+                    variants
+                );
 
-            /* ================================================
-               UPDATE
-               ================================================ */
+
+            if (variantError) {
+
+                return errorResponse(
+                    variantError,
+                    400
+                );
+
+            }
+
+
+            try {
+
+                const result =
+                    await env.DB
+                        .prepare(`
+
+                            INSERT INTO products (
+
+                                name,
+
+                                slug,
+
+                                description,
+
+                                price,
+
+                                image,
+
+                                category,
+
+                                printify_product_id,
+
+                                status
+
+                            )
+
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+
+                        `)
+                        .bind(
+
+                            fields.name,
+
+                            fields.slug,
+
+                            fields.description,
+
+                            fields.price,
+
+                            fields.image || null,
+
+                            fields.category || null,
+
+                            fields.printify_product_id || null,
+
+                            fields.status
+
+                        )
+                        .run();
+
+
+                const productId =
+                    result.meta?.last_row_id;
+
+
+                await replaceVariants(
+                    productId,
+                    variants
+                );
+
+
+                const product =
+                    await getProduct(
+                        productId,
+                        true
+                    );
+
+
+                return json({
+
+                    success: true,
+
+                    message:
+                        "Product created successfully.",
+
+                    product
+
+                }, 201);
+
+            } catch (error) {
+
+                console.error(
+                    "ADMIN CREATE PRODUCT error:",
+                    error
+                );
+
+
+                if (
+                    String(
+                        error.message
+                    )
+                    .toLowerCase()
+                    .includes("unique")
+                ) {
+
+                    return errorResponse(
+                        "A product with this slug already exists.",
+                        409
+                    );
+
+                }
+
+
+                return errorResponse(
+                    "Failed to create product.",
+                    500
+                );
+
+            }
+
+        }
+
+
+        /* =====================================================
+           ADMIN UPDATE PRODUCT
+           PUT /api/admin/products/:id
+           ===================================================== */
+
+        if (
+            adminProductMatch &&
+            method === "PUT"
+        ) {
+
+            const productId =
+                Number(
+                    adminProductMatch[1]
+                );
+
+
+            let body;
+
+
+            try {
+
+                body =
+                    await request.json();
+
+            } catch {
+
+                return errorResponse(
+                    "Invalid JSON body.",
+                    400
+                );
+
+            }
+
+
+            const fields =
+                getProductFields(body);
+
+
+            const variants =
+                normalizeVariants(
+                    body.variants
+                );
+
+
+            /* VALIDATION */
+
+            if (!fields.name) {
+
+                return errorResponse(
+                    "Product name is required.",
+                    400
+                );
+
+            }
+
+
+            if (!fields.slug) {
+
+                return errorResponse(
+                    "A valid slug is required.",
+                    400
+                );
+
+            }
+
+
+            if (
+                !isValidPrice(
+                    fields.price
+                )
+            ) {
+
+                return errorResponse(
+                    "Invalid product price.",
+                    400
+                );
+
+            }
+
+
+            if (
+                !isValidImageUrl(
+                    fields.image
+                )
+            ) {
+
+                return errorResponse(
+                    "Image must be a valid HTTP or HTTPS URL.",
+                    400
+                );
+
+            }
+
+
+            if (
+                !isValidCategory(
+                    fields.category
+                )
+            ) {
+
+                return errorResponse(
+                    "Invalid product category.",
+                    400
+                );
+
+            }
+
+
+            if (
+                !isValidStatus(
+                    fields.status
+                )
+            ) {
+
+                return errorResponse(
+                    "Invalid product status.",
+                    400
+                );
+
+            }
+
+
+            const variantError =
+                validateVariants(
+                    variants
+                );
+
+
+            if (variantError) {
+
+                return errorResponse(
+                    variantError,
+                    400
+                );
+
+            }
+
 
             try {
 
                 const existingProduct =
                     await env.DB
                         .prepare(`
+
                             SELECT id
+
                             FROM products
+
                             WHERE id = ?
+
                         `)
-                        .bind(
-                            productId
-                        )
+                        .bind(productId)
                         .first();
 
 
-                if (
-                    !existingProduct
-                ) {
+                if (!existingProduct) {
 
                     return errorResponse(
                         "Product not found.",
@@ -1001,17 +1392,29 @@ export default {
 
                 await env.DB
                     .prepare(`
+
                         UPDATE products
+
                         SET
+
                             name = ?,
+
                             slug = ?,
+
                             description = ?,
+
                             price = ?,
+
                             image = ?,
+
                             category = ?,
+
                             printify_product_id = ?,
+
                             status = ?
+
                         WHERE id = ?
+
                     `)
                     .bind(
 
@@ -1037,27 +1440,17 @@ export default {
                     .run();
 
 
+                await replaceVariants(
+                    productId,
+                    variants
+                );
+
+
                 const product =
-                    await env.DB
-                        .prepare(`
-                            SELECT
-                                id,
-                                name,
-                                slug,
-                                description,
-                                price,
-                                image,
-                                category,
-                                printify_product_id,
-                                status,
-                                created_at
-                            FROM products
-                            WHERE id = ?
-                        `)
-                        .bind(
-                            productId
-                        )
-                        .first();
+                    await getProduct(
+                        productId,
+                        true
+                    );
 
 
                 return json({
@@ -1084,9 +1477,7 @@ export default {
                         error.message
                     )
                     .toLowerCase()
-                    .includes(
-                        "unique"
-                    )
+                    .includes("unique")
                 ) {
 
                     return errorResponse(
@@ -1107,17 +1498,10 @@ export default {
         }
 
 
-
         /* =====================================================
-           ADMIN: DELETE PRODUCT
-
-           DELETE /api/admin/products/:id
-
-           SOFT DELETE:
-           status = inactive
-
-           We intentionally do NOT remove
-           the database row.
+           ADMIN DELETE PRODUCT
+           
+           SOFT DELETE PRODUCT
            ===================================================== */
 
         if (
@@ -1136,19 +1520,19 @@ export default {
                 const existingProduct =
                     await env.DB
                         .prepare(`
-                            SELECT id, status
+
+                            SELECT id
+
                             FROM products
+
                             WHERE id = ?
+
                         `)
-                        .bind(
-                            productId
-                        )
+                        .bind(productId)
                         .first();
 
 
-                if (
-                    !existingProduct
-                ) {
+                if (!existingProduct) {
 
                     return errorResponse(
                         "Product not found.",
@@ -1160,13 +1544,15 @@ export default {
 
                 await env.DB
                     .prepare(`
+
                         UPDATE products
+
                         SET status = 'inactive'
+
                         WHERE id = ?
+
                     `)
-                    .bind(
-                        productId
-                    )
+                    .bind(productId)
                     .run();
 
 
@@ -1200,11 +1586,8 @@ export default {
         }
 
 
-
         /* =====================================================
-           API: TEST DATABASE
-
-           GET /api/test-db
+           TEST DATABASE
            ===================================================== */
 
         if (
@@ -1226,8 +1609,7 @@ export default {
 
                     success: true,
 
-                    message:
-                        "D1 OK",
+                    message: "D1 OK",
 
                     database:
                         "threadly-db",
@@ -1254,15 +1636,12 @@ export default {
         }
 
 
-
         /* =====================================================
-           404 FOR UNKNOWN API ROUTES
+           UNKNOWN API
            ===================================================== */
 
         if (
-            pathname.startsWith(
-                "/api/"
-            )
+            pathname.startsWith("/api/")
         ) {
 
             return errorResponse(
@@ -1271,7 +1650,6 @@ export default {
             );
 
         }
-
 
 
         /* =====================================================
