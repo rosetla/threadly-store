@@ -14,10 +14,13 @@ export default {
         function json(data, status = 200) {
 
             return Response.json(data, {
+
                 status,
+
                 headers: {
                     "Cache-Control": "no-store"
                 }
+
             });
 
         }
@@ -26,8 +29,10 @@ export default {
         function errorResponse(message, status = 400) {
 
             return json({
+
                 success: false,
                 error: message
+
             }, status);
 
         }
@@ -39,7 +44,9 @@ export default {
                 value === null ||
                 value === undefined
             ) {
+
                 return "";
+
             }
 
             return String(value)
@@ -62,9 +69,11 @@ export default {
         function isValidStatus(status) {
 
             return [
+
                 "active",
                 "draft",
                 "inactive"
+
             ].includes(status);
 
         }
@@ -73,6 +82,7 @@ export default {
         function isValidCategory(category) {
 
             return [
+
                 "",
                 "funny",
                 "lifestyle",
@@ -80,6 +90,7 @@ export default {
                 "music",
                 "animals",
                 "other"
+
             ].includes(category);
 
         }
@@ -88,10 +99,12 @@ export default {
         function isValidPrice(price) {
 
             return (
+
                 typeof price === "number" &&
                 Number.isFinite(price) &&
                 price >= 0 &&
                 price <= 100000
+
             );
 
         }
@@ -100,7 +113,9 @@ export default {
         function isValidImageUrl(image) {
 
             if (!image) {
+
                 return true;
+
             }
 
             try {
@@ -108,8 +123,10 @@ export default {
                 const parsed = new URL(image);
 
                 return [
+
                     "http:",
                     "https:"
+
                 ].includes(parsed.protocol);
 
             } catch {
@@ -128,6 +145,7 @@ export default {
         }
 
 
+
         /* =====================================================
            PRODUCT FIELDS
            ===================================================== */
@@ -135,12 +153,17 @@ export default {
         function getProductFields(body) {
 
             const name =
-                normalizeString(body.name, 200);
+                normalizeString(
+                    body.name,
+                    200
+                );
+
 
             const slug =
                 normalizeSlug(
                     body.slug || body.name
                 );
+
 
             const description =
                 normalizeString(
@@ -148,8 +171,10 @@ export default {
                     10000
                 );
 
+
             const price =
                 Number(body.price);
+
 
             const image =
                 normalizeString(
@@ -157,11 +182,13 @@ export default {
                     2000
                 );
 
+
             const category =
                 normalizeString(
                     body.category,
                     100
                 ).toLowerCase();
+
 
             const printifyProductId =
                 normalizeString(
@@ -169,25 +196,32 @@ export default {
                     200
                 );
 
+
             const status =
                 normalizeString(
                     body.status,
                     30
                 ).toLowerCase();
 
+
             return {
+
                 name,
                 slug,
                 description,
                 price,
                 image,
                 category,
+
                 printify_product_id:
                     printifyProductId,
+
                 status
+
             };
 
         }
+
 
 
         /* =====================================================
@@ -217,7 +251,9 @@ export default {
         function isValidHex(value) {
 
             if (!value) {
+
                 return true;
+
             }
 
             return /^#[0-9A-Fa-f]{6}$/.test(
@@ -227,20 +263,46 @@ export default {
         }
 
 
+        /* =====================================================
+           NORMALIZE COLORS
+
+           Accepted:
+
+           [
+               "Black",
+               "White"
+           ]
+
+           OR:
+
+           [
+               {
+                   name: "Black",
+                   hex: "#111111",
+                   image: "https://..."
+               }
+           ]
+           ===================================================== */
+
         function normalizeColors(colors) {
 
             if (!Array.isArray(colors)) {
+
                 return [];
+
             }
+
 
             const result = [];
             const seen = new Set();
+
 
             for (const item of colors) {
 
                 let name = "";
                 let hex = "";
                 let image = "";
+
 
                 if (
                     typeof item === "string"
@@ -262,12 +324,14 @@ export default {
                             item.color_name
                         );
 
+
                     hex =
                         normalizeString(
                             item.hex ||
                             item.color_hex,
                             20
                         );
+
 
                     image =
                         normalizeString(
@@ -277,40 +341,61 @@ export default {
 
                 }
 
+
                 if (!name) {
+
                     continue;
+
                 }
+
 
                 const key =
                     name.toLowerCase();
 
+
                 if (seen.has(key)) {
+
                     continue;
+
                 }
+
 
                 seen.add(key);
 
+
                 result.push({
+
                     name,
                     hex,
                     image
+
                 });
 
             }
+
 
             return result;
 
         }
 
 
+
+        /* =====================================================
+           NORMALIZE SIZES
+           ===================================================== */
+
         function normalizeSizes(sizes) {
 
             if (!Array.isArray(sizes)) {
+
                 return [];
+
             }
+
 
             const result = [];
             const seen = new Set();
+
 
             for (const value of sizes) {
 
@@ -319,23 +404,38 @@ export default {
                         value
                     );
 
+
                 if (!size) {
+
                     continue;
+
                 }
+
 
                 if (seen.has(size)) {
+
                     continue;
+
                 }
 
+
                 seen.add(size);
+
+
                 result.push(size);
 
             }
+
 
             return result;
 
         }
 
+
+
+        /* =====================================================
+           GET PRODUCT VARIANTS
+           ===================================================== */
 
         async function getProductVariants(
             productId,
@@ -357,6 +457,7 @@ export default {
                             created_at
                         FROM product_variants
                         WHERE product_id = ?
+                        AND status = 'active'
                         ORDER BY
                             color_name ASC,
                             CASE size
@@ -376,10 +477,16 @@ export default {
                     .bind(productId)
                     .all();
 
+
             return result.results || [];
 
         }
 
+
+
+        /* =====================================================
+           GET PRODUCT + VARIANTS
+           ===================================================== */
 
         async function getProductWithVariants(
             productId,
@@ -406,9 +513,13 @@ export default {
                     .bind(productId)
                     .first();
 
+
             if (!product) {
+
                 return null;
+
             }
+
 
             product.variants =
                 await getProductVariants(
@@ -416,21 +527,23 @@ export default {
                     env
                 );
 
+
             return product;
 
         }
+
 
 
         /* =====================================================
            PUBLIC API
            ===================================================== */
 
-        /*
-         * GET /api/products
-         *
-         * Existing API preserved.
-         * Now includes variants.
-         */
+
+        /* =====================================================
+           GET ALL ACTIVE PRODUCTS
+
+           GET /api/products
+           ===================================================== */
 
         if (
             pathname === "/api/products" &&
@@ -459,8 +572,10 @@ export default {
                         `)
                         .all();
 
+
                 const products =
                     result.results || [];
+
 
                 for (const product of products) {
 
@@ -472,10 +587,14 @@ export default {
 
                 }
 
+
                 return json({
+
                     success: true,
                     products
+
                 });
+
 
             } catch (error) {
 
@@ -483,6 +602,7 @@ export default {
                     "GET /api/products error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Failed to load products.",
@@ -494,9 +614,12 @@ export default {
         }
 
 
-        /*
-         * GET /api/products/:id
-         */
+
+        /* =====================================================
+           GET SINGLE PRODUCT
+
+           GET /api/products/:id
+           ===================================================== */
 
         const productMatch =
             pathname.match(
@@ -511,6 +634,7 @@ export default {
 
             const productId =
                 Number(productMatch[1]);
+
 
             try {
 
@@ -535,6 +659,7 @@ export default {
                         .bind(productId)
                         .first();
 
+
                 if (!product) {
 
                     return errorResponse(
@@ -544,16 +669,21 @@ export default {
 
                 }
 
+
                 product.variants =
                     await getProductVariants(
                         productId,
                         env
                     );
 
+
                 return json({
+
                     success: true,
                     product
+
                 });
+
 
             } catch (error) {
 
@@ -561,6 +691,7 @@ export default {
                     "GET /api/products/:id error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Failed to load product.",
@@ -572,8 +703,16 @@ export default {
         }
 
 
+
         /* =====================================================
            ADMIN API
+           ===================================================== */
+
+
+        /* =====================================================
+           ADMIN PRODUCT ROUTE
+
+           /api/admin/products/:id
            ===================================================== */
 
         const adminProductMatch =
@@ -582,9 +721,12 @@ export default {
             );
 
 
-        /*
-         * ADMIN GET ALL
-         */
+
+        /* =====================================================
+           ADMIN GET ALL PRODUCTS
+
+           GET /api/admin/products
+           ===================================================== */
 
         if (
             pathname === "/api/admin/products" &&
@@ -612,8 +754,10 @@ export default {
                         `)
                         .all();
 
+
                 const products =
                     result.results || [];
+
 
                 for (const product of products) {
 
@@ -625,10 +769,14 @@ export default {
 
                 }
 
+
                 return json({
+
                     success: true,
                     products
+
                 });
+
 
             } catch (error) {
 
@@ -636,6 +784,7 @@ export default {
                     "ADMIN GET PRODUCTS error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Failed to load admin products.",
@@ -647,9 +796,12 @@ export default {
         }
 
 
-        /*
-         * ADMIN GET SINGLE
-         */
+
+        /* =====================================================
+           ADMIN GET SINGLE PRODUCT
+
+           GET /api/admin/products/:id
+           ===================================================== */
 
         if (
             adminProductMatch &&
@@ -661,6 +813,7 @@ export default {
                     adminProductMatch[1]
                 );
 
+
             try {
 
                 const product =
@@ -668,6 +821,7 @@ export default {
                         productId,
                         env
                     );
+
 
                 if (!product) {
 
@@ -678,10 +832,14 @@ export default {
 
                 }
 
+
                 return json({
+
                     success: true,
                     product
+
                 });
+
 
             } catch (error) {
 
@@ -689,6 +847,7 @@ export default {
                     "ADMIN GET PRODUCT error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Failed to load product.",
@@ -700,31 +859,12 @@ export default {
         }
 
 
-        /*
-         * ADMIN CREATE PRODUCT
-         *
-         * POST /api/admin/products
-         *
-         * Body:
-         *
-         * {
-         *   name,
-         *   slug,
-         *   description,
-         *   price,
-         *   image,
-         *   category,
-         *   printify_product_id,
-         *   status,
-         *   colors: [
-         *     {
-         *       name: "Black",
-         *       hex: "#000000"
-         *     }
-         *   ],
-         *   sizes: ["S","M","L","XL"]
-         * }
-         */
+
+        /* =====================================================
+           ADMIN CREATE PRODUCT
+
+           POST /api/admin/products
+           ===================================================== */
 
         if (
             pathname === "/api/admin/products" &&
@@ -732,6 +872,7 @@ export default {
         ) {
 
             let body;
+
 
             try {
 
@@ -763,6 +904,11 @@ export default {
                     body.sizes
                 );
 
+
+
+            /* =================================================
+               VALIDATION
+               ================================================= */
 
             if (!fields.name) {
 
@@ -840,9 +986,7 @@ export default {
             }
 
 
-            if (
-                colors.length === 0
-            ) {
+            if (!colors.length) {
 
                 return errorResponse(
                     "Please select at least one color.",
@@ -852,9 +996,7 @@ export default {
             }
 
 
-            if (
-                sizes.length === 0
-            ) {
+            if (!sizes.length) {
 
                 return errorResponse(
                     "Please select at least one size.",
@@ -879,6 +1021,7 @@ export default {
 
                 }
 
+
                 if (
                     !isValidImageUrl(
                         color.image
@@ -894,6 +1037,11 @@ export default {
 
             }
 
+
+
+            /* =================================================
+               CREATE PRODUCT
+               ================================================= */
 
             try {
 
@@ -913,6 +1061,7 @@ export default {
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         `)
                         .bind(
+
                             fields.name,
                             fields.slug,
                             fields.description,
@@ -921,6 +1070,7 @@ export default {
                             fields.category || null,
                             fields.printify_product_id || null,
                             fields.status
+
                         )
                         .run();
 
@@ -929,9 +1079,10 @@ export default {
                     result.meta?.last_row_id;
 
 
-                /*
-                 * Create Color × Size matrix
-                 */
+
+                /* =================================================
+                   CREATE COLOR × SIZE MATRIX
+                   ================================================= */
 
                 for (const color of colors) {
 
@@ -951,19 +1102,31 @@ export default {
                                 VALUES (?, ?, ?, ?, ?, ?, ?)
                             `)
                             .bind(
+
                                 productId,
+
                                 color.name,
-                                color.hex || null,
+
+                                color.hex ||
+                                    null,
+
                                 size,
-                                color.image || fields.image || null,
+
+                                color.image ||
+                                    fields.image ||
+                                    null,
+
                                 null,
+
                                 "active"
+
                             )
                             .run();
 
                     }
 
                 }
+
 
 
                 const product =
@@ -974,11 +1137,16 @@ export default {
 
 
                 return json({
+
                     success: true,
+
                     message:
                         "Product created successfully.",
+
                     product
+
                 }, 201);
+
 
             } catch (error) {
 
@@ -1016,14 +1184,12 @@ export default {
         }
 
 
-        /*
-         * ADMIN UPDATE PRODUCT
-         *
-         * PUT /api/admin/products/:id
-         *
-         * The product information and
-         * complete variant matrix are updated.
-         */
+
+        /* =====================================================
+           ADMIN UPDATE PRODUCT
+
+           PUT /api/admin/products/:id
+           ===================================================== */
 
         if (
             adminProductMatch &&
@@ -1037,6 +1203,7 @@ export default {
 
 
             let body;
+
 
             try {
 
@@ -1068,6 +1235,11 @@ export default {
                     body.sizes
                 );
 
+
+
+            /* =================================================
+               VALIDATION
+               ================================================= */
 
             if (!fields.name) {
 
@@ -1145,9 +1317,7 @@ export default {
             }
 
 
-            if (
-                colors.length === 0
-            ) {
+            if (!colors.length) {
 
                 return errorResponse(
                     "Please select at least one color.",
@@ -1157,9 +1327,7 @@ export default {
             }
 
 
-            if (
-                sizes.length === 0
-            ) {
+            if (!sizes.length) {
 
                 return errorResponse(
                     "Please select at least one size.",
@@ -1184,8 +1352,27 @@ export default {
 
                 }
 
+
+                if (
+                    !isValidImageUrl(
+                        color.image
+                    )
+                ) {
+
+                    return errorResponse(
+                        `Invalid image URL for "${color.name}".`,
+                        400
+                    );
+
+                }
+
             }
 
+
+
+            /* =================================================
+               UPDATE
+               ================================================= */
 
             try {
 
@@ -1210,9 +1397,10 @@ export default {
                 }
 
 
-                /*
-                 * Update product
-                 */
+
+                /* =============================================
+                   UPDATE PRODUCT
+                   ============================================= */
 
                 await env.DB
                     .prepare(`
@@ -1229,6 +1417,7 @@ export default {
                         WHERE id = ?
                     `)
                     .bind(
+
                         fields.name,
                         fields.slug,
                         fields.description,
@@ -1238,13 +1427,15 @@ export default {
                         fields.printify_product_id || null,
                         fields.status,
                         productId
+
                     )
                     .run();
 
 
-                /*
-                 * Read old variants
-                 */
+
+                /* =============================================
+                   READ OLD VARIANTS
+                   ============================================= */
 
                 const oldVariants =
                     await getProductVariants(
@@ -1252,11 +1443,6 @@ export default {
                         env
                     );
 
-
-                /*
-                 * Existing Printify IDs
-                 * are preserved where possible.
-                 */
 
                 const oldMap =
                     new Map();
@@ -1269,6 +1455,7 @@ export default {
                     const key =
                         `${variant.color_name.toLowerCase()}::${variant.size}`;
 
+
                     oldMap.set(
                         key,
                         variant
@@ -1277,12 +1464,10 @@ export default {
                 }
 
 
-                /*
-                 * Delete current variants.
-                 *
-                 * They will be recreated
-                 * from the selected matrix.
-                 */
+
+                /* =============================================
+                   DELETE OLD VARIANTS
+                   ============================================= */
 
                 await env.DB
                     .prepare(`
@@ -1293,9 +1478,10 @@ export default {
                     .run();
 
 
-                /*
-                 * Create new matrix
-                 */
+
+                /* =============================================
+                   CREATE NEW COLOR × SIZE MATRIX
+                   ============================================= */
 
                 for (const color of colors) {
 
@@ -1303,6 +1489,7 @@ export default {
 
                         const key =
                             `${color.name.toLowerCase()}::${size}`;
+
 
                         const oldVariant =
                             oldMap.get(key);
@@ -1322,23 +1509,33 @@ export default {
                                 VALUES (?, ?, ?, ?, ?, ?, ?)
                             `)
                             .bind(
+
                                 productId,
+
                                 color.name,
-                                color.hex || null,
+
+                                color.hex ||
+                                    null,
+
                                 size,
+
                                 color.image ||
                                     fields.image ||
                                     null,
+
                                 oldVariant?.printify_variant_id ||
                                     null,
+
                                 oldVariant?.status ||
                                     "active"
+
                             )
                             .run();
 
                     }
 
                 }
+
 
 
                 const product =
@@ -1349,11 +1546,16 @@ export default {
 
 
                 return json({
+
                     success: true,
+
                     message:
                         "Product updated successfully.",
+
                     product
+
                 });
+
 
             } catch (error) {
 
@@ -1391,11 +1593,14 @@ export default {
         }
 
 
-        /*
-         * ADMIN DELETE PRODUCT
-         *
-         * Soft delete.
-         */
+
+        /* =====================================================
+           ADMIN DELETE PRODUCT
+
+           DELETE /api/admin/products/:id
+
+           Soft delete
+           ===================================================== */
 
         if (
             adminProductMatch &&
@@ -1442,12 +1647,17 @@ export default {
 
 
                 return json({
+
                     success: true,
+
                     message:
                         "Product moved to inactive status.",
+
                     product_id:
                         productId
+
                 });
+
 
             } catch (error) {
 
@@ -1455,6 +1665,7 @@ export default {
                     "ADMIN DELETE PRODUCT error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Failed to delete product.",
@@ -1466,19 +1677,23 @@ export default {
         }
 
 
+
         /* =====================================================
            ADMIN VARIANT API
            ===================================================== */
-
-        /*
-         * GET /api/admin/products/:id/variants
-         */
 
         const adminVariantsMatch =
             pathname.match(
                 /^\/api\/admin\/products\/(\d+)\/variants$/
             );
 
+
+
+        /* =====================================================
+           GET VARIANTS
+
+           GET /api/admin/products/:id/variants
+           ===================================================== */
 
         if (
             adminVariantsMatch &&
@@ -1522,9 +1737,12 @@ export default {
 
 
                 return json({
+
                     success: true,
                     variants
+
                 });
+
 
             } catch (error) {
 
@@ -1532,6 +1750,7 @@ export default {
                     "ADMIN GET VARIANTS error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Failed to load variants.",
@@ -1543,11 +1762,12 @@ export default {
         }
 
 
-        /*
-         * PUT /api/admin/products/:id/variants
-         *
-         * Optional direct matrix endpoint.
-         */
+
+        /* =====================================================
+           UPDATE VARIANTS
+
+           PUT /api/admin/products/:id/variants
+           ===================================================== */
 
         if (
             adminVariantsMatch &&
@@ -1561,6 +1781,7 @@ export default {
 
 
             let body;
+
 
             try {
 
@@ -1609,6 +1830,39 @@ export default {
             }
 
 
+            for (const color of colors) {
+
+                if (
+                    !isValidHex(
+                        color.hex
+                    )
+                ) {
+
+                    return errorResponse(
+                        `Invalid color hex for "${color.name}".`,
+                        400
+                    );
+
+                }
+
+
+                if (
+                    !isValidImageUrl(
+                        color.image
+                    )
+                ) {
+
+                    return errorResponse(
+                        `Invalid image URL for "${color.name}".`,
+                        400
+                    );
+
+                }
+
+            }
+
+
+
             try {
 
                 const product =
@@ -1634,6 +1888,11 @@ export default {
                 }
 
 
+
+                /* =============================================
+                   OLD VARIANTS
+                   ============================================= */
+
                 const oldVariants =
                     await getProductVariants(
                         productId,
@@ -1652,6 +1911,7 @@ export default {
                     const key =
                         `${variant.color_name.toLowerCase()}::${variant.size}`;
 
+
                     oldMap.set(
                         key,
                         variant
@@ -1659,6 +1919,11 @@ export default {
 
                 }
 
+
+
+                /* =============================================
+                   DELETE
+                   ============================================= */
 
                 await env.DB
                     .prepare(`
@@ -1669,12 +1934,18 @@ export default {
                     .run();
 
 
+
+                /* =============================================
+                   CREATE NEW MATRIX
+                   ============================================= */
+
                 for (const color of colors) {
 
                     for (const size of sizes) {
 
                         const key =
                             `${color.name.toLowerCase()}::${size}`;
+
 
                         const oldVariant =
                             oldMap.get(key);
@@ -1694,23 +1965,33 @@ export default {
                                 VALUES (?, ?, ?, ?, ?, ?, ?)
                             `)
                             .bind(
+
                                 productId,
+
                                 color.name,
-                                color.hex || null,
+
+                                color.hex ||
+                                    null,
+
                                 size,
+
                                 color.image ||
                                     product.image ||
                                     null,
+
                                 oldVariant?.printify_variant_id ||
                                     null,
+
                                 oldVariant?.status ||
                                     "active"
+
                             )
                             .run();
 
                     }
 
                 }
+
 
 
                 const variants =
@@ -1721,11 +2002,16 @@ export default {
 
 
                 return json({
+
                     success: true,
+
                     message:
                         "Variants updated successfully.",
+
                     variants
+
                 });
+
 
             } catch (error) {
 
@@ -1733,6 +2019,7 @@ export default {
                     "ADMIN UPDATE VARIANTS error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Failed to update variants.",
@@ -1744,8 +2031,11 @@ export default {
         }
 
 
+
         /* =====================================================
            TEST DATABASE
+
+           GET /api/test-db
            ===================================================== */
 
         if (
@@ -1764,11 +2054,19 @@ export default {
 
 
                 return json({
+
                     success: true,
-                    message: "D1 OK",
-                    database: "threadly-db",
+
+                    message:
+                        "D1 OK",
+
+                    database:
+                        "threadly-db",
+
                     result
+
                 });
+
 
             } catch (error) {
 
@@ -1776,6 +2074,7 @@ export default {
                     "TEST DB error:",
                     error
                 );
+
 
                 return errorResponse(
                     "Database connection failed.",
@@ -1785,6 +2084,7 @@ export default {
             }
 
         }
+
 
 
         /* =====================================================
@@ -1801,6 +2101,7 @@ export default {
             );
 
         }
+
 
 
         /* =====================================================
