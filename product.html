@@ -1,4 +1,566 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Product | Threadly Co.</title>
+
+    <meta
+        name="description"
+        content="Shop graphic t-shirts from Threadly Co."
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <header class="site-header">
+
+        <div class="container header-inner">
+
+            <a
+                href="index.html"
+                class="logo"
+            >
+                THREADLY<span>CO.</span>
+            </a>
+
+
+            <nav class="main-nav">
+
+                <a href="shop.html">
+                    Shop
+                </a>
+
+                <a href="index.html#featured">
+                    Featured
+                </a>
+
+                <a href="index.html#about">
+                    About
+                </a>
+
+            </nav>
+
+
+            <a
+                href="cart.html"
+                class="cart-link"
+            >
+                Cart
+                <span id="cart-count">
+                    0
+                </span>
+            </a>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main>
+
+
+        <!-- =================================================
+             BREADCRUMB
+             ================================================= -->
+
+        <section class="product-breadcrumb">
+
+            <div class="container">
+
+                <a href="index.html">
+                    Home
+                </a>
+
+                <span>
+                    /
+                </span>
+
+                <a href="shop.html">
+                    Shop
+                </a>
+
+                <span>
+                    /
+                </span>
+
+                <span id="breadcrumb-product">
+                    Product
+                </span>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             PRODUCT
+             ================================================= -->
+
+        <section class="product-section">
+
+            <div class="container product-layout">
+
+
+                <!-- =========================================
+                     PRODUCT IMAGE
+                     ========================================= -->
+
+                <div class="product-gallery">
+
+                    <div class="product-main-image">
+
+                        <img
+                            id="product-image"
+                            src=""
+                            alt="Product image"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     PRODUCT INFO
+                     ========================================= -->
+
+                <div class="product-details">
+
+
+                    <p
+                        id="product-category"
+                        class="product-category"
+                    >
+                        LOADING...
+                    </p>
+
+
+                    <h1
+                        id="product-name"
+                    >
+                        Loading product...
+                    </h1>
+
+
+                    <div
+                        id="product-price"
+                        class="product-price"
+                    >
+                        $0.00
+                    </div>
+
+
+
+                    <!-- DESCRIPTION -->
+
+                    <div class="product-description">
+
+                        <p
+                            id="product-description-text"
+                        >
+                            Loading product information...
+                        </p>
+
+                    </div>
+
+
+
+                    <!-- COLOR -->
+
+                    <div class="product-option-group">
+
+                        <div class="product-option-label">
+
+                            <span>
+                                Color:
+                            </span>
+
+                            <strong
+                                id="selected-color"
+                            >
+                                Black
+                            </strong>
+
+                        </div>
+
+
+                        <div class="color-options">
+
+
+                            <button
+                                type="button"
+                                class="color-option active"
+                                data-color="Black"
+                                aria-label="Black"
+                            >
+                                Black
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="color-option"
+                                data-color="White"
+                                aria-label="White"
+                            >
+                                White
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="color-option"
+                                data-color="Navy"
+                                aria-label="Navy"
+                            >
+                                Navy
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="color-option"
+                                data-color="Gray"
+                                aria-label="Gray"
+                            >
+                                Gray
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- SIZE -->
+
+                    <div class="product-option-group">
+
+                        <div class="product-option-label">
+
+                            <span>
+                                Size:
+                            </span>
+
+                            <strong
+                                id="selected-size"
+                            >
+                                M
+                            </strong>
+
+                        </div>
+
+
+                        <div class="size-options">
+
+
+                            <button
+                                type="button"
+                                class="size-option"
+                                data-size="S"
+                            >
+                                S
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="size-option active"
+                                data-size="M"
+                            >
+                                M
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="size-option"
+                                data-size="L"
+                            >
+                                L
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="size-option"
+                                data-size="XL"
+                            >
+                                XL
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="size-option"
+                                data-size="2XL"
+                            >
+                                2XL
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- QUANTITY -->
+
+                    <div class="product-option-group">
+
+                        <div class="product-option-label">
+
+                            <span>
+                                Quantity
+                            </span>
+
+                        </div>
+
+
+                        <div class="quantity-selector">
+
+
+                            <button
+                                type="button"
+                                id="quantity-minus"
+                            >
+                                −
+                            </button>
+
+
+                            <span
+                                id="quantity"
+                            >
+                                1
+                            </span>
+
+
+                            <button
+                                type="button"
+                                id="quantity-plus"
+                            >
+                                +
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- ADD TO CART -->
+
+                    <button
+                        type="button"
+                        id="add-to-cart"
+                        class="btn add-to-cart-btn"
+                    >
+                        ADD TO CART
+                    </button>
+
+
+                    <p
+                        id="cart-message"
+                        class="cart-message"
+                    >
+                    </p>
+
+
+
+                    <!-- PRODUCT INFO -->
+
+                    <div class="product-extra-info">
+
+                        <p>
+                            ✓ Premium quality graphic t-shirt
+                        </p>
+
+                        <p>
+                            ✓ Secure checkout
+                        </p>
+
+                        <p>
+                            ✓ Printed after purchase
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <footer class="site-footer">
+
+        <div class="container footer-grid">
+
+
+            <div class="footer-brand">
+
+                <a
+                    href="index.html"
+                    class="logo"
+                >
+                    THREADLY<span>CO.</span>
+                </a>
+
+                <p>
+                    Graphic t-shirts made for people
+                    with their own style.
+                </p>
+
+            </div>
+
+
+
+            <div class="footer-column">
+
+                <h3>
+                    Shop
+                </h3>
+
+                <a href="shop.html">
+                    All T-Shirts
+                </a>
+
+                <a href="shop.html?category=funny">
+                    Funny
+                </a>
+
+                <a href="shop.html?category=lifestyle">
+                    Lifestyle
+                </a>
+
+                <a href="shop.html?category=trending">
+                    Trending
+                </a>
+
+            </div>
+
+
+
+            <div class="footer-column">
+
+                <h3>
+                    Help
+                </h3>
+
+                <a href="#">
+                    Contact
+                </a>
+
+                <a href="#">
+                    Shipping
+                </a>
+
+                <a href="#">
+                    Returns
+                </a>
+
+                <a href="#">
+                    FAQ
+                </a>
+
+            </div>
+
+
+
+            <div class="footer-column">
+
+                <h3>
+                    Follow
+                </h3>
+
+                <a href="#">
+                    Instagram
+                </a>
+
+                <a href="#">
+                    Facebook
+                </a>
+
+                <a href="#">
+                    TikTok
+                </a>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="container footer-bottom">
+
+            <p>
+                © 2026 Threadly Co. All rights reserved.
+            </p>
+
+            <div>
+
+                <a href="#">
+                    Privacy Policy
+                </a>
+
+                <a href="#">
+                    Terms
+                </a>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script>
+
 
     /* =====================================================
        GET PRODUCT ID FROM URL
@@ -19,17 +581,232 @@
        PRODUCT
        ===================================================== */
 
-    let product = null;
+    let product =
+        null;
 
 
 
     /* =====================================================
-       LOAD PRODUCT FROM API
+       GET CART
+       ===================================================== */
+
+    function getCart() {
+
+        try {
+
+            const cart =
+                JSON.parse(
+                    localStorage.getItem(
+                        "cart"
+                    )
+                );
+
+
+            if (
+                Array.isArray(cart)
+            ) {
+
+                return cart;
+
+            }
+
+
+            return [];
+
+        } catch (error) {
+
+            console.error(
+                "Failed to read cart:",
+                error
+            );
+
+
+            return [];
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       SAVE CART
+       ===================================================== */
+
+    function saveCart(cart) {
+
+        localStorage.setItem(
+            "cart",
+            JSON.stringify(cart)
+        );
+
+    }
+
+
+
+    /* =====================================================
+       UPDATE CART COUNT
+       ===================================================== */
+
+    function updateCartCount() {
+
+        const cart =
+            getCart();
+
+
+        const count =
+            cart.reduce(
+                function(total, item) {
+
+                    return (
+                        total +
+                        Number(
+                            item.quantity || 0
+                        )
+                    );
+
+                },
+                0
+            );
+
+
+        const cartCount =
+            document.getElementById(
+                "cart-count"
+            );
+
+
+        if (
+            cartCount
+        ) {
+
+            cartCount.textContent =
+                count;
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       SHOW PRODUCT ERROR
+       ===================================================== */
+
+    function showProductError(message) {
+
+        const productName =
+            document.getElementById(
+                "product-name"
+            );
+
+
+        const description =
+            document.getElementById(
+                "product-description-text"
+            );
+
+
+        const addToCartButton =
+            document.getElementById(
+                "add-to-cart"
+            );
+
+
+        if (
+            productName
+        ) {
+
+            productName.textContent =
+                message;
+
+        }
+
+
+        if (
+            description
+        ) {
+
+            description.textContent =
+                "Please return to the shop and try again.";
+
+        }
+
+
+        if (
+            addToCartButton
+        ) {
+
+            addToCartButton.disabled =
+                true;
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       GET PRODUCT FROM API
+       ===================================================== */
+
+    async function getProduct(productId) {
+
+        const response =
+            await fetch(
+                `/api/products/${encodeURIComponent(productId)}`
+            );
+
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+
+        if (
+            !contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            throw new Error(
+                "API did not return JSON."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success ||
+            !data.product
+        ) {
+
+            return null;
+
+        }
+
+
+        return data.product;
+
+    }
+
+
+
+    /* =====================================================
+       LOAD PRODUCT
        ===================================================== */
 
     async function loadProduct() {
 
-        if (!productId) {
+        if (
+            !productId
+        ) {
 
             showProductError(
                 "Product not found."
@@ -42,20 +819,14 @@
 
         try {
 
-            const response =
-                await fetch(
-                    `/api/products/${encodeURIComponent(productId)}`
+            product =
+                await getProduct(
+                    productId
                 );
 
 
-            const data =
-                await response.json();
-
-
             if (
-                !response.ok ||
-                !data.success ||
-                !data.product
+                !product
             ) {
 
                 showProductError(
@@ -67,18 +838,19 @@
             }
 
 
-            product =
-                data.product;
-
-
 
             /* =============================================
-               UPDATE PAGE
+               UPDATE TITLE
                ============================================= */
 
             document.title =
                 `${product.name} | Threadly Co.`;
 
+
+
+            /* =============================================
+               UPDATE PRODUCT NAME
+               ============================================= */
 
             document.getElementById(
                 "product-name"
@@ -86,35 +858,67 @@
                 product.name;
 
 
+
+            /* =============================================
+               UPDATE CATEGORY
+               ============================================= */
+
             document.getElementById(
                 "product-category"
             ).textContent =
-                product.category.toUpperCase();
+                String(
+                    product.category || ""
+                ).toUpperCase();
 
+
+
+            /* =============================================
+               UPDATE PRICE
+               ============================================= */
 
             document.getElementById(
                 "product-price"
             ).textContent =
-                `$${Number(product.price).toFixed(2)}`;
+                `$${Number(
+                    product.price || 0
+                ).toFixed(2)}`;
 
 
-            document.getElementById(
-                "product-image"
-            ).src =
-                product.image;
+
+            /* =============================================
+               UPDATE IMAGE
+               ============================================= */
+
+            const productImage =
+                document.getElementById(
+                    "product-image"
+                );
 
 
-            document.getElementById(
-                "product-image"
-            ).alt =
+            productImage.src =
+                product.image || "";
+
+
+            productImage.alt =
                 product.name;
 
+
+
+            /* =============================================
+               UPDATE DESCRIPTION
+               ============================================= */
 
             document.getElementById(
                 "product-description-text"
             ).textContent =
-                product.description;
+                product.description ||
+                "";
 
+
+
+            /* =============================================
+               UPDATE BREADCRUMB
+               ============================================= */
 
             document.getElementById(
                 "breadcrumb-product"
@@ -133,11 +937,14 @@
                 );
 
 
-            if (metaDescription) {
+            if (
+                metaDescription
+            ) {
 
                 metaDescription.setAttribute(
                     "content",
-                    product.description
+                    product.description ||
+                    product.name
                 );
 
             }
@@ -156,33 +963,6 @@
             );
 
         }
-
-    }
-
-
-
-    /* =====================================================
-       PRODUCT ERROR
-       ===================================================== */
-
-    function showProductError(message) {
-
-        document.getElementById(
-            "product-name"
-        ).textContent =
-            message;
-
-
-        document.getElementById(
-            "product-description-text"
-        ).textContent =
-            "Please return to the shop and try again.";
-
-
-        document.getElementById(
-            "add-to-cart"
-        ).disabled =
-            true;
 
     }
 
@@ -236,8 +1016,14 @@
                         button.dataset.color;
 
 
-                    selectedColorText.textContent =
-                        selectedColor;
+                    if (
+                        selectedColorText
+                    ) {
+
+                        selectedColorText.textContent =
+                            selectedColor;
+
+                    }
 
                 }
             );
@@ -258,6 +1044,12 @@
     const sizeButtons =
         document.querySelectorAll(
             ".size-option"
+        );
+
+
+    const selectedSizeText =
+        document.getElementById(
+            "selected-size"
         );
 
 
@@ -287,6 +1079,16 @@
 
                     selectedSize =
                         button.dataset.size;
+
+
+                    if (
+                        selectedSizeText
+                    ) {
+
+                        selectedSizeText.textContent =
+                            selectedSize;
+
+                    }
 
                 }
             );
@@ -318,7 +1120,9 @@
             "click",
             function() {
 
-                if (quantity > 1) {
+                if (
+                    quantity > 1
+                ) {
 
                     quantity--;
 
@@ -340,7 +1144,9 @@
             "click",
             function() {
 
-                if (quantity < 10) {
+                if (
+                    quantity < 10
+                ) {
 
                     quantity++;
 
@@ -352,86 +1158,6 @@
 
             }
         );
-
-
-
-    /* =====================================================
-       CART STORAGE
-       ===================================================== */
-
-    function getCart() {
-
-        try {
-
-            return JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                )
-            ) || [];
-
-        } catch (error) {
-
-            console.error(
-                "Failed to read cart:",
-                error
-            );
-
-
-            return [];
-
-        }
-
-    }
-
-
-
-    function saveCart(cart) {
-
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(cart)
-        );
-
-    }
-
-
-
-    /* =====================================================
-       CART COUNT
-       ===================================================== */
-
-    function updateCartCount() {
-
-        const cart =
-            getCart();
-
-
-        const count =
-            cart.reduce(
-                function(total, item) {
-
-                    return total +
-                        Number(item.quantity || 0);
-
-                },
-                0
-            );
-
-
-        const cartCount =
-            document.getElementById(
-                "cart-count"
-            );
-
-
-        if (cartCount) {
-
-            cartCount.textContent =
-                count;
-
-        }
-
-    }
 
 
 
@@ -448,7 +1174,9 @@
             function() {
 
 
-                if (!product) {
+                if (
+                    !product
+                ) {
 
                     return;
 
@@ -460,42 +1188,53 @@
 
 
 
-                /*
-                 * Same product
-                 * + same color
-                 * + same size
-                 *
-                 * = same cart item
-                 */
+                /* =========================================
+                   FIND SAME PRODUCT
+                   ========================================= */
 
                 const existingItem =
                     cart.find(
                         function(item) {
 
                             return (
+
                                 String(
                                     item.productId
                                 ) ===
                                 String(
                                     product.id
-                                ) &&
+                                )
+
+                                &&
 
                                 item.color ===
-                                selectedColor &&
+                                selectedColor
+
+                                &&
 
                                 item.size ===
                                 selectedSize
+
                             );
 
                         }
                     );
 
 
-                if (existingItem) {
+
+                /* =========================================
+                   UPDATE OR ADD
+                   ========================================= */
+
+                if (
+                    existingItem
+                ) {
 
                     existingItem.quantity =
                         Math.min(
-                            existingItem.quantity +
+                            Number(
+                                existingItem.quantity
+                            ) +
                             quantity,
                             10
                         );
@@ -521,6 +1260,11 @@
                 }
 
 
+
+                /* =========================================
+                   SAVE
+                   ========================================= */
+
                 saveCart(
                     cart
                 );
@@ -530,31 +1274,41 @@
 
 
 
+                /* =========================================
+                   MESSAGE
+                   ========================================= */
+
                 const message =
                     document.getElementById(
                         "cart-message"
                     );
 
 
-                message.textContent =
-                    "Added to cart ✓";
+                if (
+                    message
+                ) {
+
+                    message.textContent =
+                        "Added to cart ✓";
 
 
-                message.classList.add(
-                    "show"
-                );
+                    message.classList.add(
+                        "show"
+                    );
 
 
-                setTimeout(
-                    function() {
+                    setTimeout(
+                        function() {
 
-                        message.classList.remove(
-                            "show"
-                        );
+                            message.classList.remove(
+                                "show"
+                            );
 
-                    },
-                    2500
-                );
+                        },
+                        2500
+                    );
+
+                }
 
             }
         );
@@ -569,4 +1323,10 @@
 
     loadProduct();
 
-</script>
+
+    </script>
+
+
+</body>
+
+</html>
