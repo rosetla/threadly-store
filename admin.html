@@ -29,49 +29,33 @@
            ===================================================== */
 
         .admin-page {
-
             padding: 60px 0 100px;
-
         }
 
-
         .admin-header {
-
             display: flex;
             align-items: flex-end;
             justify-content: space-between;
             gap: 30px;
             margin-bottom: 40px;
-
         }
-
 
         .admin-header h1 {
-
             margin: 0;
-
         }
-
 
         .admin-header p {
-
             margin: 8px 0 0;
             opacity: 0.65;
-
         }
 
-
         .admin-actions {
-
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
-
         }
 
-
         .admin-btn {
-
             border: 1px solid #111;
             background: #111;
             color: #fff;
@@ -79,22 +63,20 @@
             cursor: pointer;
             font: inherit;
             font-weight: 600;
-
         }
-
 
         .admin-btn:hover {
-
             opacity: 0.85;
-
         }
 
+        .admin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
         .admin-btn.secondary {
-
             background: #fff;
             color: #111;
-
         }
 
 
@@ -103,44 +85,33 @@
            ===================================================== */
 
         .admin-toolbar {
-
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 20px;
             margin-bottom: 20px;
             flex-wrap: wrap;
-
         }
-
 
         .admin-search {
-
             flex: 1;
             min-width: 240px;
-
         }
 
-
         .admin-search input {
-
             width: 100%;
             box-sizing: border-box;
             padding: 13px 15px;
             border: 1px solid #ccc;
             font: inherit;
-
         }
 
-
         .admin-filter select {
-
             padding: 13px 15px;
             border: 1px solid #ccc;
             background: #fff;
             font: inherit;
             min-width: 160px;
-
         }
 
 
@@ -149,91 +120,62 @@
            ===================================================== */
 
         .admin-table-wrapper {
-
             width: 100%;
             overflow-x: auto;
             border: 1px solid #ddd;
             background: #fff;
-
         }
-
 
         .admin-table {
-
             width: 100%;
-            min-width: 900px;
+            min-width: 1000px;
             border-collapse: collapse;
-
         }
-
 
         .admin-table th,
         .admin-table td {
-
             padding: 16px;
             text-align: left;
             border-bottom: 1px solid #eee;
             vertical-align: middle;
-
         }
 
-
         .admin-table th {
-
             font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             background: #f7f7f7;
-
         }
-
 
         .admin-table tbody tr:last-child td {
-
             border-bottom: none;
-
         }
 
-
         .admin-product-image {
-
             width: 64px;
             height: 64px;
             object-fit: cover;
             display: block;
             background: #f1f1f1;
-
         }
-
 
         .admin-product-name {
-
             font-weight: 700;
             margin-bottom: 5px;
-
         }
-
 
         .admin-product-slug {
-
             font-size: 12px;
             opacity: 0.55;
-
         }
-
 
         .admin-price {
-
             font-weight: 700;
             white-space: nowrap;
-
         }
 
-
         .admin-category {
-
             text-transform: capitalize;
-
         }
 
 
@@ -242,38 +184,27 @@
            ===================================================== */
 
         .status-badge {
-
             display: inline-block;
             padding: 6px 10px;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-
         }
-
 
         .status-active {
-
             background: #dff5e5;
             color: #176b32;
-
         }
-
 
         .status-draft {
-
             background: #fff1cc;
             color: #765600;
-
         }
 
-
         .status-inactive {
-
             background: #eee;
             color: #666;
-
         }
 
 
@@ -282,38 +213,27 @@
            ===================================================== */
 
         .admin-row-actions {
-
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-
         }
 
-
         .row-btn {
-
             border: 1px solid #ccc;
             background: #fff;
             padding: 8px 12px;
             cursor: pointer;
             font: inherit;
             font-size: 13px;
-
         }
-
 
         .row-btn:hover {
-
             background: #f3f3f3;
-
         }
 
-
         .row-btn.delete {
-
             border-color: #d7aaaa;
             color: #a40000;
-
         }
 
 
@@ -322,35 +242,27 @@
            ===================================================== */
 
         .admin-state {
-
             padding: 60px 20px;
             text-align: center;
             opacity: 0.65;
-
         }
 
-
         .admin-error {
-
             margin-bottom: 20px;
             padding: 14px 16px;
             border: 1px solid #d9aaaa;
             background: #fff1f1;
             color: #8b0000;
             display: none;
-
         }
 
-
         .admin-success {
-
             margin-bottom: 20px;
             padding: 14px 16px;
             border: 1px solid #a9d7b4;
             background: #effaf1;
             color: #176b32;
             display: none;
-
         }
 
 
@@ -359,7 +271,6 @@
            ===================================================== */
 
         .admin-modal {
-
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.55);
@@ -368,152 +279,268 @@
             justify-content: center;
             padding: 20px;
             z-index: 9999;
-
         }
-
 
         .admin-modal.open {
-
             display: flex;
-
         }
 
-
         .admin-modal-content {
-
             width: 100%;
-            max-width: 760px;
+            max-width: 850px;
             max-height: 90vh;
             overflow-y: auto;
             background: #fff;
             padding: 35px;
             box-sizing: border-box;
-
         }
 
-
         .admin-modal-header {
-
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 20px;
             margin-bottom: 30px;
-
         }
-
 
         .admin-modal-header h2 {
-
             margin: 0;
-
         }
 
-
         .modal-close {
-
             border: none;
             background: transparent;
             font-size: 28px;
             line-height: 1;
             cursor: pointer;
-
         }
 
 
-        .admin-form {
+        /* =====================================================
+           FORM
+           ===================================================== */
 
+        .admin-form {
             display: flex;
             flex-direction: column;
             gap: 20px;
-
         }
 
-
         .admin-form-group {
-
             display: flex;
             flex-direction: column;
             gap: 8px;
-
         }
-
 
         .admin-form-group label {
-
             font-weight: 600;
             font-size: 14px;
-
         }
-
 
         .admin-form-group input,
         .admin-form-group textarea,
         .admin-form-group select {
-
             width: 100%;
             box-sizing: border-box;
             padding: 13px 14px;
             border: 1px solid #ccc;
             background: #fff;
             font: inherit;
-
         }
-
 
         .admin-form-group textarea {
-
             min-height: 130px;
             resize: vertical;
-
         }
 
-
         .admin-form-row {
-
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 18px;
-
         }
-
 
         .admin-form-help {
-
             font-size: 12px;
             opacity: 0.55;
-
         }
 
 
-        .admin-image-preview {
+        /* =====================================================
+           IMAGE
+           ===================================================== */
 
+        .admin-image-preview {
             width: 120px;
             height: 120px;
             object-fit: cover;
             background: #f1f1f1;
             display: none;
             margin-top: 5px;
-
         }
 
 
-        .admin-modal-footer {
+        /* =====================================================
+           VARIANTS
+           ===================================================== */
 
+        .variants-section {
+            margin-top: 10px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+
+        .variants-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .variants-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .variant-add-btn {
+            border: 1px solid #111;
+            background: #111;
+            color: #fff;
+            padding: 9px 13px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .variant-add-btn:hover {
+            opacity: 0.85;
+        }
+
+        .variants-help {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-bottom: 15px;
+        }
+
+        .variants-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .variant-item {
+            border: 1px solid #ddd;
+            padding: 14px;
+            background: #fafafa;
+        }
+
+        .variant-main {
+            display: grid;
+            grid-template-columns: 70px 1fr auto;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .variant-color-preview {
+            width: 54px;
+            height: 54px;
+            border: 1px solid #ccc;
+            background: #fff;
+            object-fit: cover;
+        }
+
+        .variant-info {
+            min-width: 0;
+        }
+
+        .variant-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .variant-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .variant-pill {
+            padding: 4px 8px;
+            background: #eee;
+        }
+
+        .variant-actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .variant-empty {
+            padding: 25px;
+            text-align: center;
+            border: 1px dashed #ccc;
+            opacity: 0.6;
+        }
+
+
+        /* =====================================================
+           VARIANT FORM
+           ===================================================== */
+
+        .variant-editor {
+            display: none;
+            margin-top: 15px;
+            padding: 18px;
+            border: 1px solid #ddd;
+            background: #fff;
+        }
+
+        .variant-editor.open {
+            display: block;
+        }
+
+        .variant-editor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .variant-editor-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .variant-color-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .variant-color-input input[type="color"] {
+            width: 55px;
+            height: 45px;
+            padding: 3px;
+            cursor: pointer;
+        }
+
+
+        /* =====================================================
+           MODAL FOOTER
+           ===================================================== */
+
+        .admin-modal-footer {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #eee;
-
-        }
-
-
-        .admin-danger {
-
-            color: #a40000;
-
         }
 
 
@@ -524,24 +551,29 @@
         @media (max-width: 700px) {
 
             .admin-header {
-
                 align-items: flex-start;
                 flex-direction: column;
-
             }
-
 
             .admin-form-row {
-
                 grid-template-columns: 1fr;
-
             }
 
-
             .admin-modal-content {
-
                 padding: 24px;
+            }
 
+            .variant-main {
+                grid-template-columns: 55px 1fr;
+            }
+
+            .variant-actions {
+                grid-column: 1 / -1;
+                justify-content: flex-start;
+            }
+
+            .variant-editor-grid {
+                grid-template-columns: 1fr;
             }
 
         }
@@ -569,7 +601,6 @@
                 THREADLY<span>CO.</span>
             </a>
 
-
             <nav class="main-nav">
 
                 <a href="shop.html">
@@ -585,7 +616,6 @@
                 </a>
 
             </nav>
-
 
             <a
                 href="admin.html"
@@ -611,9 +641,7 @@
             <div class="container">
 
 
-                <!-- =================================================
-                     HEADER
-                     ================================================= -->
+                <!-- HEADER -->
 
                 <div class="admin-header">
 
@@ -628,11 +656,10 @@
                         </h1>
 
                         <p>
-                            Manage products stored in Cloudflare D1.
+                            Manage products, colors and sizes stored in Cloudflare D1.
                         </p>
 
                     </div>
-
 
                     <div class="admin-actions">
 
@@ -643,7 +670,6 @@
                         >
                             REFRESH
                         </button>
-
 
                         <button
                             type="button"
@@ -659,15 +685,12 @@
 
 
 
-                <!-- =================================================
-                     MESSAGES
-                     ================================================= -->
+                <!-- MESSAGES -->
 
                 <div
                     id="admin-error"
                     class="admin-error"
                 ></div>
-
 
                 <div
                     id="admin-success"
@@ -676,12 +699,9 @@
 
 
 
-                <!-- =================================================
-                     TOOLBAR
-                     ================================================= -->
+                <!-- TOOLBAR -->
 
                 <div class="admin-toolbar">
-
 
                     <div class="admin-search">
 
@@ -694,12 +714,9 @@
 
                     </div>
 
-
                     <div class="admin-filter">
 
-                        <select
-                            id="status-filter"
-                        >
+                        <select id="status-filter">
 
                             <option value="all">
                                 All Status
@@ -721,14 +738,11 @@
 
                     </div>
 
-
                 </div>
 
 
 
-                <!-- =================================================
-                     TABLE
-                     ================================================= -->
+                <!-- TABLE -->
 
                 <div class="admin-table-wrapper">
 
@@ -770,10 +784,7 @@
 
                         </thead>
 
-
-                        <tbody
-                            id="products-table-body"
-                        >
+                        <tbody id="products-table-body">
 
                             <tr>
 
@@ -820,7 +831,6 @@
                     Add Product
                 </h2>
 
-
                 <button
                     type="button"
                     id="modal-close"
@@ -843,7 +853,6 @@
                 <!-- NAME / SLUG -->
 
                 <div class="admin-form-row">
-
 
                     <div class="admin-form-group">
 
@@ -880,7 +889,6 @@
 
                     </div>
 
-
                 </div>
 
 
@@ -905,7 +913,6 @@
                 <!-- PRICE / CATEGORY -->
 
                 <div class="admin-form-row">
-
 
                     <div class="admin-form-group">
 
@@ -968,7 +975,6 @@
 
                     </div>
 
-
                 </div>
 
 
@@ -991,7 +997,6 @@
                     <span class="admin-form-help">
                         Use a full HTTP or HTTPS image URL.
                     </span>
-
 
                     <img
                         id="image-preview"
@@ -1053,6 +1058,236 @@
 
 
 
+                <!-- =================================================
+                     VARIANTS
+                     ================================================= -->
+
+                <section
+                    id="variants-section"
+                    class="variants-section"
+                >
+
+                    <div class="variants-header">
+
+                        <h3>
+                            Colors & Sizes
+                        </h3>
+
+                        <button
+                            type="button"
+                            id="add-variant"
+                            class="variant-add-btn"
+                        >
+                            + ADD VARIANT
+                        </button>
+
+                    </div>
+
+                    <div class="variants-help">
+
+                        Add each available combination of color and size.
+                        Example: Black + M, Black + L, White + M.
+
+                    </div>
+
+
+                    <!-- VARIANT EDITOR -->
+
+                    <div
+                        id="variant-editor"
+                        class="variant-editor"
+                    >
+
+                        <div class="variant-editor-grid">
+
+
+                            <div class="admin-form-group">
+
+                                <label for="variant-color-name">
+                                    Color Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="variant-color-name"
+                                    maxlength="100"
+                                    placeholder="Black"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-form-group">
+
+                                <label for="variant-size">
+                                    Size
+                                </label>
+
+                                <select id="variant-size">
+
+                                    <option value="XS">
+                                        XS
+                                    </option>
+
+                                    <option value="S">
+                                        S
+                                    </option>
+
+                                    <option value="M" selected>
+                                        M
+                                    </option>
+
+                                    <option value="L">
+                                        L
+                                    </option>
+
+                                    <option value="XL">
+                                        XL
+                                    </option>
+
+                                    <option value="2XL">
+                                        2XL
+                                    </option>
+
+                                    <option value="3XL">
+                                        3XL
+                                    </option>
+
+                                    <option value="4XL">
+                                        4XL
+                                    </option>
+
+                                    <option value="5XL">
+                                        5XL
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="admin-form-group">
+
+                                <label>
+                                    Color
+                                </label>
+
+                                <div class="variant-color-input">
+
+                                    <input
+                                        type="color"
+                                        id="variant-color-hex"
+                                        value="#000000"
+                                    >
+
+                                    <input
+                                        type="text"
+                                        id="variant-color-hex-text"
+                                        value="#000000"
+                                        maxlength="7"
+                                        placeholder="#000000"
+                                    >
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="admin-form-group">
+
+                                <label for="variant-image">
+                                    Variant Image URL
+                                </label>
+
+                                <input
+                                    type="url"
+                                    id="variant-image"
+                                    maxlength="2000"
+                                    placeholder="https://example.com/black-shirt.jpg"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-form-group">
+
+                                <label for="variant-printify-id">
+                                    Printify Variant ID
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="variant-printify-id"
+                                    maxlength="200"
+                                    placeholder="Optional"
+                                >
+
+                            </div>
+
+
+                            <div class="admin-form-group">
+
+                                <label for="variant-status">
+                                    Status
+                                </label>
+
+                                <select id="variant-status">
+
+                                    <option value="active">
+                                        Active
+                                    </option>
+
+                                    <option value="inactive">
+                                        Inactive
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="variant-editor-actions">
+
+                            <button
+                                type="button"
+                                id="variant-cancel"
+                                class="row-btn"
+                            >
+                                CANCEL
+                            </button>
+
+                            <button
+                                type="button"
+                                id="variant-save"
+                                class="admin-btn"
+                            >
+                                SAVE VARIANT
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- VARIANT LIST -->
+
+                    <div
+                        id="variants-list"
+                        class="variants-list"
+                    >
+
+                        <div class="variant-empty">
+                            Save the product first, then add colors and sizes.
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
                 <!-- FOOTER -->
 
                 <div class="admin-modal-footer">
@@ -1064,7 +1299,6 @@
                     >
                         CANCEL
                     </button>
-
 
                     <button
                         type="submit"
@@ -1085,10 +1319,6 @@
 
 
 
-    <!-- =====================================================
-         JAVASCRIPT
-         ===================================================== -->
-
     <script>
 
 
@@ -1100,7 +1330,6 @@
             "/api/admin/products";
 
 
-
         /* =====================================================
            STATE
            ===================================================== */
@@ -1109,6 +1338,9 @@
 
         let editingProductId = null;
 
+        let variants = [];
+
+        let editingVariantId = null;
 
 
         /* =====================================================
@@ -1120,102 +1352,138 @@
                 "products-table-body"
             );
 
-
         const modal =
             document.getElementById(
                 "product-modal"
             );
-
 
         const modalTitle =
             document.getElementById(
                 "modal-title"
             );
 
-
         const productForm =
             document.getElementById(
                 "product-form"
             );
-
 
         const productName =
             document.getElementById(
                 "product-name"
             );
 
-
         const productSlug =
             document.getElementById(
                 "product-slug"
             );
-
 
         const productDescription =
             document.getElementById(
                 "product-description"
             );
 
-
         const productPrice =
             document.getElementById(
                 "product-price"
             );
-
 
         const productCategory =
             document.getElementById(
                 "product-category"
             );
 
-
         const productImage =
             document.getElementById(
                 "product-image"
             );
-
 
         const productPrintifyId =
             document.getElementById(
                 "product-printify-id"
             );
 
-
         const productStatus =
             document.getElementById(
                 "product-status"
             );
-
 
         const imagePreview =
             document.getElementById(
                 "image-preview"
             );
 
-
         const searchInput =
             document.getElementById(
                 "product-search"
             );
-
 
         const statusFilter =
             document.getElementById(
                 "status-filter"
             );
 
-
         const errorBox =
             document.getElementById(
                 "admin-error"
             );
-
 
         const successBox =
             document.getElementById(
                 "admin-success"
             );
 
+
+        /* VARIANT DOM */
+
+        const variantsSection =
+            document.getElementById(
+                "variants-section"
+            );
+
+        const variantsList =
+            document.getElementById(
+                "variants-list"
+            );
+
+        const variantEditor =
+            document.getElementById(
+                "variant-editor"
+            );
+
+        const variantColorName =
+            document.getElementById(
+                "variant-color-name"
+            );
+
+        const variantSize =
+            document.getElementById(
+                "variant-size"
+            );
+
+        const variantColorHex =
+            document.getElementById(
+                "variant-color-hex"
+            );
+
+        const variantColorHexText =
+            document.getElementById(
+                "variant-color-hex-text"
+            );
+
+        const variantImage =
+            document.getElementById(
+                "variant-image"
+            );
+
+        const variantPrintifyId =
+            document.getElementById(
+                "variant-printify-id"
+            );
+
+        const variantStatus =
+            document.getElementById(
+                "variant-status"
+            );
 
 
         /* =====================================================
@@ -1224,37 +1492,14 @@
 
         function escapeHtml(value) {
 
-            return String(
-                value ?? ""
-            )
-
-                .replace(
-                    /&/g,
-                    "&amp;"
-                )
-
-                .replace(
-                    /</g,
-                    "&lt;"
-                )
-
-                .replace(
-                    />/g,
-                    "&gt;"
-                )
-
-                .replace(
-                    /"/g,
-                    "&quot;"
-                )
-
-                .replace(
-                    /'/g,
-                    "&#039;"
-                );
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
 
         }
-
 
 
         function formatMoney(value) {
@@ -1262,23 +1507,13 @@
             const number =
                 Number(value);
 
-
-            if (
-                !Number.isFinite(
-                    number
-                )
-            ) {
-
+            if (!Number.isFinite(number)) {
                 return "$0.00";
-
             }
 
-
-            return "$" +
-                number.toFixed(2);
+            return "$" + number.toFixed(2);
 
         }
-
 
 
         function showError(message) {
@@ -1286,14 +1521,11 @@
             successBox.style.display =
                 "none";
 
-
             errorBox.textContent =
                 message;
 
-
             errorBox.style.display =
                 "block";
-
 
             window.scrollTo({
                 top: 0,
@@ -1303,26 +1535,21 @@
         }
 
 
-
         function showSuccess(message) {
 
             errorBox.style.display =
                 "none";
 
-
             successBox.textContent =
                 message;
 
-
             successBox.style.display =
                 "block";
-
 
             window.scrollTo({
                 top: 0,
                 behavior: "smooth"
             });
-
 
             setTimeout(
                 function() {
@@ -1337,65 +1564,39 @@
         }
 
 
+        function getStatusClass(status) {
 
-        function getStatusClass(
-            status
-        ) {
-
-            if (
-                status === "active"
-            ) {
-
+            if (status === "active") {
                 return "status-active";
-
             }
 
-
-            if (
-                status === "draft"
-            ) {
-
+            if (status === "draft") {
                 return "status-draft";
-
             }
-
 
             return "status-inactive";
 
         }
 
 
-
-        function formatDate(
-            date
-        ) {
+        function formatDate(date) {
 
             if (!date) {
-
                 return "—";
-
             }
-
 
             const parsed =
                 new Date(
-                    date.replace(
-                        " ",
-                        "T"
-                    ) + "Z"
+                    date.replace(" ", "T") + "Z"
                 );
-
 
             if (
                 Number.isNaN(
                     parsed.getTime()
                 )
             ) {
-
                 return date;
-
             }
-
 
             return parsed.toLocaleDateString(
                 "en-US",
@@ -1409,6 +1610,26 @@
         }
 
 
+        function normalizeHex(value) {
+
+            let hex =
+                String(value || "")
+                    .trim();
+
+            if (!hex.startsWith("#")) {
+                hex = "#" + hex;
+            }
+
+            if (
+                /^#[0-9a-fA-F]{6}$/.test(hex)
+            ) {
+                return hex.toUpperCase();
+            }
+
+            return "#000000";
+
+        }
+
 
         /* =====================================================
            LOAD PRODUCTS
@@ -1419,18 +1640,15 @@
             tableBody.innerHTML = `
 
                 <tr>
-
                     <td
                         colspan="7"
                         class="admin-state"
                     >
                         Loading products...
                     </td>
-
                 </tr>
 
             `;
-
 
             try {
 
@@ -1447,10 +1665,8 @@
                         }
                     );
 
-
                 const data =
                     await response.json();
-
 
                 if (
                     !response.ok ||
@@ -1464,14 +1680,12 @@
 
                 }
 
-
                 products =
                     Array.isArray(
                         data.products
                     )
                         ? data.products
                         : [];
-
 
                 renderProducts();
 
@@ -1482,22 +1696,18 @@
                     error
                 );
 
-
                 tableBody.innerHTML = `
 
                     <tr>
-
                         <td
                             colspan="7"
                             class="admin-state"
                         >
                             Failed to load products.
                         </td>
-
                     </tr>
 
                 `;
-
 
                 showError(
                     error.message ||
@@ -1509,9 +1719,8 @@
         }
 
 
-
         /* =====================================================
-           FILTER PRODUCTS
+           FILTER
            ===================================================== */
 
         function getFilteredProducts() {
@@ -1521,44 +1730,27 @@
                     .trim()
                     .toLowerCase();
 
-
             const status =
                 statusFilter.value;
-
 
             return products.filter(
                 function(product) {
 
                     const matchesSearch =
                         !search ||
-                        String(
-                            product.name || ""
-                        )
-                        .toLowerCase()
-                        .includes(
-                            search
-                        ) ||
-                        String(
-                            product.slug || ""
-                        )
-                        .toLowerCase()
-                        .includes(
-                            search
-                        ) ||
-                        String(
-                            product.category || ""
-                        )
-                        .toLowerCase()
-                        .includes(
-                            search
-                        );
-
+                        String(product.name || "")
+                            .toLowerCase()
+                            .includes(search) ||
+                        String(product.slug || "")
+                            .toLowerCase()
+                            .includes(search) ||
+                        String(product.category || "")
+                            .toLowerCase()
+                            .includes(search);
 
                     const matchesStatus =
                         status === "all" ||
-                        product.status ===
-                            status;
-
+                        product.status === status;
 
                     return (
                         matchesSearch &&
@@ -1571,7 +1763,6 @@
         }
 
 
-
         /* =====================================================
            RENDER PRODUCTS
            ===================================================== */
@@ -1581,22 +1772,17 @@
             const filtered =
                 getFilteredProducts();
 
-
-            if (
-                filtered.length === 0
-            ) {
+            if (filtered.length === 0) {
 
                 tableBody.innerHTML = `
 
                     <tr>
-
                         <td
                             colspan="7"
                             class="admin-state"
                         >
                             No products found.
                         </td>
-
                     </tr>
 
                 `;
@@ -1605,7 +1791,6 @@
 
             }
 
-
             tableBody.innerHTML =
                 filtered
                     .map(
@@ -1613,23 +1798,13 @@
 
                             const image =
                                 product.image
-                                    ? escapeHtml(
-                                        product.image
-                                    )
+                                    ? escapeHtml(product.image)
                                     : "";
-
 
                             const status =
                                 escapeHtml(
                                     product.status
                                 );
-
-
-                            const statusClass =
-                                getStatusClass(
-                                    product.status
-                                );
-
 
                             return `
 
@@ -1657,48 +1832,29 @@
                                     <td>
 
                                         <div class="admin-product-name">
-
-                                            ${escapeHtml(
-                                                product.name
-                                            )}
-
+                                            ${escapeHtml(product.name)}
                                         </div>
 
                                         <div class="admin-product-slug">
-
-                                            /${escapeHtml(
-                                                product.slug
-                                            )}
-
+                                            /${escapeHtml(product.slug)}
                                         </div>
 
                                     </td>
 
 
                                     <td>
-
                                         <span class="admin-price">
-
-                                            ${formatMoney(
-                                                product.price
-                                            )}
-
+                                            ${formatMoney(product.price)}
                                         </span>
-
                                     </td>
 
 
                                     <td>
 
                                         <span class="admin-category">
-
-                                            ${
-                                                escapeHtml(
-                                                    product.category ||
-                                                    "—"
-                                                )
-                                            }
-
+                                            ${escapeHtml(
+                                                product.category || "—"
+                                            )}
                                         </span>
 
                                     </td>
@@ -1707,22 +1863,16 @@
                                     <td>
 
                                         <span
-                                            class="status-badge ${statusClass}"
+                                            class="status-badge ${getStatusClass(product.status)}"
                                         >
-
                                             ${status}
-
                                         </span>
 
                                     </td>
 
 
                                     <td>
-
-                                        ${formatDate(
-                                            product.created_at
-                                        )}
-
+                                        ${formatDate(product.created_at)}
                                     </td>
 
 
@@ -1741,11 +1891,8 @@
 
 
                                             ${
-                                                product.status !==
-                                                "inactive"
-
+                                                product.status !== "inactive"
                                                     ? `
-
                                                         <button
                                                             type="button"
                                                             class="row-btn delete"
@@ -1754,9 +1901,7 @@
                                                         >
                                                             Deactivate
                                                         </button>
-
                                                     `
-
                                                     : ""
                                             }
 
@@ -1775,110 +1920,102 @@
         }
 
 
-
         /* =====================================================
            OPEN MODAL
            ===================================================== */
 
-        function openModal(
-            product = null
-        ) {
+        async function openModal(product = null) {
 
-            modal.classList.add(
-                "open"
-            );
-
+            modal.classList.add("open");
 
             modal.setAttribute(
                 "aria-hidden",
                 "false"
             );
 
+            resetVariantEditor();
+
+            variants = [];
 
             if (product) {
 
                 editingProductId =
-                    product.id;
-
+                    Number(product.id);
 
                 modalTitle.textContent =
                     "Edit Product";
 
-
                 productName.value =
                     product.name || "";
-
 
                 productSlug.value =
                     product.slug || "";
 
-
                 productDescription.value =
                     product.description || "";
-
 
                 productPrice.value =
                     product.price ?? "";
 
-
                 productCategory.value =
                     product.category || "";
-
 
                 productImage.value =
                     product.image || "";
 
-
                 productPrintifyId.value =
-                    product.printify_product_id ||
-                    "";
-
+                    product.printify_product_id || "";
 
                 productStatus.value =
                     product.status || "active";
 
-
                 updateImagePreview();
+
+                await loadVariants(
+                    editingProductId
+                );
 
             } else {
 
                 editingProductId =
                     null;
 
-
                 modalTitle.textContent =
                     "Add Product";
 
-
                 productForm.reset();
-
 
                 productStatus.value =
                     "draft";
 
-
                 imagePreview.style.display =
                     "none";
-
 
                 imagePreview.removeAttribute(
                     "src"
                 );
 
-            }
+                variantsList.innerHTML = `
 
+                    <div class="variant-empty">
+                        Save the product first, then add colors and sizes.
+                    </div>
+
+                `;
+
+                variantsSection.style.display =
+                    "block";
+
+            }
 
             setTimeout(
                 function() {
-
                     productName.focus();
-
                 },
                 50
             );
 
         }
-
 
 
         /* =====================================================
@@ -1887,22 +2024,21 @@
 
         function closeModal() {
 
-            modal.classList.remove(
-                "open"
-            );
-
+            modal.classList.remove("open");
 
             modal.setAttribute(
                 "aria-hidden",
                 "true"
             );
 
-
             editingProductId =
                 null;
 
-        }
+            variants = [];
 
+            resetVariantEditor();
+
+        }
 
 
         /* =====================================================
@@ -1914,12 +2050,10 @@
             const url =
                 productImage.value.trim();
 
-
             if (!url) {
 
                 imagePreview.style.display =
                     "none";
-
 
                 imagePreview.removeAttribute(
                     "src"
@@ -1929,10 +2063,8 @@
 
             }
 
-
             imagePreview.src =
                 url;
-
 
             imagePreview.style.display =
                 "block";
@@ -1940,83 +2072,53 @@
         }
 
 
-
         /* =====================================================
-           AUTO SLUG
+           SLUG
            ===================================================== */
 
-        function generateSlug(
-            value
-        ) {
+        function generateSlug(value) {
 
             return value
                 .toLowerCase()
                 .trim()
-                .replace(
-                    /[^a-z0-9]+/g,
-                    "-"
-                )
-                .replace(
-                    /^-+|-+$/g,
-                    ""
-                );
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "");
 
         }
-
 
 
         /* =====================================================
            SAVE PRODUCT
            ===================================================== */
 
-        async function saveProduct(
-            event
-        ) {
+        async function saveProduct(event) {
 
             event.preventDefault();
-
 
             const name =
                 productName.value.trim();
 
-
             const slug =
                 productSlug.value.trim() ||
-                generateSlug(
-                    name
-                );
-
+                generateSlug(name);
 
             const description =
                 productDescription.value.trim();
 
-
             const price =
-                Number(
-                    productPrice.value
-                );
-
+                Number(productPrice.value);
 
             const image =
                 productImage.value.trim();
 
-
             const category =
                 productCategory.value;
-
 
             const printifyProductId =
                 productPrintifyId.value.trim();
 
-
             const status =
                 productStatus.value;
-
-
-
-            /* ================================================
-               CLIENT VALIDATION
-               ================================================ */
 
             if (!name) {
 
@@ -2030,7 +2132,6 @@
 
             }
 
-
             if (!slug) {
 
                 showError(
@@ -2042,7 +2143,6 @@
                 return;
 
             }
-
 
             if (
                 !Number.isFinite(price) ||
@@ -2059,10 +2159,7 @@
 
             }
 
-
-            if (
-                !category
-            ) {
+            if (!category) {
 
                 showError(
                     "Please select a category."
@@ -2074,54 +2171,38 @@
 
             }
 
-
             const payload = {
 
                 name,
-
                 slug,
-
                 description,
-
                 price,
-
                 image,
-
                 category,
-
                 printify_product_id:
                     printifyProductId,
-
                 status
 
             };
-
-
-
-            /* ================================================
-               BUTTON STATE
-               ================================================ */
 
             const saveButton =
                 document.getElementById(
                     "save-product"
                 );
 
-
             const originalText =
                 saveButton.textContent;
 
-
             saveButton.disabled =
                 true;
-
 
             saveButton.textContent =
                 editingProductId
                     ? "SAVING..."
                     : "CREATING...";
 
-
+            const wasEditing =
+                Boolean(editingProductId);
 
             try {
 
@@ -2130,12 +2211,10 @@
                         ? `${API_BASE}/${editingProductId}`
                         : API_BASE;
 
-
                 const method =
                     editingProductId
                         ? "PUT"
                         : "POST";
-
 
                 const response =
                     await fetch(
@@ -2149,16 +2228,12 @@
                                     "application/json"
                             },
                             body:
-                                JSON.stringify(
-                                    payload
-                                )
+                                JSON.stringify(payload)
                         }
                     );
 
-
                 const data =
                     await response.json();
-
 
                 if (
                     !response.ok ||
@@ -2172,18 +2247,47 @@
 
                 }
 
+                /*
+                 * When creating a new product,
+                 * remember the new ID.
+                 * This allows the user to immediately
+                 * add variants without reopening.
+                 */
 
-                closeModal();
+                if (
+                    !wasEditing &&
+                    data.product &&
+                    data.product.id
+                ) {
 
+                    editingProductId =
+                        Number(data.product.id);
+
+                    modalTitle.textContent =
+                        "Edit Product";
+
+                }
 
                 await loadProducts();
 
-
                 showSuccess(
-                    editingProductId
+                    wasEditing
                         ? "Product updated successfully."
                         : "Product created successfully."
                 );
+
+                /*
+                 * Keep modal open after creation.
+                 * This makes adding variants much easier.
+                 */
+
+                if (editingProductId) {
+
+                    await loadVariants(
+                        editingProductId
+                    );
+
+                }
 
             } catch (error) {
 
@@ -2191,7 +2295,6 @@
                     "Save product error:",
                     error
                 );
-
 
                 showError(
                     error.message ||
@@ -2203,7 +2306,6 @@
                 saveButton.disabled =
                     false;
 
-
                 saveButton.textContent =
                     originalText;
 
@@ -2211,6 +2313,667 @@
 
         }
 
+
+        /* =====================================================
+           LOAD VARIANTS
+           ===================================================== */
+
+        async function loadVariants(productId) {
+
+            if (!productId) {
+
+                variants = [];
+
+                renderVariants();
+
+                return;
+
+            }
+
+            variantsList.innerHTML = `
+
+                <div class="variant-empty">
+                    Loading variants...
+                </div>
+
+            `;
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE}/${productId}/variants`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Accept":
+                                    "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Failed to load variants."
+                    );
+
+                }
+
+                variants =
+                    Array.isArray(data.variants)
+                        ? data.variants
+                        : [];
+
+                renderVariants();
+
+            } catch (error) {
+
+                console.error(
+                    "Load variants error:",
+                    error
+                );
+
+                variants = [];
+
+                variantsList.innerHTML = `
+
+                    <div class="variant-empty">
+                        Failed to load variants.
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           RENDER VARIANTS
+           ===================================================== */
+
+        function renderVariants() {
+
+            if (!editingProductId) {
+
+                variantsList.innerHTML = `
+
+                    <div class="variant-empty">
+                        Save the product first, then add colors and sizes.
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+            if (variants.length === 0) {
+
+                variantsList.innerHTML = `
+
+                    <div class="variant-empty">
+                        No variants yet. Add your first color and size.
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+            variantsList.innerHTML =
+                variants
+                    .map(
+                        function(variant) {
+
+                            const color =
+                                normalizeHex(
+                                    variant.color_hex
+                                );
+
+                            const image =
+                                variant.image ||
+                                "";
+
+                            return `
+
+                                <div
+                                    class="variant-item"
+                                    data-variant-id="${variant.id}"
+                                >
+
+                                    <div class="variant-main">
+
+
+                                        ${
+                                            image
+                                                ? `
+                                                    <img
+                                                        src="${escapeHtml(image)}"
+                                                        class="variant-color-preview"
+                                                        alt="${escapeHtml(variant.color_name)}"
+                                                        onerror="this.style.display='none';"
+                                                    >
+                                                `
+                                                : `
+                                                    <div
+                                                        class="variant-color-preview"
+                                                        style="background:${color};"
+                                                        title="${escapeHtml(variant.color_name)}"
+                                                    ></div>
+                                                `
+                                        }
+
+
+                                        <div class="variant-info">
+
+                                            <div class="variant-name">
+
+                                                ${escapeHtml(
+                                                    variant.color_name
+                                                )}
+
+                                            </div>
+
+
+                                            <div class="variant-meta">
+
+                                                <span class="variant-pill">
+
+                                                    Size:
+                                                    ${escapeHtml(
+                                                        variant.size || "M"
+                                                    )}
+
+                                                </span>
+
+
+                                                <span
+                                                    class="variant-pill"
+                                                    style="border-left:8px solid ${color};"
+                                                >
+
+                                                    ${escapeHtml(color)}
+
+                                                </span>
+
+
+                                                <span class="variant-pill">
+
+                                                    ${escapeHtml(
+                                                        variant.status || "active"
+                                                    )}
+
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="variant-actions">
+
+                                            <button
+                                                type="button"
+                                                class="row-btn"
+                                                data-variant-action="edit"
+                                                data-id="${variant.id}"
+                                            >
+                                                Edit
+                                            </button>
+
+
+                                            ${
+                                                variant.status !== "inactive"
+                                                    ? `
+                                                        <button
+                                                            type="button"
+                                                            class="row-btn delete"
+                                                            data-variant-action="delete"
+                                                            data-id="${variant.id}"
+                                                        >
+                                                            Deactivate
+                                                        </button>
+                                                    `
+                                                    : ""
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        }
+                    )
+                    .join("");
+
+        }
+
+
+        /* =====================================================
+           RESET VARIANT EDITOR
+           ===================================================== */
+
+        function resetVariantEditor() {
+
+            editingVariantId =
+                null;
+
+            variantEditor.classList.remove(
+                "open"
+            );
+
+            variantColorName.value =
+                "";
+
+            variantSize.value =
+                "M";
+
+            variantColorHex.value =
+                "#000000";
+
+            variantColorHexText.value =
+                "#000000";
+
+            variantImage.value =
+                "";
+
+            variantPrintifyId.value =
+                "";
+
+            variantStatus.value =
+                "active";
+
+        }
+
+
+        /* =====================================================
+           OPEN VARIANT EDITOR
+           ===================================================== */
+
+        function openVariantEditor(
+            variant = null
+        ) {
+
+            if (!editingProductId) {
+
+                showError(
+                    "Save the product before adding variants."
+                );
+
+                return;
+
+            }
+
+            variantEditor.classList.add(
+                "open"
+            );
+
+            if (variant) {
+
+                editingVariantId =
+                    Number(variant.id);
+
+                variantColorName.value =
+                    variant.color_name || "";
+
+                variantSize.value =
+                    variant.size || "M";
+
+                const hex =
+                    normalizeHex(
+                        variant.color_hex
+                    );
+
+                variantColorHex.value =
+                    hex;
+
+                variantColorHexText.value =
+                    hex;
+
+                variantImage.value =
+                    variant.image || "";
+
+                variantPrintifyId.value =
+                    variant.printify_variant_id || "";
+
+                variantStatus.value =
+                    variant.status || "active";
+
+            } else {
+
+                editingVariantId =
+                    null;
+
+                variantColorName.value =
+                    "";
+
+                variantSize.value =
+                    "M";
+
+                variantColorHex.value =
+                    "#000000";
+
+                variantColorHexText.value =
+                    "#000000";
+
+                variantImage.value =
+                    "";
+
+                variantPrintifyId.value =
+                    "";
+
+                variantStatus.value =
+                    "active";
+
+            }
+
+            setTimeout(
+                function() {
+                    variantColorName.focus();
+                },
+                50
+            );
+
+        }
+
+
+        /* =====================================================
+           SAVE VARIANT
+           ===================================================== */
+
+        async function saveVariant() {
+
+            if (!editingProductId) {
+
+                showError(
+                    "Save the product before adding variants."
+                );
+
+                return;
+
+            }
+
+            const colorName =
+                variantColorName.value.trim();
+
+            const size =
+                variantSize.value;
+
+            const colorHex =
+                normalizeHex(
+                    variantColorHexText.value
+                );
+
+            const image =
+                variantImage.value.trim();
+
+            const printifyVariantId =
+                variantPrintifyId.value.trim();
+
+            const status =
+                variantStatus.value;
+
+            if (!colorName) {
+
+                showError(
+                    "Color name is required."
+                );
+
+                variantColorName.focus();
+
+                return;
+
+            }
+
+            if (!/^#[0-9A-F]{6}$/i.test(colorHex)) {
+
+                showError(
+                    "Color HEX must look like #000000."
+                );
+
+                variantColorHexText.focus();
+
+                return;
+
+            }
+
+            const payload = {
+
+                color_name:
+                    colorName,
+
+                color_hex:
+                    colorHex,
+
+                size,
+
+                image,
+
+                printify_variant_id:
+                    printifyVariantId,
+
+                status
+
+            };
+
+            const button =
+                document.getElementById(
+                    "variant-save"
+                );
+
+            const originalText =
+                button.textContent;
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                editingVariantId
+                    ? "SAVING..."
+                    : "CREATING...";
+
+            try {
+
+                const url =
+                    editingVariantId
+                        ? `/api/admin/variants/${editingVariantId}`
+                        : `${API_BASE}/${editingProductId}/variants`;
+
+                const method =
+                    editingVariantId
+                        ? "PUT"
+                        : "POST";
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method,
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+                                "Accept":
+                                    "application/json"
+                            },
+                            body:
+                                JSON.stringify(payload)
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Failed to save variant."
+                    );
+
+                }
+
+                resetVariantEditor();
+
+                await loadVariants(
+                    editingProductId
+                );
+
+                showSuccess(
+                    editingVariantId
+                        ? "Variant updated successfully."
+                        : "Variant created successfully."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Save variant error:",
+                    error
+                );
+
+                showError(
+                    error.message ||
+                    "Failed to save variant."
+                );
+
+            } finally {
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    originalText;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           EDIT VARIANT
+           ===================================================== */
+
+        function editVariant(id) {
+
+            const variant =
+                variants.find(
+                    function(item) {
+
+                        return Number(item.id) ===
+                            Number(id);
+
+                    }
+                );
+
+            if (!variant) {
+                return;
+            }
+
+            openVariantEditor(
+                variant
+            );
+
+        }
+
+
+        /* =====================================================
+           DEACTIVATE VARIANT
+           ===================================================== */
+
+        async function deactivateVariant(id) {
+
+            const variant =
+                variants.find(
+                    function(item) {
+
+                        return Number(item.id) ===
+                            Number(id);
+
+                    }
+                );
+
+            if (!variant) {
+                return;
+            }
+
+            const confirmed =
+                window.confirm(
+                    `Deactivate "${variant.color_name} / ${variant.size}"?`
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/admin/variants/${id}`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                "Accept":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Failed to deactivate variant."
+                    );
+
+                }
+
+                await loadVariants(
+                    editingProductId
+                );
+
+                showSuccess(
+                    "Variant deactivated successfully."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Deactivate variant error:",
+                    error
+                );
+
+                showError(
+                    error.message ||
+                    "Failed to deactivate variant."
+                );
+
+            }
+
+        }
 
 
         /* =====================================================
@@ -2225,22 +2988,15 @@
                 products.find(
                     function(item) {
 
-                        return Number(
-                            item.id
-                        ) === Number(
-                            productId
-                        );
+                        return Number(item.id) ===
+                            Number(productId);
 
                     }
                 );
 
-
             if (!product) {
-
                 return;
-
             }
-
 
             const confirmed =
                 window.confirm(
@@ -2248,14 +3004,9 @@
                     `The product will no longer appear in the public shop.`
                 );
 
-
             if (!confirmed) {
-
                 return;
-
             }
-
-
 
             try {
 
@@ -2271,10 +3022,8 @@
                         }
                     );
 
-
                 const data =
                     await response.json();
-
 
                 if (
                     !response.ok ||
@@ -2288,9 +3037,7 @@
 
                 }
 
-
                 await loadProducts();
-
 
                 showSuccess(
                     "Product deactivated successfully."
@@ -2303,7 +3050,6 @@
                     error
                 );
 
-
                 showError(
                     error.message ||
                     "Failed to deactivate product."
@@ -2314,78 +3060,41 @@
         }
 
 
-
         /* =====================================================
-           EVENT: ADD
+           EVENTS
            ===================================================== */
 
         document
-            .getElementById(
-                "add-product"
-            )
+            .getElementById("add-product")
             .addEventListener(
                 "click",
                 function() {
-
                     openModal();
-
                 }
             );
 
 
-
-        /* =====================================================
-           EVENT: REFRESH
-           ===================================================== */
-
         document
-            .getElementById(
-                "refresh-products"
-            )
+            .getElementById("refresh-products")
             .addEventListener(
                 "click",
                 function() {
-
                     loadProducts();
-
                 }
             );
 
-
-
-        /* =====================================================
-           EVENT: SEARCH
-           ===================================================== */
 
         searchInput.addEventListener(
             "input",
-            function() {
-
-                renderProducts();
-
-            }
+            renderProducts
         );
 
-
-
-        /* =====================================================
-           EVENT: STATUS FILTER
-           ===================================================== */
 
         statusFilter.addEventListener(
             "change",
-            function() {
-
-                renderProducts();
-
-            }
+            renderProducts
         );
 
-
-
-        /* =====================================================
-           EVENT: TABLE ACTIONS
-           ===================================================== */
 
         tableBody.addEventListener(
             "click",
@@ -2396,39 +3105,27 @@
                         "[data-action]"
                     );
 
-
                 if (!button) {
-
                     return;
-
                 }
-
 
                 const action =
                     button.dataset.action;
 
-
                 const id =
-                    Number(
-                        button.dataset.id
-                    );
+                    Number(button.dataset.id);
 
-
-                if (
-                    action === "edit"
-                ) {
+                if (action === "edit") {
 
                     const product =
                         products.find(
                             function(item) {
 
-                                return Number(
-                                    item.id
-                                ) === id;
+                                return Number(item.id) ===
+                                    id;
 
                             }
                         );
-
 
                     if (product) {
 
@@ -2440,10 +3137,7 @@
 
                 }
 
-
-                if (
-                    action === "delete"
-                ) {
+                if (action === "delete") {
 
                     deactivateProduct(
                         id
@@ -2455,26 +3149,14 @@
         );
 
 
-
-        /* =====================================================
-           EVENT: FORM SUBMIT
-           ===================================================== */
-
         productForm.addEventListener(
             "submit",
             saveProduct
         );
 
 
-
-        /* =====================================================
-           EVENT: CLOSE BUTTONS
-           ===================================================== */
-
         document
-            .getElementById(
-                "modal-close"
-            )
+            .getElementById("modal-close")
             .addEventListener(
                 "click",
                 closeModal
@@ -2482,19 +3164,12 @@
 
 
         document
-            .getElementById(
-                "modal-cancel"
-            )
+            .getElementById("modal-cancel")
             .addEventListener(
                 "click",
                 closeModal
             );
 
-
-
-        /* =====================================================
-           EVENT: IMAGE PREVIEW
-           ===================================================== */
 
         productImage.addEventListener(
             "input",
@@ -2513,9 +3188,114 @@
         );
 
 
+        /* =====================================================
+           VARIANT EVENTS
+           ===================================================== */
+
+        document
+            .getElementById("add-variant")
+            .addEventListener(
+                "click",
+                function() {
+
+                    openVariantEditor();
+
+                }
+            );
+
+
+        document
+            .getElementById("variant-cancel")
+            .addEventListener(
+                "click",
+                resetVariantEditor
+            );
+
+
+        document
+            .getElementById("variant-save")
+            .addEventListener(
+                "click",
+                saveVariant
+            );
+
+
+        variantsList.addEventListener(
+            "click",
+            function(event) {
+
+                const button =
+                    event.target.closest(
+                        "[data-variant-action]"
+                    );
+
+                if (!button) {
+                    return;
+                }
+
+                const action =
+                    button.dataset.variantAction;
+
+                const id =
+                    Number(button.dataset.id);
+
+                if (action === "edit") {
+
+                    editVariant(id);
+
+                }
+
+                if (action === "delete") {
+
+                    deactivateVariant(id);
+
+                }
+
+            }
+        );
+
+
+        /* COLOR PICKER -> TEXT */
+
+        variantColorHex.addEventListener(
+            "input",
+            function() {
+
+                variantColorHexText.value =
+                    variantColorHex.value
+                        .toUpperCase();
+
+            }
+        );
+
+
+        /* TEXT -> COLOR PICKER */
+
+        variantColorHexText.addEventListener(
+            "input",
+            function() {
+
+                const value =
+                    variantColorHexText.value
+                        .trim();
+
+                if (
+                    /^#[0-9A-F]{6}$/i.test(
+                        value
+                    )
+                ) {
+
+                    variantColorHex.value =
+                        value;
+
+                }
+
+            }
+        );
+
 
         /* =====================================================
-           EVENT: CLICK OUTSIDE MODAL
+           MODAL OUTSIDE CLICK
            ===================================================== */
 
         modal.addEventListener(
@@ -2523,8 +3303,7 @@
             function(event) {
 
                 if (
-                    event.target ===
-                    modal
+                    event.target === modal
                 ) {
 
                     closeModal();
@@ -2535,9 +3314,8 @@
         );
 
 
-
         /* =====================================================
-           EVENT: ESC
+           ESC
            ===================================================== */
 
         document.addEventListener(
@@ -2545,11 +3323,8 @@
             function(event) {
 
                 if (
-                    event.key ===
-                    "Escape" &&
-                    modal.classList.contains(
-                        "open"
-                    )
+                    event.key === "Escape" &&
+                    modal.classList.contains("open")
                 ) {
 
                     closeModal();
@@ -2560,29 +3335,17 @@
         );
 
 
-
         /* =====================================================
-           AUTO-GENERATE SLUG
+           AUTO SLUG
            ===================================================== */
 
         productName.addEventListener(
             "input",
             function() {
 
-                /*
-                 * Only automatically change
-                 * the slug while creating
-                 * a new product.
-                 */
-
-                if (
-                    editingProductId
-                ) {
-
+                if (editingProductId) {
                     return;
-
                 }
-
 
                 productSlug.value =
                     generateSlug(
@@ -2591,7 +3354,6 @@
 
             }
         );
-
 
 
         /* =====================================================
