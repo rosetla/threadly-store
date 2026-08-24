@@ -1,881 +1,1379 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
 
-    /* =====================================================
-       CART STORAGE
-       ===================================================== */
+<head>
 
-    function getCart() {
+    <meta charset="UTF-8">
 
-        return JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    }
+    <title>Your Cart | Threadly Co.</title>
 
+    <meta
+        name="description"
+        content="Review your Threadly Co. t-shirt order."
+    >
 
-    function saveCart(cart) {
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
 
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(cart)
-        );
-
-    }
-
-
-
-    /* =====================================================
-       FORMAT MONEY
-       ===================================================== */
-
-    function formatMoney(amount) {
-
-        return "$" +
-            Number(amount).toFixed(2);
-
-    }
+</head>
 
 
-
-    /* =====================================================
-       UPDATE CART COUNT
-       ===================================================== */
-
-    function updateCartCount() {
-
-        const cart =
-            getCart();
+<body>
 
 
-        const count =
-            cart.reduce(
-                function(total, item) {
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
 
-                    return total +
-                        Number(item.quantity || 0);
+    <header class="site-header">
 
-                },
-                0
-            );
+        <div class="container header-inner">
 
-
-        const cartCount =
-            document.getElementById(
-                "cart-count"
-            );
+            <a
+                href="index.html"
+                class="logo"
+            >
+                THREADLY<span>CO.</span>
+            </a>
 
 
-        if (cartCount) {
+            <nav class="main-nav">
 
-            cartCount.textContent =
-                count;
+                <a href="shop.html">
+                    Shop
+                </a>
+
+                <a href="index.html#featured">
+                    Featured
+                </a>
+
+                <a href="index.html#about">
+                    About
+                </a>
+
+            </nav>
+
+
+            <a
+                href="cart.html"
+                class="cart-link"
+            >
+
+                Cart
+
+                <span id="cart-count">
+                    0
+                </span>
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main>
+
+
+        <!-- =================================================
+             CART HERO
+             ================================================= -->
+
+        <section class="cart-hero">
+
+            <div class="container">
+
+                <p class="section-eyebrow">
+                    YOUR ORDER
+                </p>
+
+                <h1>
+                    Shopping Cart
+                </h1>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CART CONTENT
+             ================================================= -->
+
+        <section class="cart-section">
+
+            <div class="container">
+
+
+                <!-- =========================================
+                     EMPTY CART
+                     ========================================= -->
+
+                <div
+                    id="empty-cart"
+                    class="empty-cart"
+                    style="display: none;"
+                >
+
+                    <div class="empty-cart-icon">
+                        🛒
+                    </div>
+
+                    <h2>
+                        Your cart is empty.
+                    </h2>
+
+                    <p>
+                        Looks like you haven't found your
+                        next favorite tee yet.
+                    </p>
+
+                    <a
+                        href="shop.html"
+                        class="btn cart-shop-btn"
+                    >
+                        SHOP T-SHIRTS
+                    </a>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     CART LAYOUT
+                     ========================================= -->
+
+                <div
+                    id="cart-content"
+                    class="cart-layout"
+                >
+
+
+                    <!-- =====================================
+                         CART ITEMS
+                         ===================================== -->
+
+                    <div class="cart-items">
+
+
+                        <div class="cart-items-header">
+
+                            <span>
+                                Product
+                            </span>
+
+                            <span>
+                                Quantity
+                            </span>
+
+                            <span>
+                                Total
+                            </span>
+
+                        </div>
+
+
+                        <div id="cart-items-list">
+
+                            <!-- Products generated by JavaScript -->
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- =====================================
+                         ORDER SUMMARY
+                         ===================================== -->
+
+                    <aside class="cart-summary">
+
+                        <h2>
+                            Order Summary
+                        </h2>
+
+
+                        <div class="summary-row">
+
+                            <span>
+                                Subtotal
+                            </span>
+
+                            <strong id="cart-subtotal">
+                                $0.00
+                            </strong>
+
+                        </div>
+
+
+                        <div class="summary-row">
+
+                            <span>
+                                Shipping
+                            </span>
+
+                            <strong id="cart-shipping">
+                                Calculated at checkout
+                            </strong>
+
+                        </div>
+
+
+                        <div class="summary-divider"></div>
+
+
+                        <div class="summary-total">
+
+                            <span>
+                                Total
+                            </span>
+
+                            <strong id="cart-total">
+                                $0.00
+                            </strong>
+
+                        </div>
+
+
+                        <!-- =================================
+                             CHECKOUT
+                             ================================= -->
+
+                        <button
+                            type="button"
+                            id="checkout-btn"
+                            class="btn checkout-btn"
+                        >
+                            PROCEED TO CHECKOUT
+                        </button>
+
+
+                        <p class="checkout-note">
+                            Secure checkout. Your order is
+                            printed and shipped after purchase.
+                        </p>
+
+
+                        <!-- =================================
+                             CONTINUE SHOPPING
+                             ================================= -->
+
+                        <a
+                            href="shop.html"
+                            class="continue-shopping"
+                        >
+                            ← Continue Shopping
+                        </a>
+
+                    </aside>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <footer class="site-footer">
+
+        <div class="container footer-grid">
+
+
+            <!-- BRAND -->
+
+            <div class="footer-brand">
+
+                <a
+                    href="index.html"
+                    class="logo"
+                >
+                    THREADLY<span>CO.</span>
+                </a>
+
+                <p>
+                    Graphic t-shirts made for people
+                    with their own style.
+                </p>
+
+            </div>
+
+
+
+            <!-- SHOP -->
+
+            <div class="footer-column">
+
+                <h3>
+                    Shop
+                </h3>
+
+                <a href="shop.html">
+                    All T-Shirts
+                </a>
+
+                <a href="shop.html?category=funny">
+                    Funny
+                </a>
+
+                <a href="shop.html?category=lifestyle">
+                    Lifestyle
+                </a>
+
+                <a href="shop.html?category=trending">
+                    Trending
+                </a>
+
+            </div>
+
+
+
+            <!-- HELP -->
+
+            <div class="footer-column">
+
+                <h3>
+                    Help
+                </h3>
+
+                <a href="#">
+                    Contact
+                </a>
+
+                <a href="#">
+                    Shipping
+                </a>
+
+                <a href="#">
+                    Returns
+                </a>
+
+                <a href="#">
+                    FAQ
+                </a>
+
+            </div>
+
+
+
+            <!-- SOCIAL -->
+
+            <div class="footer-column">
+
+                <h3>
+                    Follow
+                </h3>
+
+                <a href="#">
+                    Instagram
+                </a>
+
+                <a href="#">
+                    Facebook
+                </a>
+
+                <a href="#">
+                    TikTok
+                </a>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- FOOTER BOTTOM -->
+
+        <div class="container footer-bottom">
+
+            <p>
+                © 2026 Threadly Co. All rights reserved.
+            </p>
+
+            <div>
+
+                <a href="#">
+                    Privacy Policy
+                </a>
+
+                <a href="#">
+                    Terms
+                </a>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script>
+
+
+        /* =====================================================
+           CART STORAGE
+           ===================================================== */
+
+        function getCart() {
+
+            return JSON.parse(
+                localStorage.getItem("cart")
+            ) || [];
 
         }
 
-    }
+
+        function saveCart(cart) {
+
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(cart)
+            );
+
+        }
 
 
 
-    /* =====================================================
-       GET PRODUCT FROM API
-       ===================================================== */
+        /* =====================================================
+           FORMAT MONEY
+           ===================================================== */
 
-    async function getProduct(productId) {
+        function formatMoney(amount) {
 
-        try {
+            return "$" +
+                Number(amount).toFixed(2);
 
-            const response =
-                await fetch(
-                    `/api/products/${encodeURIComponent(productId)}`
+        }
+
+
+
+        /* =====================================================
+           UPDATE CART COUNT
+           ===================================================== */
+
+        function updateCartCount() {
+
+            const cart =
+                getCart();
+
+
+            const count =
+                cart.reduce(
+                    function(total, item) {
+
+                        return total +
+                            Number(
+                                item.quantity || 0
+                            );
+
+                    },
+                    0
                 );
 
 
-            const data =
-                await response.json();
+            const cartCount =
+                document.getElementById(
+                    "cart-count"
+                );
 
 
-            if (
-                !response.ok ||
-                !data.success ||
-                !data.product
-            ) {
+            if (cartCount) {
+
+                cartCount.textContent =
+                    count;
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           GET PRODUCT FROM D1 API
+           ===================================================== */
+
+        async function getProduct(productId) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/products/${encodeURIComponent(productId)}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success ||
+                    !data.product
+                ) {
+
+                    return null;
+
+                }
+
+
+                return data.product;
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load product:",
+                    error
+                );
+
 
                 return null;
 
             }
 
-
-            return data.product;
-
-        } catch (error) {
-
-            console.error(
-                "Failed to load product:",
-                error
-            );
-
-
-            return null;
-
-        }
-
-    }
-
-
-
-    /* =====================================================
-       RENDER CART
-       ===================================================== */
-
-    async function renderCart() {
-
-        const cart =
-            getCart();
-
-
-        const cartContent =
-            document.getElementById(
-                "cart-content"
-            );
-
-
-        const emptyCart =
-            document.getElementById(
-                "empty-cart"
-            );
-
-
-        const cartItemsList =
-            document.getElementById(
-                "cart-items-list"
-            );
-
-
-        /* =================================================
-           EMPTY CART
-           ================================================= */
-
-        if (cart.length === 0) {
-
-            cartContent.style.display =
-                "none";
-
-
-            emptyCart.style.display =
-                "block";
-
-
-            updateCartCount();
-
-
-            return;
-
         }
 
 
 
-        /* =================================================
-           SHOW CART
-           ================================================= */
+        /* =====================================================
+           HTML ESCAPE
+           ===================================================== */
 
-        cartContent.style.display =
-            "";
+        function escapeHtml(value) {
 
+            return String(
+                value || ""
+            )
 
-        emptyCart.style.display =
-            "none";
-
-
-        cartItemsList.innerHTML =
-            "<p>Loading your cart...</p>";
-
-
-
-        /* =================================================
-           LOAD ALL PRODUCTS
-           ================================================= */
-
-        const productResults =
-            await Promise.all(
-
-                cart.map(
-                    function(item) {
-
-                        return getProduct(
-                            item.productId
-                        );
-
-                    }
+                .replace(
+                    /&/g,
+                    "&amp;"
                 )
 
-            );
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
 
 
 
-        /* =================================================
-           BUILD VALID CART
-           ================================================= */
+        /* =====================================================
+           RENDER CART
+           ===================================================== */
 
-        const validCart =
-            [];
-
-
-        const cartItems =
-            [];
+        async function renderCart() {
 
 
-        let subtotal =
-            0;
+            const cart =
+                getCart();
 
 
-
-        for (
-            let index = 0;
-            index < cart.length;
-            index++
-        ) {
-
-            const item =
-                cart[index];
+            const cartContent =
+                document.getElementById(
+                    "cart-content"
+                );
 
 
-            const product =
-                productResults[index];
+            const emptyCart =
+                document.getElementById(
+                    "empty-cart"
+                );
+
+
+            const cartItemsList =
+                document.getElementById(
+                    "cart-items-list"
+                );
 
 
 
             /* =============================================
-               PRODUCT DOES NOT EXIST
+               EMPTY CART
                ============================================= */
 
-            if (!product) {
+            if (
+                !cart ||
+                cart.length === 0
+            ) {
 
-                console.warn(
-                    "Product not found:",
-                    item.productId
-                );
+                cartContent.style.display =
+                    "none";
 
 
-                continue;
+                emptyCart.style.display =
+                    "block";
+
+
+                updateCartCount();
+
+
+                return;
 
             }
 
 
 
             /* =============================================
-               CLEAN / NORMALIZE CART ITEM
+               SHOW CART
                ============================================= */
 
-            const cleanItem = {
-
-                productId:
-                    String(product.id),
-
-                color:
-                    item.color || "Black",
-
-                size:
-                    item.size || "M",
-
-                quantity:
-                    Math.max(
-                        1,
-                        Math.min(
-                            Number(item.quantity) || 1,
-                            10
-                        )
-                    )
-
-            };
+            cartContent.style.display =
+                "";
 
 
-
-            validCart.push(
-                cleanItem
-            );
+            emptyCart.style.display =
+                "none";
 
 
+            cartItemsList.innerHTML = `
 
-            /*
-             * This index belongs to validCart,
-             * NOT the old cart array.
-             */
+                <p>
+                    Loading your cart...
+                </p>
 
-            const validIndex =
-                validCart.length - 1;
+            `;
 
 
 
             /* =============================================
-               PRICE
+               LOAD PRODUCTS FROM D1
                ============================================= */
 
-            const itemPrice =
-                Number(product.price);
+            const productResults =
+                await Promise.all(
 
+                    cart.map(
+                        function(item) {
 
-            const itemTotal =
-                itemPrice *
-                cleanItem.quantity;
+                            return getProduct(
+                                item.productId
+                            );
 
+                        }
+                    )
 
-            subtotal +=
-                itemTotal;
-
-
-
-            /*
-             * Store everything needed
-             * to render the product.
-             */
-
-            cartItems.push({
-
-                product:
-                    product,
-
-                item:
-                    cleanItem,
-
-                index:
-                    validIndex,
-
-                price:
-                    itemPrice,
-
-                total:
-                    itemTotal
-
-            });
-
-        }
+                );
 
 
 
-        /* =================================================
-           SAVE CLEAN CART
-           ================================================= */
+            /* =============================================
+               VALID CART
+               ============================================= */
 
-        saveCart(
-            validCart
-        );
-
+            const validCart =
+                [];
 
 
-        /* =================================================
-           CART BECAME EMPTY
-           ================================================= */
-
-        if (validCart.length === 0) {
-
-            cartContent.style.display =
-                "none";
+            const cartItems =
+                [];
 
 
-            emptyCart.style.display =
-                "block";
-
-
-            updateCartCount();
-
-
-            return;
-
-        }
+            let subtotal =
+                0;
 
 
 
-        /* =================================================
-           RENDER ITEMS
-           ================================================= */
+            /* =============================================
+               PROCESS CART
+               ============================================= */
 
-        cartItemsList.innerHTML =
-            "";
-
-
-
-        cartItems.forEach(
-            function(cartItem) {
-
-                const product =
-                    cartItem.product;
+            for (
+                let index = 0;
+                index < cart.length;
+                index++
+            ) {
 
 
                 const item =
-                    cartItem.item;
+                    cart[index];
 
 
-                const validIndex =
-                    cartItem.index;
-
-
-                const itemPrice =
-                    cartItem.price;
-
-
-                const itemTotal =
-                    cartItem.total;
+                const product =
+                    productResults[index];
 
 
 
-                const itemElement =
-                    document.createElement(
-                        "article"
+                /* =========================================
+                   PRODUCT NO LONGER EXISTS
+                   ========================================= */
+
+                if (!product) {
+
+                    console.warn(
+                        "Product not found:",
+                        item.productId
                     );
 
 
-                itemElement.className =
-                    "cart-item";
+                    continue;
+
+                }
 
 
-                itemElement.innerHTML = `
 
-                    <div class="cart-product">
+                /* =========================================
+                   CLEAN CART ITEM
+                   ========================================= */
 
-                        <a
-                            href="product.html?id=${product.id}"
-                            class="cart-product-image"
-                        >
+                const cleanItem = {
 
-                            <img
-                                src="${escapeHtml(product.image || "")}"
-                                alt="${escapeHtml(product.name)}"
-                            >
+                    productId:
+                        String(
+                            product.id
+                        ),
 
-                        </a>
+                    color:
+                        item.color ||
+                        "Black",
+
+                    size:
+                        item.size ||
+                        "M",
+
+                    quantity:
+                        Math.max(
+                            1,
+                            Math.min(
+                                Number(
+                                    item.quantity
+                                ) || 1,
+                                10
+                            )
+                        )
+
+                };
 
 
-                        <div class="cart-product-info">
+
+                /* =========================================
+                   ADD TO VALID CART
+                   ========================================= */
+
+                validCart.push(
+                    cleanItem
+                );
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * Use the index of validCart,
+                 * not the original cart index.
+                 */
+
+                const validIndex =
+                    validCart.length - 1;
+
+
+
+                /* =========================================
+                   PRICE FROM DATABASE
+                   ========================================= */
+
+                const itemPrice =
+                    Number(
+                        product.price
+                    );
+
+
+                const itemTotal =
+                    itemPrice *
+                    cleanItem.quantity;
+
+
+                subtotal +=
+                    itemTotal;
+
+
+
+                /* =========================================
+                   SAVE RENDER DATA
+                   ========================================= */
+
+                cartItems.push({
+
+                    product:
+                        product,
+
+                    item:
+                        cleanItem,
+
+                    index:
+                        validIndex,
+
+                    price:
+                        itemPrice,
+
+                    total:
+                        itemTotal
+
+                });
+
+            }
+
+
+
+            /* =============================================
+               SAVE CLEAN CART
+               ============================================= */
+
+            saveCart(
+                validCart
+            );
+
+
+
+            /* =============================================
+               CART EMPTY AFTER VALIDATION
+               ============================================= */
+
+            if (
+                validCart.length === 0
+            ) {
+
+                cartContent.style.display =
+                    "none";
+
+
+                emptyCart.style.display =
+                    "block";
+
+
+                updateCartCount();
+
+
+                return;
+
+            }
+
+
+
+            /* =============================================
+               RENDER CART ITEMS
+               ============================================= */
+
+            cartItemsList.innerHTML =
+                "";
+
+
+
+            cartItems.forEach(
+                function(cartItem) {
+
+
+                    const product =
+                        cartItem.product;
+
+
+                    const item =
+                        cartItem.item;
+
+
+                    const validIndex =
+                        cartItem.index;
+
+
+                    const itemPrice =
+                        cartItem.price;
+
+
+                    const itemTotal =
+                        cartItem.total;
+
+
+
+                    const itemElement =
+                        document.createElement(
+                            "article"
+                        );
+
+
+                    itemElement.className =
+                        "cart-item";
+
+
+
+                    itemElement.innerHTML = `
+
+                        <div class="cart-product">
 
                             <a
-                                href="product.html?id=${product.id}"
-                                class="cart-product-name"
+                                href="product.html?id=${encodeURIComponent(product.id)}"
+                                class="cart-product-image"
                             >
 
-                                ${escapeHtml(
-                                    product.name
-                                )}
+                                <img
+                                    src="${escapeHtml(product.image)}"
+                                    alt="${escapeHtml(product.name)}"
+                                    loading="lazy"
+                                >
 
                             </a>
 
 
-                            <p>
+                            <div class="cart-product-info">
 
-                                Color:
-
-                                <strong>
-
-                                    ${escapeHtml(
-                                        item.color
-                                    )}
-
-                                </strong>
-
-                            </p>
-
-
-                            <p>
-
-                                Size:
-
-                                <strong>
+                                <a
+                                    href="product.html?id=${encodeURIComponent(product.id)}"
+                                    class="cart-product-name"
+                                >
 
                                     ${escapeHtml(
-                                        item.size
+                                        product.name
                                     )}
 
-                                </strong>
-
-                            </p>
+                                </a>
 
 
-                            <p
-                                class="cart-unit-price"
+                                <p>
+
+                                    Color:
+
+                                    <strong>
+
+                                        ${escapeHtml(
+                                            item.color
+                                        )}
+
+                                    </strong>
+
+                                </p>
+
+
+                                <p>
+
+                                    Size:
+
+                                    <strong>
+
+                                        ${escapeHtml(
+                                            item.size
+                                        )}
+
+                                    </strong>
+
+                                </p>
+
+
+                                <p class="cart-unit-price">
+
+                                    ${formatMoney(
+                                        itemPrice
+                                    )}
+
+                                </p>
+
+
+                                <button
+                                    type="button"
+                                    class="remove-item"
+                                    data-index="${validIndex}"
+                                >
+
+                                    Remove
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="cart-quantity">
+
+                            <button
+                                type="button"
+                                class="quantity-btn"
+                                data-action="decrease"
+                                data-index="${validIndex}"
                             >
 
-                                ${formatMoney(
-                                    itemPrice
-                                )}
+                                −
 
-                            </p>
+                            </button>
+
+
+                            <span>
+
+                                ${item.quantity}
+
+                            </span>
 
 
                             <button
                                 type="button"
-                                class="remove-item"
+                                class="quantity-btn"
+                                data-action="increase"
                                 data-index="${validIndex}"
                             >
 
-                                Remove
+                                +
 
                             </button>
 
                         </div>
 
-                    </div>
 
 
+                        <div class="cart-item-total">
 
-                    <div
-                        class="cart-quantity"
-                    >
+                            ${formatMoney(
+                                itemTotal
+                            )}
 
-                        <button
-                            type="button"
-                            class="quantity-btn"
-                            data-action="decrease"
-                            data-index="${validIndex}"
-                        >
+                        </div>
 
-                            −
+                    `;
 
-                        </button>
 
 
-                        <span>
-
-                            ${item.quantity}
-
-                        </span>
-
-
-                        <button
-                            type="button"
-                            class="quantity-btn"
-                            data-action="increase"
-                            data-index="${validIndex}"
-                        >
-
-                            +
-
-                        </button>
-
-                    </div>
-
-
-
-                    <div
-                        class="cart-item-total"
-                    >
-
-                        ${formatMoney(
-                            itemTotal
-                        )}
-
-                    </div>
-
-                `;
-
-
-                cartItemsList.appendChild(
-                    itemElement
-                );
-
-            }
-        );
-
-
-
-        /* =================================================
-           SHIPPING
-           ================================================= */
-
-        const shipping =
-            subtotal >= 50
-                ? 0
-                : 5.99;
-
-
-
-        const total =
-            subtotal +
-            shipping;
-
-
-
-        /* =================================================
-           UPDATE SUMMARY
-           ================================================= */
-
-        document.getElementById(
-            "cart-subtotal"
-        ).textContent =
-            formatMoney(
-                subtotal
-            );
-
-
-        document.getElementById(
-            "cart-shipping"
-        ).textContent =
-            shipping === 0
-                ? "FREE"
-                : formatMoney(
-                    shipping
-                );
-
-
-        document.getElementById(
-            "cart-total"
-        ).textContent =
-            formatMoney(
-                total
-            );
-
-
-
-        updateCartCount();
-
-    }
-
-
-
-    /* =====================================================
-       UPDATE QUANTITY
-       ===================================================== */
-
-    document.addEventListener(
-        "click",
-        function(event) {
-
-
-            const button =
-                event.target.closest(
-                    ".quantity-btn"
-                );
-
-
-            if (!button) {
-
-                return;
-
-            }
-
-
-
-            const index =
-                Number(
-                    button.dataset.index
-                );
-
-
-            const action =
-                button.dataset.action;
-
-
-
-            const cart =
-                getCart();
-
-
-
-            if (!cart[index]) {
-
-                return;
-
-            }
-
-
-
-            /* =============================================
-               INCREASE
-               ============================================= */
-
-            if (
-                action ===
-                "increase"
-            ) {
-
-                if (
-                    cart[index].quantity < 10
-                ) {
-
-                    cart[index].quantity++;
-
-                }
-
-            }
-
-
-
-            /* =============================================
-               DECREASE
-               ============================================= */
-
-            if (
-                action ===
-                "decrease"
-            ) {
-
-                cart[index].quantity--;
-
-
-                if (
-                    cart[index].quantity <= 0
-                ) {
-
-                    cart.splice(
-                        index,
-                        1
+                    cartItemsList.appendChild(
+                        itemElement
                     );
 
                 }
-
-            }
-
-
-
-            saveCart(
-                cart
             );
 
 
-            renderCart();
 
-        }
-    );
+            /* =============================================
+               SHIPPING
+               ============================================= */
 
-
-
-    /* =====================================================
-       REMOVE ITEM
-       ===================================================== */
-
-    document.addEventListener(
-        "click",
-        function(event) {
+            const shipping =
+                subtotal >= 50
+                    ? 0
+                    : 5.99;
 
 
-            const button =
-                event.target.closest(
-                    ".remove-item"
+
+            /* =============================================
+               TOTAL
+               ============================================= */
+
+            const total =
+                subtotal +
+                shipping;
+
+
+
+            /* =============================================
+               UPDATE SUMMARY
+               ============================================= */
+
+            document.getElementById(
+                "cart-subtotal"
+            ).textContent =
+                formatMoney(
+                    subtotal
                 );
 
 
-            if (!button) {
+            document.getElementById(
+                "cart-shipping"
+            ).textContent =
+                shipping === 0
+                    ? "FREE"
+                    : formatMoney(
+                        shipping
+                    );
 
-                return;
 
-            }
-
-
-
-            const index =
-                Number(
-                    button.dataset.index
+            document.getElementById(
+                "cart-total"
+            ).textContent =
+                formatMoney(
+                    total
                 );
 
 
-            const cart =
-                getCart();
 
+            /* =============================================
+               UPDATE HEADER COUNT
+               ============================================= */
 
-
-            if (
-                index < 0 ||
-                index >= cart.length
-            ) {
-
-                return;
-
-            }
-
-
-
-            cart.splice(
-                index,
-                1
-            );
-
-
-            saveCart(
-                cart
-            );
-
-
-            renderCart();
+            updateCartCount();
 
         }
-    );
 
 
 
-    /* =====================================================
-       CHECKOUT
-       ===================================================== */
+        /* =====================================================
+           QUANTITY BUTTONS
+           ===================================================== */
 
-    const checkoutButton =
-        document.getElementById(
-            "checkout-btn"
-        );
-
-
-    if (checkoutButton) {
-
-        checkoutButton.addEventListener(
+        document.addEventListener(
             "click",
-            function() {
+            function(event) {
 
 
-                const cart =
-                    getCart();
+                const button =
+                    event.target.closest(
+                        ".quantity-btn"
+                    );
 
 
-                if (cart.length === 0) {
+                if (!button) {
 
                     return;
 
                 }
 
 
-                window.location.href =
-                    "checkout.html";
+
+                const index =
+                    Number(
+                        button.dataset.index
+                    );
+
+
+                const action =
+                    button.dataset.action;
+
+
+                const cart =
+                    getCart();
+
+
+
+                if (
+                    !cart[index]
+                ) {
+
+                    return;
+
+                }
+
+
+
+                /* =========================================
+                   INCREASE
+                   ========================================= */
+
+                if (
+                    action ===
+                    "increase"
+                ) {
+
+                    if (
+                        Number(
+                            cart[index].quantity
+                        ) < 10
+                    ) {
+
+                        cart[index].quantity =
+                            Number(
+                                cart[index].quantity
+                            ) + 1;
+
+                    }
+
+                }
+
+
+
+                /* =========================================
+                   DECREASE
+                   ========================================= */
+
+                if (
+                    action ===
+                    "decrease"
+                ) {
+
+                    cart[index].quantity =
+                        Number(
+                            cart[index].quantity
+                        ) - 1;
+
+
+                    if (
+                        cart[index].quantity <= 0
+                    ) {
+
+                        cart.splice(
+                            index,
+                            1
+                        );
+
+                    }
+
+                }
+
+
+
+                saveCart(
+                    cart
+                );
+
+
+                renderCart();
 
             }
         );
 
-    }
+
+
+        /* =====================================================
+           REMOVE ITEM
+           ===================================================== */
+
+        document.addEventListener(
+            "click",
+            function(event) {
+
+
+                const button =
+                    event.target.closest(
+                        ".remove-item"
+                    );
+
+
+                if (!button) {
+
+                    return;
+
+                }
 
 
 
-    /* =====================================================
-       HTML ESCAPE
-       ===================================================== */
+                const index =
+                    Number(
+                        button.dataset.index
+                    );
 
-    function escapeHtml(value) {
 
-        return String(
-            value || ""
-        )
-            .replace(
-                /&/g,
-                "&amp;"
-            )
-            .replace(
-                /</g,
-                "&lt;"
-            )
-            .replace(
-                />/g,
-                "&gt;"
-            )
-            .replace(
-                /"/g,
-                "&quot;"
-            )
-            .replace(
-                /'/g,
-                "&#039;"
+                const cart =
+                    getCart();
+
+
+
+                if (
+                    index < 0 ||
+                    index >= cart.length
+                ) {
+
+                    return;
+
+                }
+
+
+
+                cart.splice(
+                    index,
+                    1
+                );
+
+
+                saveCart(
+                    cart
+                );
+
+
+                renderCart();
+
+            }
+        );
+
+
+
+        /* =====================================================
+           CHECKOUT BUTTON
+           ===================================================== */
+
+        const checkoutButton =
+            document.getElementById(
+                "checkout-btn"
             );
 
-    }
+
+        if (checkoutButton) {
+
+            checkoutButton.addEventListener(
+                "click",
+                function() {
+
+
+                    const cart =
+                        getCart();
+
+
+                    if (
+                        cart.length === 0
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    window.location.href =
+                        "checkout.html";
+
+                }
+            );
+
+        }
 
 
 
-    /* =====================================================
-       INITIALIZE
-       ===================================================== */
+        /* =====================================================
+           INITIALIZE
+           ===================================================== */
 
-    renderCart();
+        updateCartCount();
 
-</script>
+        renderCart();
+
+    </script>
+
+
+</body>
+
+</html>
