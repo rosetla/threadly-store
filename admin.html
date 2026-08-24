@@ -1,0 +1,2608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Admin | Threadly Co.</title>
+
+    <meta
+        name="robots"
+        content="noindex, nofollow"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <style>
+
+        /* =====================================================
+           ADMIN
+           ===================================================== */
+
+        .admin-page {
+
+            padding: 60px 0 100px;
+
+        }
+
+
+        .admin-header {
+
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 40px;
+
+        }
+
+
+        .admin-header h1 {
+
+            margin: 0;
+
+        }
+
+
+        .admin-header p {
+
+            margin: 8px 0 0;
+            opacity: 0.65;
+
+        }
+
+
+        .admin-actions {
+
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+
+        }
+
+
+        .admin-btn {
+
+            border: 1px solid #111;
+            background: #111;
+            color: #fff;
+            padding: 13px 20px;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 600;
+
+        }
+
+
+        .admin-btn:hover {
+
+            opacity: 0.85;
+
+        }
+
+
+        .admin-btn.secondary {
+
+            background: #fff;
+            color: #111;
+
+        }
+
+
+        /* =====================================================
+           TOOLBAR
+           ===================================================== */
+
+        .admin-toolbar {
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+
+        }
+
+
+        .admin-search {
+
+            flex: 1;
+            min-width: 240px;
+
+        }
+
+
+        .admin-search input {
+
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px 15px;
+            border: 1px solid #ccc;
+            font: inherit;
+
+        }
+
+
+        .admin-filter select {
+
+            padding: 13px 15px;
+            border: 1px solid #ccc;
+            background: #fff;
+            font: inherit;
+            min-width: 160px;
+
+        }
+
+
+        /* =====================================================
+           TABLE
+           ===================================================== */
+
+        .admin-table-wrapper {
+
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            background: #fff;
+
+        }
+
+
+        .admin-table {
+
+            width: 100%;
+            min-width: 900px;
+            border-collapse: collapse;
+
+        }
+
+
+        .admin-table th,
+        .admin-table td {
+
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+
+        }
+
+
+        .admin-table th {
+
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: #f7f7f7;
+
+        }
+
+
+        .admin-table tbody tr:last-child td {
+
+            border-bottom: none;
+
+        }
+
+
+        .admin-product-image {
+
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            display: block;
+            background: #f1f1f1;
+
+        }
+
+
+        .admin-product-name {
+
+            font-weight: 700;
+            margin-bottom: 5px;
+
+        }
+
+
+        .admin-product-slug {
+
+            font-size: 12px;
+            opacity: 0.55;
+
+        }
+
+
+        .admin-price {
+
+            font-weight: 700;
+            white-space: nowrap;
+
+        }
+
+
+        .admin-category {
+
+            text-transform: capitalize;
+
+        }
+
+
+        /* =====================================================
+           STATUS
+           ===================================================== */
+
+        .status-badge {
+
+            display: inline-block;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+
+        }
+
+
+        .status-active {
+
+            background: #dff5e5;
+            color: #176b32;
+
+        }
+
+
+        .status-draft {
+
+            background: #fff1cc;
+            color: #765600;
+
+        }
+
+
+        .status-inactive {
+
+            background: #eee;
+            color: #666;
+
+        }
+
+
+        /* =====================================================
+           ACTIONS
+           ===================================================== */
+
+        .admin-row-actions {
+
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+
+        }
+
+
+        .row-btn {
+
+            border: 1px solid #ccc;
+            background: #fff;
+            padding: 8px 12px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+
+        }
+
+
+        .row-btn:hover {
+
+            background: #f3f3f3;
+
+        }
+
+
+        .row-btn.delete {
+
+            border-color: #d7aaaa;
+            color: #a40000;
+
+        }
+
+
+        /* =====================================================
+           EMPTY / LOADING
+           ===================================================== */
+
+        .admin-state {
+
+            padding: 60px 20px;
+            text-align: center;
+            opacity: 0.65;
+
+        }
+
+
+        .admin-error {
+
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            border: 1px solid #d9aaaa;
+            background: #fff1f1;
+            color: #8b0000;
+            display: none;
+
+        }
+
+
+        .admin-success {
+
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            border: 1px solid #a9d7b4;
+            background: #effaf1;
+            color: #176b32;
+            display: none;
+
+        }
+
+
+        /* =====================================================
+           MODAL
+           ===================================================== */
+
+        .admin-modal {
+
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 9999;
+
+        }
+
+
+        .admin-modal.open {
+
+            display: flex;
+
+        }
+
+
+        .admin-modal-content {
+
+            width: 100%;
+            max-width: 760px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #fff;
+            padding: 35px;
+            box-sizing: border-box;
+
+        }
+
+
+        .admin-modal-header {
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+
+        }
+
+
+        .admin-modal-header h2 {
+
+            margin: 0;
+
+        }
+
+
+        .modal-close {
+
+            border: none;
+            background: transparent;
+            font-size: 28px;
+            line-height: 1;
+            cursor: pointer;
+
+        }
+
+
+        .admin-form {
+
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+
+        }
+
+
+        .admin-form-group {
+
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+        }
+
+
+        .admin-form-group label {
+
+            font-weight: 600;
+            font-size: 14px;
+
+        }
+
+
+        .admin-form-group input,
+        .admin-form-group textarea,
+        .admin-form-group select {
+
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px 14px;
+            border: 1px solid #ccc;
+            background: #fff;
+            font: inherit;
+
+        }
+
+
+        .admin-form-group textarea {
+
+            min-height: 130px;
+            resize: vertical;
+
+        }
+
+
+        .admin-form-row {
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+
+        }
+
+
+        .admin-form-help {
+
+            font-size: 12px;
+            opacity: 0.55;
+
+        }
+
+
+        .admin-image-preview {
+
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            background: #f1f1f1;
+            display: none;
+            margin-top: 5px;
+
+        }
+
+
+        .admin-modal-footer {
+
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+
+        }
+
+
+        .admin-danger {
+
+            color: #a40000;
+
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+           ===================================================== */
+
+        @media (max-width: 700px) {
+
+            .admin-header {
+
+                align-items: flex-start;
+                flex-direction: column;
+
+            }
+
+
+            .admin-form-row {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .admin-modal-content {
+
+                padding: 24px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <header class="site-header">
+
+        <div class="container header-inner">
+
+            <a
+                href="index.html"
+                class="logo"
+            >
+                THREADLY<span>CO.</span>
+            </a>
+
+
+            <nav class="main-nav">
+
+                <a href="shop.html">
+                    Shop
+                </a>
+
+                <a href="index.html#featured">
+                    Featured
+                </a>
+
+                <a href="index.html#about">
+                    About
+                </a>
+
+            </nav>
+
+
+            <a
+                href="admin.html"
+                class="cart-link"
+            >
+                Admin
+            </a>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main>
+
+        <section class="admin-page">
+
+            <div class="container">
+
+
+                <!-- =================================================
+                     HEADER
+                     ================================================= -->
+
+                <div class="admin-header">
+
+                    <div>
+
+                        <p class="section-eyebrow">
+                            THREADLY CO.
+                        </p>
+
+                        <h1>
+                            Product Management
+                        </h1>
+
+                        <p>
+                            Manage products stored in Cloudflare D1.
+                        </p>
+
+                    </div>
+
+
+                    <div class="admin-actions">
+
+                        <button
+                            type="button"
+                            id="refresh-products"
+                            class="admin-btn secondary"
+                        >
+                            REFRESH
+                        </button>
+
+
+                        <button
+                            type="button"
+                            id="add-product"
+                            class="admin-btn"
+                        >
+                            + ADD PRODUCT
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     MESSAGES
+                     ================================================= -->
+
+                <div
+                    id="admin-error"
+                    class="admin-error"
+                ></div>
+
+
+                <div
+                    id="admin-success"
+                    class="admin-success"
+                ></div>
+
+
+
+                <!-- =================================================
+                     TOOLBAR
+                     ================================================= -->
+
+                <div class="admin-toolbar">
+
+
+                    <div class="admin-search">
+
+                        <input
+                            type="search"
+                            id="product-search"
+                            placeholder="Search products..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <div class="admin-filter">
+
+                        <select
+                            id="status-filter"
+                        >
+
+                            <option value="all">
+                                All Status
+                            </option>
+
+                            <option value="active">
+                                Active
+                            </option>
+
+                            <option value="draft">
+                                Draft
+                            </option>
+
+                            <option value="inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     TABLE
+                     ================================================= -->
+
+                <div class="admin-table-wrapper">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Image
+                                </th>
+
+                                <th>
+                                    Product
+                                </th>
+
+                                <th>
+                                    Price
+                                </th>
+
+                                <th>
+                                    Category
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Created
+                                </th>
+
+                                <th>
+                                    Actions
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="products-table-body"
+                        >
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    class="admin-state"
+                                >
+                                    Loading products...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         PRODUCT MODAL
+         ===================================================== -->
+
+    <div
+        id="product-modal"
+        class="admin-modal"
+        aria-hidden="true"
+    >
+
+        <div class="admin-modal-content">
+
+
+            <div class="admin-modal-header">
+
+                <h2 id="modal-title">
+                    Add Product
+                </h2>
+
+
+                <button
+                    type="button"
+                    id="modal-close"
+                    class="modal-close"
+                    aria-label="Close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+
+            <form
+                id="product-form"
+                class="admin-form"
+            >
+
+
+                <!-- NAME / SLUG -->
+
+                <div class="admin-form-row">
+
+
+                    <div class="admin-form-group">
+
+                        <label for="product-name">
+                            Product Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="product-name"
+                            required
+                            maxlength="200"
+                        >
+
+                    </div>
+
+
+                    <div class="admin-form-group">
+
+                        <label for="product-slug">
+                            Slug
+                        </label>
+
+                        <input
+                            type="text"
+                            id="product-slug"
+                            required
+                            maxlength="200"
+                        >
+
+                        <span class="admin-form-help">
+                            Example: funny-dog-dad-t-shirt
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="admin-form-group">
+
+                    <label for="product-description">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="product-description"
+                        maxlength="10000"
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- PRICE / CATEGORY -->
+
+                <div class="admin-form-row">
+
+
+                    <div class="admin-form-group">
+
+                        <label for="product-price">
+                            Price (USD)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="product-price"
+                            min="0"
+                            max="100000"
+                            step="0.01"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="admin-form-group">
+
+                        <label for="product-category">
+                            Category
+                        </label>
+
+                        <select
+                            id="product-category"
+                            required
+                        >
+
+                            <option value="">
+                                Select category
+                            </option>
+
+                            <option value="funny">
+                                Funny
+                            </option>
+
+                            <option value="lifestyle">
+                                Lifestyle
+                            </option>
+
+                            <option value="trending">
+                                Trending
+                            </option>
+
+                            <option value="music">
+                                Music
+                            </option>
+
+                            <option value="animals">
+                                Animals
+                            </option>
+
+                            <option value="other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- IMAGE -->
+
+                <div class="admin-form-group">
+
+                    <label for="product-image">
+                        Image URL
+                    </label>
+
+                    <input
+                        type="url"
+                        id="product-image"
+                        placeholder="https://example.com/product.jpg"
+                        maxlength="2000"
+                    >
+
+                    <span class="admin-form-help">
+                        Use a full HTTP or HTTPS image URL.
+                    </span>
+
+
+                    <img
+                        id="image-preview"
+                        class="admin-image-preview"
+                        alt="Product preview"
+                    >
+
+                </div>
+
+
+
+                <!-- PRINTIFY -->
+
+                <div class="admin-form-group">
+
+                    <label for="product-printify-id">
+                        Printify Product ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="product-printify-id"
+                        maxlength="200"
+                        placeholder="Optional"
+                    >
+
+                </div>
+
+
+
+                <!-- STATUS -->
+
+                <div class="admin-form-group">
+
+                    <label for="product-status">
+                        Status
+                    </label>
+
+                    <select
+                        id="product-status"
+                        required
+                    >
+
+                        <option value="active">
+                            Active
+                        </option>
+
+                        <option value="draft">
+                            Draft
+                        </option>
+
+                        <option value="inactive">
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <!-- FOOTER -->
+
+                <div class="admin-modal-footer">
+
+                    <button
+                        type="button"
+                        id="modal-cancel"
+                        class="admin-btn secondary"
+                    >
+                        CANCEL
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        id="save-product"
+                        class="admin-btn"
+                    >
+                        SAVE PRODUCT
+                    </button>
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
+
+    <script>
+
+
+        /* =====================================================
+           CONFIG
+           ===================================================== */
+
+        const API_BASE =
+            "/api/admin/products";
+
+
+
+        /* =====================================================
+           STATE
+           ===================================================== */
+
+        let products = [];
+
+        let editingProductId = null;
+
+
+
+        /* =====================================================
+           DOM
+           ===================================================== */
+
+        const tableBody =
+            document.getElementById(
+                "products-table-body"
+            );
+
+
+        const modal =
+            document.getElementById(
+                "product-modal"
+            );
+
+
+        const modalTitle =
+            document.getElementById(
+                "modal-title"
+            );
+
+
+        const productForm =
+            document.getElementById(
+                "product-form"
+            );
+
+
+        const productName =
+            document.getElementById(
+                "product-name"
+            );
+
+
+        const productSlug =
+            document.getElementById(
+                "product-slug"
+            );
+
+
+        const productDescription =
+            document.getElementById(
+                "product-description"
+            );
+
+
+        const productPrice =
+            document.getElementById(
+                "product-price"
+            );
+
+
+        const productCategory =
+            document.getElementById(
+                "product-category"
+            );
+
+
+        const productImage =
+            document.getElementById(
+                "product-image"
+            );
+
+
+        const productPrintifyId =
+            document.getElementById(
+                "product-printify-id"
+            );
+
+
+        const productStatus =
+            document.getElementById(
+                "product-status"
+            );
+
+
+        const imagePreview =
+            document.getElementById(
+                "image-preview"
+            );
+
+
+        const searchInput =
+            document.getElementById(
+                "product-search"
+            );
+
+
+        const statusFilter =
+            document.getElementById(
+                "status-filter"
+            );
+
+
+        const errorBox =
+            document.getElementById(
+                "admin-error"
+            );
+
+
+        const successBox =
+            document.getElementById(
+                "admin-success"
+            );
+
+
+
+        /* =====================================================
+           HELPERS
+           ===================================================== */
+
+        function escapeHtml(value) {
+
+            return String(
+                value ?? ""
+            )
+
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+
+        function formatMoney(value) {
+
+            const number =
+                Number(value);
+
+
+            if (
+                !Number.isFinite(
+                    number
+                )
+            ) {
+
+                return "$0.00";
+
+            }
+
+
+            return "$" +
+                number.toFixed(2);
+
+        }
+
+
+
+        function showError(message) {
+
+            successBox.style.display =
+                "none";
+
+
+            errorBox.textContent =
+                message;
+
+
+            errorBox.style.display =
+                "block";
+
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+        }
+
+
+
+        function showSuccess(message) {
+
+            errorBox.style.display =
+                "none";
+
+
+            successBox.textContent =
+                message;
+
+
+            successBox.style.display =
+                "block";
+
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
+
+            setTimeout(
+                function() {
+
+                    successBox.style.display =
+                        "none";
+
+                },
+                3500
+            );
+
+        }
+
+
+
+        function getStatusClass(
+            status
+        ) {
+
+            if (
+                status === "active"
+            ) {
+
+                return "status-active";
+
+            }
+
+
+            if (
+                status === "draft"
+            ) {
+
+                return "status-draft";
+
+            }
+
+
+            return "status-inactive";
+
+        }
+
+
+
+        function formatDate(
+            date
+        ) {
+
+            if (!date) {
+
+                return "—";
+
+            }
+
+
+            const parsed =
+                new Date(
+                    date.replace(
+                        " ",
+                        "T"
+                    ) + "Z"
+                );
+
+
+            if (
+                Number.isNaN(
+                    parsed.getTime()
+                )
+            ) {
+
+                return date;
+
+            }
+
+
+            return parsed.toLocaleDateString(
+                "en-US",
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric"
+                }
+            );
+
+        }
+
+
+
+        /* =====================================================
+           LOAD PRODUCTS
+           ===================================================== */
+
+        async function loadProducts() {
+
+            tableBody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="admin-state"
+                    >
+                        Loading products...
+                    </td>
+
+                </tr>
+
+            `;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        API_BASE,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Accept":
+                                    "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Failed to load products."
+                    );
+
+                }
+
+
+                products =
+                    Array.isArray(
+                        data.products
+                    )
+                        ? data.products
+                        : [];
+
+
+                renderProducts();
+
+            } catch (error) {
+
+                console.error(
+                    "Load products error:",
+                    error
+                );
+
+
+                tableBody.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="admin-state"
+                        >
+                            Failed to load products.
+                        </td>
+
+                    </tr>
+
+                `;
+
+
+                showError(
+                    error.message ||
+                    "Failed to load products."
+                );
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           FILTER PRODUCTS
+           ===================================================== */
+
+        function getFilteredProducts() {
+
+            const search =
+                searchInput.value
+                    .trim()
+                    .toLowerCase();
+
+
+            const status =
+                statusFilter.value;
+
+
+            return products.filter(
+                function(product) {
+
+                    const matchesSearch =
+                        !search ||
+                        String(
+                            product.name || ""
+                        )
+                        .toLowerCase()
+                        .includes(
+                            search
+                        ) ||
+                        String(
+                            product.slug || ""
+                        )
+                        .toLowerCase()
+                        .includes(
+                            search
+                        ) ||
+                        String(
+                            product.category || ""
+                        )
+                        .toLowerCase()
+                        .includes(
+                            search
+                        );
+
+
+                    const matchesStatus =
+                        status === "all" ||
+                        product.status ===
+                            status;
+
+
+                    return (
+                        matchesSearch &&
+                        matchesStatus
+                    );
+
+                }
+            );
+
+        }
+
+
+
+        /* =====================================================
+           RENDER PRODUCTS
+           ===================================================== */
+
+        function renderProducts() {
+
+            const filtered =
+                getFilteredProducts();
+
+
+            if (
+                filtered.length === 0
+            ) {
+
+                tableBody.innerHTML = `
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="admin-state"
+                        >
+                            No products found.
+                        </td>
+
+                    </tr>
+
+                `;
+
+                return;
+
+            }
+
+
+            tableBody.innerHTML =
+                filtered
+                    .map(
+                        function(product) {
+
+                            const image =
+                                product.image
+                                    ? escapeHtml(
+                                        product.image
+                                    )
+                                    : "";
+
+
+                            const status =
+                                escapeHtml(
+                                    product.status
+                                );
+
+
+                            const statusClass =
+                                getStatusClass(
+                                    product.status
+                                );
+
+
+                            return `
+
+                                <tr>
+
+                                    <td>
+
+                                        ${
+                                            image
+                                                ? `
+                                                    <img
+                                                        src="${image}"
+                                                        alt="${escapeHtml(product.name)}"
+                                                        class="admin-product-image"
+                                                        loading="lazy"
+                                                        onerror="this.style.display='none';"
+                                                    >
+                                                `
+                                                : "—"
+                                        }
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="admin-product-name">
+
+                                            ${escapeHtml(
+                                                product.name
+                                            )}
+
+                                        </div>
+
+                                        <div class="admin-product-slug">
+
+                                            /${escapeHtml(
+                                                product.slug
+                                            )}
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="admin-price">
+
+                                            ${formatMoney(
+                                                product.price
+                                            )}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="admin-category">
+
+                                            ${
+                                                escapeHtml(
+                                                    product.category ||
+                                                    "—"
+                                                )
+                                            }
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span
+                                            class="status-badge ${statusClass}"
+                                        >
+
+                                            ${status}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        ${formatDate(
+                                            product.created_at
+                                        )}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="admin-row-actions">
+
+                                            <button
+                                                type="button"
+                                                class="row-btn"
+                                                data-action="edit"
+                                                data-id="${product.id}"
+                                            >
+                                                Edit
+                                            </button>
+
+
+                                            ${
+                                                product.status !==
+                                                "inactive"
+
+                                                    ? `
+
+                                                        <button
+                                                            type="button"
+                                                            class="row-btn delete"
+                                                            data-action="delete"
+                                                            data-id="${product.id}"
+                                                        >
+                                                            Deactivate
+                                                        </button>
+
+                                                    `
+
+                                                    : ""
+                                            }
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            `;
+
+                        }
+                    )
+                    .join("");
+
+        }
+
+
+
+        /* =====================================================
+           OPEN MODAL
+           ===================================================== */
+
+        function openModal(
+            product = null
+        ) {
+
+            modal.classList.add(
+                "open"
+            );
+
+
+            modal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+
+            if (product) {
+
+                editingProductId =
+                    product.id;
+
+
+                modalTitle.textContent =
+                    "Edit Product";
+
+
+                productName.value =
+                    product.name || "";
+
+
+                productSlug.value =
+                    product.slug || "";
+
+
+                productDescription.value =
+                    product.description || "";
+
+
+                productPrice.value =
+                    product.price ?? "";
+
+
+                productCategory.value =
+                    product.category || "";
+
+
+                productImage.value =
+                    product.image || "";
+
+
+                productPrintifyId.value =
+                    product.printify_product_id ||
+                    "";
+
+
+                productStatus.value =
+                    product.status || "active";
+
+
+                updateImagePreview();
+
+            } else {
+
+                editingProductId =
+                    null;
+
+
+                modalTitle.textContent =
+                    "Add Product";
+
+
+                productForm.reset();
+
+
+                productStatus.value =
+                    "draft";
+
+
+                imagePreview.style.display =
+                    "none";
+
+
+                imagePreview.removeAttribute(
+                    "src"
+                );
+
+            }
+
+
+            setTimeout(
+                function() {
+
+                    productName.focus();
+
+                },
+                50
+            );
+
+        }
+
+
+
+        /* =====================================================
+           CLOSE MODAL
+           ===================================================== */
+
+        function closeModal() {
+
+            modal.classList.remove(
+                "open"
+            );
+
+
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+
+            editingProductId =
+                null;
+
+        }
+
+
+
+        /* =====================================================
+           IMAGE PREVIEW
+           ===================================================== */
+
+        function updateImagePreview() {
+
+            const url =
+                productImage.value.trim();
+
+
+            if (!url) {
+
+                imagePreview.style.display =
+                    "none";
+
+
+                imagePreview.removeAttribute(
+                    "src"
+                );
+
+                return;
+
+            }
+
+
+            imagePreview.src =
+                url;
+
+
+            imagePreview.style.display =
+                "block";
+
+        }
+
+
+
+        /* =====================================================
+           AUTO SLUG
+           ===================================================== */
+
+        function generateSlug(
+            value
+        ) {
+
+            return value
+                .toLowerCase()
+                .trim()
+                .replace(
+                    /[^a-z0-9]+/g,
+                    "-"
+                )
+                .replace(
+                    /^-+|-+$/g,
+                    ""
+                );
+
+        }
+
+
+
+        /* =====================================================
+           SAVE PRODUCT
+           ===================================================== */
+
+        async function saveProduct(
+            event
+        ) {
+
+            event.preventDefault();
+
+
+            const name =
+                productName.value.trim();
+
+
+            const slug =
+                productSlug.value.trim() ||
+                generateSlug(
+                    name
+                );
+
+
+            const description =
+                productDescription.value.trim();
+
+
+            const price =
+                Number(
+                    productPrice.value
+                );
+
+
+            const image =
+                productImage.value.trim();
+
+
+            const category =
+                productCategory.value;
+
+
+            const printifyProductId =
+                productPrintifyId.value.trim();
+
+
+            const status =
+                productStatus.value;
+
+
+
+            /* ================================================
+               CLIENT VALIDATION
+               ================================================ */
+
+            if (!name) {
+
+                showError(
+                    "Product name is required."
+                );
+
+                productName.focus();
+
+                return;
+
+            }
+
+
+            if (!slug) {
+
+                showError(
+                    "Product slug is required."
+                );
+
+                productSlug.focus();
+
+                return;
+
+            }
+
+
+            if (
+                !Number.isFinite(price) ||
+                price < 0
+            ) {
+
+                showError(
+                    "Please enter a valid price."
+                );
+
+                productPrice.focus();
+
+                return;
+
+            }
+
+
+            if (
+                !category
+            ) {
+
+                showError(
+                    "Please select a category."
+                );
+
+                productCategory.focus();
+
+                return;
+
+            }
+
+
+            const payload = {
+
+                name,
+
+                slug,
+
+                description,
+
+                price,
+
+                image,
+
+                category,
+
+                printify_product_id:
+                    printifyProductId,
+
+                status
+
+            };
+
+
+
+            /* ================================================
+               BUTTON STATE
+               ================================================ */
+
+            const saveButton =
+                document.getElementById(
+                    "save-product"
+                );
+
+
+            const originalText =
+                saveButton.textContent;
+
+
+            saveButton.disabled =
+                true;
+
+
+            saveButton.textContent =
+                editingProductId
+                    ? "SAVING..."
+                    : "CREATING...";
+
+
+
+            try {
+
+                const url =
+                    editingProductId
+                        ? `${API_BASE}/${editingProductId}`
+                        : API_BASE;
+
+
+                const method =
+                    editingProductId
+                        ? "PUT"
+                        : "POST";
+
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            method,
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+                                "Accept":
+                                    "application/json"
+                            },
+                            body:
+                                JSON.stringify(
+                                    payload
+                                )
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Failed to save product."
+                    );
+
+                }
+
+
+                closeModal();
+
+
+                await loadProducts();
+
+
+                showSuccess(
+                    editingProductId
+                        ? "Product updated successfully."
+                        : "Product created successfully."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Save product error:",
+                    error
+                );
+
+
+                showError(
+                    error.message ||
+                    "Failed to save product."
+                );
+
+            } finally {
+
+                saveButton.disabled =
+                    false;
+
+
+                saveButton.textContent =
+                    originalText;
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           DEACTIVATE PRODUCT
+           ===================================================== */
+
+        async function deactivateProduct(
+            productId
+        ) {
+
+            const product =
+                products.find(
+                    function(item) {
+
+                        return Number(
+                            item.id
+                        ) === Number(
+                            productId
+                        );
+
+                    }
+                );
+
+
+            if (!product) {
+
+                return;
+
+            }
+
+
+            const confirmed =
+                window.confirm(
+                    `Deactivate "${product.name}"?\n\n` +
+                    `The product will no longer appear in the public shop.`
+                );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE}/${productId}`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                "Accept":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Failed to deactivate product."
+                    );
+
+                }
+
+
+                await loadProducts();
+
+
+                showSuccess(
+                    "Product deactivated successfully."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Deactivate product error:",
+                    error
+                );
+
+
+                showError(
+                    error.message ||
+                    "Failed to deactivate product."
+                );
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           EVENT: ADD
+           ===================================================== */
+
+        document
+            .getElementById(
+                "add-product"
+            )
+            .addEventListener(
+                "click",
+                function() {
+
+                    openModal();
+
+                }
+            );
+
+
+
+        /* =====================================================
+           EVENT: REFRESH
+           ===================================================== */
+
+        document
+            .getElementById(
+                "refresh-products"
+            )
+            .addEventListener(
+                "click",
+                function() {
+
+                    loadProducts();
+
+                }
+            );
+
+
+
+        /* =====================================================
+           EVENT: SEARCH
+           ===================================================== */
+
+        searchInput.addEventListener(
+            "input",
+            function() {
+
+                renderProducts();
+
+            }
+        );
+
+
+
+        /* =====================================================
+           EVENT: STATUS FILTER
+           ===================================================== */
+
+        statusFilter.addEventListener(
+            "change",
+            function() {
+
+                renderProducts();
+
+            }
+        );
+
+
+
+        /* =====================================================
+           EVENT: TABLE ACTIONS
+           ===================================================== */
+
+        tableBody.addEventListener(
+            "click",
+            function(event) {
+
+                const button =
+                    event.target.closest(
+                        "[data-action]"
+                    );
+
+
+                if (!button) {
+
+                    return;
+
+                }
+
+
+                const action =
+                    button.dataset.action;
+
+
+                const id =
+                    Number(
+                        button.dataset.id
+                    );
+
+
+                if (
+                    action === "edit"
+                ) {
+
+                    const product =
+                        products.find(
+                            function(item) {
+
+                                return Number(
+                                    item.id
+                                ) === id;
+
+                            }
+                        );
+
+
+                    if (product) {
+
+                        openModal(
+                            product
+                        );
+
+                    }
+
+                }
+
+
+                if (
+                    action === "delete"
+                ) {
+
+                    deactivateProduct(
+                        id
+                    );
+
+                }
+
+            }
+        );
+
+
+
+        /* =====================================================
+           EVENT: FORM SUBMIT
+           ===================================================== */
+
+        productForm.addEventListener(
+            "submit",
+            saveProduct
+        );
+
+
+
+        /* =====================================================
+           EVENT: CLOSE BUTTONS
+           ===================================================== */
+
+        document
+            .getElementById(
+                "modal-close"
+            )
+            .addEventListener(
+                "click",
+                closeModal
+            );
+
+
+        document
+            .getElementById(
+                "modal-cancel"
+            )
+            .addEventListener(
+                "click",
+                closeModal
+            );
+
+
+
+        /* =====================================================
+           EVENT: IMAGE PREVIEW
+           ===================================================== */
+
+        productImage.addEventListener(
+            "input",
+            updateImagePreview
+        );
+
+
+        imagePreview.addEventListener(
+            "error",
+            function() {
+
+                imagePreview.style.display =
+                    "none";
+
+            }
+        );
+
+
+
+        /* =====================================================
+           EVENT: CLICK OUTSIDE MODAL
+           ===================================================== */
+
+        modal.addEventListener(
+            "click",
+            function(event) {
+
+                if (
+                    event.target ===
+                    modal
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+
+        /* =====================================================
+           EVENT: ESC
+           ===================================================== */
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key ===
+                    "Escape" &&
+                    modal.classList.contains(
+                        "open"
+                    )
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+
+        /* =====================================================
+           AUTO-GENERATE SLUG
+           ===================================================== */
+
+        productName.addEventListener(
+            "input",
+            function() {
+
+                /*
+                 * Only automatically change
+                 * the slug while creating
+                 * a new product.
+                 */
+
+                if (
+                    editingProductId
+                ) {
+
+                    return;
+
+                }
+
+
+                productSlug.value =
+                    generateSlug(
+                        productName.value
+                    );
+
+            }
+        );
+
+
+
+        /* =====================================================
+           INITIALIZE
+           ===================================================== */
+
+        loadProducts();
+
+    </script>
+
+
+</body>
+
+</html>
