@@ -101,167 +101,16 @@
                 </div>
 
 
-                <div class="product-grid">
+                <!-- PRODUCTS WILL BE LOADED FROM D1 -->
 
+                <div
+                    id="featured-products"
+                    class="product-grid"
+                >
 
-                    <!-- PRODUCT 1 -->
-
-                    <article class="product-card">
-
-                        <a
-                            href="product.html?id=1"
-                            class="product-image"
-                        >
-
-                            <img
-                                src="images/product-1.jpg"
-                                alt="Graphic t-shirt"
-                                loading="lazy"
-                            >
-
-                            <span class="product-badge">
-                                BEST SELLER
-                            </span>
-
-                        </a>
-
-
-                        <div class="product-info">
-
-                            <h3>
-                                <a href="product.html?id=1">
-                                    Graphic T-Shirt #1
-                                </a>
-                            </h3>
-
-                            <p class="product-category">
-                                Graphic Tees
-                            </p>
-
-                            <p class="product-price">
-                                $29.99
-                            </p>
-
-                        </div>
-
-                    </article>
-
-
-                    <!-- PRODUCT 2 -->
-
-                    <article class="product-card">
-
-                        <a
-                            href="product.html?id=2"
-                            class="product-image"
-                        >
-
-                            <img
-                                src="images/product-2.jpg"
-                                alt="Graphic t-shirt"
-                                loading="lazy"
-                            >
-
-                        </a>
-
-
-                        <div class="product-info">
-
-                            <h3>
-                                <a href="product.html?id=2">
-                                    Graphic T-Shirt #2
-                                </a>
-                            </h3>
-
-                            <p class="product-category">
-                                Graphic Tees
-                            </p>
-
-                            <p class="product-price">
-                                $29.99
-                            </p>
-
-                        </div>
-
-                    </article>
-
-
-                    <!-- PRODUCT 3 -->
-
-                    <article class="product-card">
-
-                        <a
-                            href="product.html?id=3"
-                            class="product-image"
-                        >
-
-                            <img
-                                src="images/product-3.jpg"
-                                alt="Graphic t-shirt"
-                                loading="lazy"
-                            >
-
-                        </a>
-
-
-                        <div class="product-info">
-
-                            <h3>
-                                <a href="product.html?id=3">
-                                    Graphic T-Shirt #3
-                                </a>
-                            </h3>
-
-                            <p class="product-category">
-                                Graphic Tees
-                            </p>
-
-                            <p class="product-price">
-                                $27.99
-                            </p>
-
-                        </div>
-
-                    </article>
-
-
-                    <!-- PRODUCT 4 -->
-
-                    <article class="product-card">
-
-                        <a
-                            href="product.html?id=4"
-                            class="product-image"
-                        >
-
-                            <img
-                                src="images/product-4.jpg"
-                                alt="Graphic t-shirt"
-                                loading="lazy"
-                            >
-
-                        </a>
-
-
-                        <div class="product-info">
-
-                            <h3>
-                                <a href="product.html?id=4">
-                                    Graphic T-Shirt #4
-                                </a>
-                            </h3>
-
-                            <p class="product-category">
-                                Graphic Tees
-                            </p>
-
-                            <p class="product-price">
-                                $29.99
-                            </p>
-
-                        </div>
-
-                    </article>
+                    <p>
+                        Loading products...
+                    </p>
 
                 </div>
 
@@ -642,74 +491,273 @@
 
     <script>
 
-        /*
-         * Update cart quantity in the header.
-         *
-         * Cart data will later be stored in localStorage.
-         * Printify integration will be added in a later stage.
-         */
+    /* =====================================================
+       CART COUNT
+       ===================================================== */
 
-        function updateCartCount() {
+    function updateCartCount() {
 
-            const cart =
-                JSON.parse(
-                    localStorage.getItem("cart")
-                ) || [];
+        const cart =
+            JSON.parse(
+                localStorage.getItem("cart")
+            ) || [];
 
-            const count =
-                cart.reduce(
-                    (total, item) =>
-                        total + item.quantity,
-                    0
+
+        const count =
+            cart.reduce(
+                function(total, item) {
+
+                    return total +
+                        item.quantity;
+
+                },
+                0
+            );
+
+
+        const cartCount =
+            document.getElementById(
+                "cart-count"
+            );
+
+
+        if (cartCount) {
+
+            cartCount.textContent =
+                count;
+
+        }
+
+    }
+
+
+    updateCartCount();
+
+
+
+    /* =====================================================
+       LOAD FEATURED PRODUCTS FROM D1
+       ===================================================== */
+
+    async function loadFeaturedProducts() {
+
+        const container =
+            document.getElementById(
+                "featured-products"
+            );
+
+
+        if (!container) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/products"
                 );
 
-            const cartCount =
-                document.getElementById(
-                    "cart-count"
+
+            const data =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    "Failed to load products"
                 );
 
-            if (cartCount) {
-                cartCount.textContent = count;
             }
-        }
 
 
-        updateCartCount();
+            /*
+             * Show the first 4 active products.
+             */
+
+            const products =
+                data.products.slice(0, 4);
 
 
-        /*
-         * Newsletter demo.
-         *
-         * This does not send email yet.
-         * Email integration can be added later.
-         */
+            if (products.length === 0) {
 
-        const newsletterForm =
-            document.querySelector(
-                ".newsletter-form"
+                container.innerHTML = `
+                    <p>No products available.</p>
+                `;
+
+                return;
+
+            }
+
+
+            /* =============================================
+               RENDER PRODUCTS
+               ============================================= */
+
+            container.innerHTML =
+                products.map(
+                    function(product, index) {
+
+                        return `
+
+                            <article
+                                class="product-card"
+                            >
+
+                                <a
+                                    href="product.html?id=${product.id}"
+                                    class="product-image"
+                                >
+
+                                    <img
+                                        src="${product.image}"
+                                        alt="${escapeHtml(product.name)}"
+                                        loading="lazy"
+                                    >
+
+                                    ${
+                                        index === 0
+                                        ?
+                                        `
+                                        <span class="product-badge">
+                                            BEST SELLER
+                                        </span>
+                                        `
+                                        :
+                                        ""
+                                    }
+
+                                </a>
+
+
+                                <div class="product-info">
+
+                                    <h3>
+
+                                        <a
+                                            href="product.html?id=${product.id}"
+                                        >
+                                            ${escapeHtml(product.name)}
+                                        </a>
+
+                                    </h3>
+
+
+                                    <p class="product-category">
+
+                                        ${escapeHtml(
+                                            product.category
+                                        )}
+
+                                    </p>
+
+
+                                    <p class="product-price">
+
+                                        $${Number(
+                                            product.price
+                                        ).toFixed(2)}
+
+                                    </p>
+
+                                </div>
+
+                            </article>
+
+                        `;
+
+                    }
+                )
+                .join("");
+
+
+        } catch (error) {
+
+            console.error(
+                "Failed to load featured products:",
+                error
             );
 
 
-        if (newsletterForm) {
+            container.innerHTML = `
 
-            newsletterForm.addEventListener(
-                "submit",
-                function(event) {
+                <p>
+                    Unable to load products.
+                    Please try again later.
+                </p>
 
-                    event.preventDefault();
-
-                    alert(
-                        "Thanks for joining Threadly Co.!"
-                    );
-
-                    newsletterForm.reset();
-
-                }
-            );
+            `;
 
         }
 
-    </script>
+    }
+
+
+
+    /* =====================================================
+       HTML ESCAPE
+       ===================================================== */
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+
+    /* =====================================================
+       NEWSLETTER
+       ===================================================== */
+
+    const newsletterForm =
+        document.querySelector(
+            ".newsletter-form"
+        );
+
+
+    if (newsletterForm) {
+
+        newsletterForm.addEventListener(
+            "submit",
+            function(event) {
+
+                event.preventDefault();
+
+
+                alert(
+                    "Thanks for joining Threadly Co.!"
+                );
+
+
+                newsletterForm.reset();
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       START
+       ===================================================== */
+
+    loadFeaturedProducts();
+
+</script>
 
 </body>
 </html>
