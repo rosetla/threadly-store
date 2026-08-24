@@ -768,21 +768,54 @@
 <script>
 
     /* =====================================================
-       CART
+       CART STORAGE
        ===================================================== */
 
     function getCart() {
 
-        return JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
+        try {
+
+            return JSON.parse(
+                localStorage.getItem(
+                    "cart"
+                )
+            ) || [];
+
+        } catch (error) {
+
+            console.error(
+                "Failed to read cart:",
+                error
+            );
+
+
+            return [];
+
+        }
 
     }
 
 
+
+    function saveCart(cart) {
+
+        localStorage.setItem(
+            "cart",
+            JSON.stringify(cart)
+        );
+
+    }
+
+
+
+    /* =====================================================
+       FORMAT MONEY
+       ===================================================== */
+
     function formatMoney(amount) {
 
-        return "$" + amount.toFixed(2);
+        return "$" +
+            Number(amount).toFixed(2);
 
     }
 
@@ -803,7 +836,9 @@
                 function(total, item) {
 
                     return total +
-                        item.quantity;
+                        Number(
+                            item.quantity || 0
+                        );
 
                 },
                 0
@@ -828,7 +863,7 @@
 
 
     /* =====================================================
-       GET PRODUCT FROM D1
+       GET PRODUCT FROM API
        ===================================================== */
 
     async function getProduct(productId) {
@@ -837,7 +872,7 @@
 
             const response =
                 await fetch(
-                    `/api/product?id=${encodeURIComponent(productId)}`
+                    `/api/products/${encodeURIComponent(productId)}`
                 );
 
 
@@ -857,6 +892,7 @@
 
 
             return data.product;
+
 
         } catch (error) {
 
@@ -904,7 +940,9 @@
             );
 
 
-        if (cart.length === 0) {
+        if (
+            cart.length === 0
+        ) {
 
             window.location.href =
                 "shop.html";
@@ -918,16 +956,23 @@
             "<p>Loading your order...</p>";
 
 
-        let subtotal = 0;
+
+        let subtotal =
+            0;
 
 
-        /*
-         * Load every product again
-         * from D1.
-         */
+        const verifiedItems =
+            [];
 
-        const verifiedItems = [];
 
+        const renderItems =
+            [];
+
+
+
+        /* ===============================================
+           VERIFY PRODUCTS
+           =============================================== */
 
         for (
             const item of cart
@@ -939,49 +984,29 @@
                 );
 
 
-            /*
-             * Skip product if it
-             * no longer exists.
-             */
-
             if (!product) {
 
                 console.warn(
-                    "Product not found:",
+                    "Could not verify product:",
                     item.productId
                 );
 
+
+                /*
+                 * Don't automatically destroy
+                 * the cart because API might
+                 * temporarily fail.
+                 */
 
                 continue;
 
             }
 
 
-            /*
-             * Use D1 product data.
-             *
-             * Do not trust:
-             *
-             * item.name
-             * item.price
-             * item.image
-             *
-             * from localStorage.
-             */
-
-            verifiedItems.push({
+            const verifiedItem = {
 
                 productId:
                     product.id,
-
-                name:
-                    product.name,
-
-                price:
-                    Number(product.price),
-
-                image:
-                    product.image,
 
                 color:
                     item.color,
@@ -990,7 +1015,25 @@
                     item.size,
 
                 quantity:
-                    item.quantity
+                    Number(
+                        item.quantity
+                    )
+
+            };
+
+
+            verifiedItems.push(
+                verifiedItem
+            );
+
+
+            renderItems.push({
+
+                product:
+                    product,
+
+                item:
+                    verifiedItem
 
             });
 
@@ -998,21 +1041,41 @@
 
 
 
-        /*
-         * If no valid products remain.
-         */
+        /* ===============================================
+           NO VALID PRODUCTS
+           =============================================== */
 
         if (
-            verifiedItems.length === 0
+            renderItems.length === 0
         ) {
 
-            localStorage.removeItem(
-                "cart"
-            );
+            itemsContainer.innerHTML =
+                `
+                    <p>
+                        Unable to load your order.
+                        Please return to your cart
+                        and try again.
+                    </p>
+                `;
 
 
-            window.location.href =
-                "shop.html";
+            document.getElementById(
+                "checkout-subtotal"
+            ).textContent =
+                "$0.00";
+
+
+            document.getElementById(
+                "checkout-shipping"
+            ).textContent =
+                "$0.00";
+
+
+            document.getElementById(
+                "checkout-total"
+            ).textContent =
+                "$0.00";
+
 
             return;
 
@@ -1021,28 +1084,39 @@
 
 
         /*
-         * Update cart with
-         * verified products.
+         * Update cart with verified items.
          */
 
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(
-                verifiedItems
-            )
+        saveCart(
+            verifiedItems
         );
 
+
+
+        /* ===============================================
+           RENDER ITEMS
+           =============================================== */
 
         itemsContainer.innerHTML =
             "";
 
 
-        verifiedItems.forEach(
-            function(item) {
+        renderItems.forEach(
+            function(cartData) {
+
+
+                const product =
+                    cartData.product;
+
+
+                const item =
+                    cartData.item;
 
 
                 const itemTotal =
-                    item.price *
+                    Number(
+                        product.price
+                    ) *
                     item.quantity;
 
 
@@ -1065,8 +1139,8 @@
                     <div class="checkout-item-image">
 
                         <img
-                            src="${item.image}"
-                            alt="${item.name}"
+                            src="${product.image}"
+                            alt="${product.name}"
                         >
 
                         <span class="checkout-item-quantity">
@@ -1079,7 +1153,7 @@
                     <div class="checkout-item-info">
 
                         <strong>
-                            ${item.name}
+                            ${product.name}
                         </strong>
 
                         <span>
@@ -1107,9 +1181,9 @@
 
 
 
-        /* =================================================
+        /* ===============================================
            SHIPPING
-           ================================================= */
+           =============================================== */
 
         const shipping =
             calculateShipping(
@@ -1123,9 +1197,9 @@
 
 
 
-        /* =================================================
+        /* ===============================================
            UPDATE SUMMARY
-           ================================================= */
+           =============================================== */
 
         document.getElementById(
             "checkout-subtotal"
@@ -1231,6 +1305,7 @@
                 );
 
 
+
                 const message =
                     document.getElementById(
                         "checkout-message"
@@ -1254,15 +1329,15 @@
 
 
                 /*
-                 * PAYMENT PLACEHOLDER
+                 * Payment placeholder
                  *
                  * Next step:
                  *
-                 * 1. Create order in D1
-                 * 2. Send customer info
-                 * 3. Create Stripe payment
-                 * 4. After payment:
-                 *    send order to Printify
+                 * 1. Create order
+                 * 2. Save customer info
+                 * 3. Create Stripe Checkout
+                 * 4. Confirm payment
+                 * 5. Send order to Printify
                  */
 
                 message.textContent =
