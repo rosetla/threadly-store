@@ -662,96 +662,75 @@
 
     <script>
 
+    /* =====================================================
+       GET PRODUCT ID FROM URL
+       ===================================================== */
 
-        /* =====================================================
-           PRODUCT DATABASE
-           ===================================================== */
+    const urlParams =
+        new URLSearchParams(
+            window.location.search
+        );
 
-        const products = {
-
-            1: {
-                name: "Funny Graphic T-Shirt",
-                category: "FUNNY",
-                price: 29.99,
-                image: "images/product-1.jpg",
-                description:
-                    "A funny graphic tee designed for everyday wear. Comfortable, simple, and made to get a reaction."
-            },
-
-            2: {
-                name: "Lifestyle Graphic T-Shirt",
-                category: "LIFESTYLE",
-                price: 29.99,
-                image: "images/product-2.jpg",
-                description:
-                    "A clean lifestyle graphic tee made for casual everyday outfits."
-            },
-
-            3: {
-                name: "Trending Graphic T-Shirt",
-                category: "TRENDING",
-                price: 27.99,
-                image: "images/product-3.jpg",
-                description:
-                    "A modern graphic tee inspired by current trends and everyday culture."
-            },
-
-            4: {
-                name: "Weekend Mood T-Shirt",
-                category: "FUNNY",
-                price: 29.99,
-                image: "images/product-4.jpg",
-                description:
-                    "The perfect tee for weekends, good vibes, and doing absolutely nothing productive."
-            },
-
-            5: {
-                name: "Everyday Life T-Shirt",
-                category: "LIFESTYLE",
-                price: 28.99,
-                image: "images/product-5.jpg",
-                description:
-                    "A simple everyday graphic tee designed to fit naturally into your wardrobe."
-            },
-
-            6: {
-                name: "Classic Graphic T-Shirt",
-                category: "TRENDING",
-                price: 31.99,
-                image: "images/product-6.jpg",
-                description:
-                    "A classic graphic t-shirt with a modern look and comfortable everyday fit."
-            }
-
-        };
+    const productId =
+        urlParams.get("id");
 
 
+    /* =====================================================
+       PRODUCT
+       ===================================================== */
 
-        /* =====================================================
-           GET PRODUCT ID
-           ===================================================== */
+    let product = null;
 
-        const urlParams =
-            new URLSearchParams(
-                window.location.search
+
+    /* =====================================================
+       LOAD PRODUCT FROM D1
+       ===================================================== */
+
+    async function loadProduct() {
+
+        if (!productId) {
+
+            showProductError(
+                "Product not found."
             );
 
-
-        const productId =
-            urlParams.get("id") || "1";
-
-
-        const product =
-            products[productId];
+            return;
+        }
 
 
+        try {
 
-        /* =====================================================
-           LOAD PRODUCT
-           ===================================================== */
+            const response =
+                await fetch(
+                    `/api/products/${productId}`
+                );
 
-        if (product) {
 
+            const data =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !data.success ||
+                !data.product
+            ) {
+
+                showProductError(
+                    "Product not found."
+                );
+
+                return;
+            }
+
+
+            product =
+                data.product;
+
+
+            /* =============================================
+               UPDATE PAGE
+               ============================================= */
 
             document.title =
                 `${product.name} | Threadly Co.`;
@@ -766,13 +745,13 @@
             document.getElementById(
                 "product-category"
             ).textContent =
-                product.category;
+                product.category.toUpperCase();
 
 
             document.getElementById(
                 "product-price"
             ).textContent =
-                `$${product.price.toFixed(2)}`;
+                `$${Number(product.price).toFixed(2)}`;
 
 
             document.getElementById(
@@ -798,344 +777,418 @@
             ).textContent =
                 product.name;
 
+
+            /* =============================================
+               UPDATE META DESCRIPTION
+               ============================================= */
+
+            const metaDescription =
+                document.querySelector(
+                    'meta[name="description"]'
+                );
+
+
+            if (metaDescription) {
+
+                metaDescription.setAttribute(
+                    "content",
+                    product.description
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Failed to load product:",
+                error
+            );
+
+
+            showProductError(
+                "Unable to load this product."
+            );
+
         }
 
+    }
 
 
-        /* =====================================================
-           COLOR SELECTION
-           ===================================================== */
 
-        let selectedColor = "Black";
+    /* =====================================================
+       PRODUCT ERROR
+       ===================================================== */
+
+    function showProductError(message) {
+
+        document.getElementById(
+            "product-name"
+        ).textContent =
+            message;
 
 
-        const colorButtons =
-            document.querySelectorAll(
-                ".color-option"
+        document.getElementById(
+            "product-description-text"
+        ).textContent =
+            "Please return to the shop and try again.";
+
+
+        document.getElementById(
+            "add-to-cart"
+        ).disabled =
+            true;
+
+    }
+
+
+
+    /* =====================================================
+       COLOR SELECTION
+       ===================================================== */
+
+    let selectedColor = "Black";
+
+
+    const colorButtons =
+        document.querySelectorAll(
+            ".color-option"
+        );
+
+
+    const selectedColorText =
+        document.getElementById(
+            "selected-color"
+        );
+
+
+    colorButtons.forEach(
+        function(button) {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+
+                    colorButtons.forEach(
+                        function(btn) {
+
+                            btn.classList.remove(
+                                "active"
+                            );
+
+                        }
+                    );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    selectedColor =
+                        button.dataset.color;
+
+
+                    selectedColorText.textContent =
+                        selectedColor;
+
+                }
             );
 
+        }
+    );
 
-        const selectedColorText =
-            document.getElementById(
-                "selected-color"
+
+
+    /* =====================================================
+       SIZE SELECTION
+       ===================================================== */
+
+    let selectedSize = "M";
+
+
+    const sizeButtons =
+        document.querySelectorAll(
+            ".size-option"
+        );
+
+
+    sizeButtons.forEach(
+        function(button) {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+
+                    sizeButtons.forEach(
+                        function(btn) {
+
+                            btn.classList.remove(
+                                "active"
+                            );
+
+                        }
+                    );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    selectedSize =
+                        button.dataset.size;
+
+                }
             );
 
-
-        colorButtons.forEach(
-            function(button) {
-
-                button.addEventListener(
-                    "click",
-                    function() {
+        }
+    );
 
 
-                        colorButtons.forEach(
-                            function(btn) {
 
-                                btn.classList.remove(
-                                    "active"
-                                );
+    /* =====================================================
+       QUANTITY
+       ===================================================== */
 
-                            }
-                        );
+    let quantity = 1;
 
 
-                        button.classList.add(
-                            "active"
-                        );
+    const quantityDisplay =
+        document.getElementById(
+            "quantity"
+        );
 
 
-                        selectedColor =
-                            button.dataset.color;
+    document
+        .getElementById("quantity-minus")
+        .addEventListener(
+            "click",
+            function() {
+
+                if (quantity > 1) {
+
+                    quantity--;
+
+                    quantityDisplay.textContent =
+                        quantity;
+
+                }
+
+            }
+        );
 
 
-                        selectedColorText.textContent =
-                            selectedColor;
+    document
+        .getElementById("quantity-plus")
+        .addEventListener(
+            "click",
+            function() {
 
-                    }
-                );
+                if (quantity < 10) {
+
+                    quantity++;
+
+                    quantityDisplay.textContent =
+                        quantity;
+
+                }
 
             }
         );
 
 
 
-        /* =====================================================
-           SIZE SELECTION
-           ===================================================== */
+    /* =====================================================
+       CART
+       ===================================================== */
 
-        let selectedSize = "M";
+    function getCart() {
 
+        return JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
 
-        const sizeButtons =
-            document.querySelectorAll(
-                ".size-option"
-            );
-
-
-        sizeButtons.forEach(
-            function(button) {
-
-                button.addEventListener(
-                    "click",
-                    function() {
+    }
 
 
-                        sizeButtons.forEach(
-                            function(btn) {
 
-                                btn.classList.remove(
-                                    "active"
-                                );
+    function saveCart(cart) {
 
-                            }
-                        );
-
-
-                        button.classList.add(
-                            "active"
-                        );
-
-
-                        selectedSize =
-                            button.dataset.size;
-
-                    }
-                );
-
-            }
+        localStorage.setItem(
+            "cart",
+            JSON.stringify(cart)
         );
 
+    }
 
 
-        /* =====================================================
-           QUANTITY
-           ===================================================== */
 
-        let quantity = 1;
+    function updateCartCount() {
+
+        const cart =
+            getCart();
 
 
-        const quantityDisplay =
-            document.getElementById(
-                "quantity"
+        const count =
+            cart.reduce(
+                function(total, item) {
+
+                    return total +
+                        item.quantity;
+
+                },
+                0
             );
 
 
-        document
-            .getElementById("quantity-minus")
-            .addEventListener(
-                "click",
-                function() {
-
-                    if (quantity > 1) {
-
-                        quantity--;
-
-                        quantityDisplay.textContent =
-                            quantity;
-
-                    }
-
-                }
-            );
-
-
-        document
-            .getElementById("quantity-plus")
-            .addEventListener(
-                "click",
-                function() {
-
-                    if (quantity < 10) {
-
-                        quantity++;
-
-                        quantityDisplay.textContent =
-                            quantity;
-
-                    }
-
-                }
-            );
-
-
-
-        /* =====================================================
-           CART
-           ===================================================== */
-
-        function getCart() {
-
-            return JSON.parse(
-                localStorage.getItem("cart")
-            ) || [];
-
-        }
-
-
-
-        function saveCart(cart) {
-
-            localStorage.setItem(
-                "cart",
-                JSON.stringify(cart)
-            );
-
-        }
-
-
-
-        function updateCartCount() {
-
-            const cart =
-                getCart();
-
-
-            const count =
-                cart.reduce(
-                    function(total, item) {
-
-                        return total +
-                            item.quantity;
-
-                    },
-                    0
-                );
-
-
+        const cartCount =
             document.getElementById(
                 "cart-count"
-            ).textContent =
+            );
+
+
+        if (cartCount) {
+
+            cartCount.textContent =
                 count;
 
         }
 
-
-
-        updateCartCount();
+    }
 
 
 
-        /* =====================================================
-           ADD TO CART
-           ===================================================== */
-
-        document
-            .getElementById("add-to-cart")
-            .addEventListener(
-                "click",
-                function() {
+    updateCartCount();
 
 
-                    if (!product) {
-                        return;
-                    }
+
+    /* =====================================================
+       ADD TO CART
+       ===================================================== */
+
+    document
+        .getElementById("add-to-cart")
+        .addEventListener(
+            "click",
+            function() {
 
 
-                    const cart =
-                        getCart();
+                if (!product) {
 
-
-                    /*
-                     * Each combination of:
-                     *
-                     * Product
-                     * Color
-                     * Size
-                     *
-                     * is treated as a separate cart item.
-                     */
-
-                    const existingItem =
-                        cart.find(
-                            function(item) {
-
-                                return (
-                                    item.productId ===
-                                    productId &&
-
-                                    item.color ===
-                                    selectedColor &&
-
-                                    item.size ===
-                                    selectedSize
-                                );
-
-                            }
-                        );
-
-
-                    if (existingItem) {
-
-                        existingItem.quantity +=
-                            quantity;
-
-                    } else {
-
-                        cart.push({
-
-                            productId:
-                                productId,
-
-                            name:
-                                product.name,
-
-                            price:
-                                product.price,
-
-                            image:
-                                product.image,
-
-                            color:
-                                selectedColor,
-
-                            size:
-                                selectedSize,
-
-                            quantity:
-                                quantity
-
-                        });
-
-                    }
-
-
-                    saveCart(cart);
-
-
-                    updateCartCount();
-
-
-                    const message =
-                        document.getElementById(
-                            "cart-message"
-                        );
-
-
-                    message.textContent =
-                        "Added to cart ✓";
-
-
-                    message.classList.add(
-                        "show"
-                    );
-
-
-                    setTimeout(
-                        function() {
-
-                            message.classList.remove(
-                                "show"
-                            );
-
-                        },
-                        2500
-                    );
+                    return;
 
                 }
-            );
 
-    </script>
+
+                const cart =
+                    getCart();
+
+
+                /*
+                 * Product + Color + Size
+                 * = Separate cart item
+                 */
+
+                const existingItem =
+                    cart.find(
+                        function(item) {
+
+                            return (
+                                item.productId ===
+                                productId &&
+
+                                item.color ===
+                                selectedColor &&
+
+                                item.size ===
+                                selectedSize
+                            );
+
+                        }
+                    );
+
+
+                if (existingItem) {
+
+                    existingItem.quantity +=
+                        quantity;
+
+                } else {
+
+                    cart.push({
+
+                        productId:
+                            productId,
+
+                        name:
+                            product.name,
+
+                        price:
+                            Number(product.price),
+
+                        image:
+                            product.image,
+
+                        color:
+                            selectedColor,
+
+                        size:
+                            selectedSize,
+
+                        quantity:
+                            quantity
+
+                    });
+
+                }
+
+
+                saveCart(cart);
+
+
+                updateCartCount();
+
+
+                const message =
+                    document.getElementById(
+                        "cart-message"
+                    );
+
+
+                message.textContent =
+                    "Added to cart ✓";
+
+
+                message.classList.add(
+                    "show"
+                );
+
+
+                setTimeout(
+                    function() {
+
+                        message.classList.remove(
+                            "show"
+                        );
+
+                    },
+                    2500
+                );
+
+            }
+        );
+
+
+
+    /* =====================================================
+       START
+       ===================================================== */
+
+    loadProduct();
+
+</script>
 
 
 </body>
