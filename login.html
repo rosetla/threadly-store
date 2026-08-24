@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Threadly Admin Login</title>
+
+    <meta
+        name="robots"
+        content="noindex, nofollow"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+
+        body {
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            background:
+                #f5f5f5;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+        }
+
+
+        .login-container {
+
+            width: 100%;
+
+            max-width: 420px;
+
+        }
+
+
+        .login-card {
+
+            background: #ffffff;
+
+            border-radius: 18px;
+
+            padding: 36px;
+
+            box-shadow:
+                0 20px 60px
+                rgba(0, 0, 0, 0.08);
+
+        }
+
+
+        .logo {
+
+            width: 52px;
+
+            height: 52px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 24px;
+
+            border-radius: 12px;
+
+            background: #111111;
+
+            color: #ffffff;
+
+            font-size: 22px;
+
+            font-weight: 700;
+
+        }
+
+
+        h1 {
+
+            margin: 0 0 8px;
+
+            color: #111111;
+
+            font-size: 28px;
+
+            line-height: 1.2;
+
+        }
+
+
+        .subtitle {
+
+            margin: 0 0 28px;
+
+            color: #666666;
+
+            font-size: 15px;
+
+            line-height: 1.5;
+
+        }
+
+
+        label {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #222222;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+        }
+
+
+        input {
+
+            width: 100%;
+
+            height: 50px;
+
+            padding:
+                0 14px;
+
+            border:
+                1px solid #dddddd;
+
+            border-radius: 10px;
+
+            outline: none;
+
+            background: #ffffff;
+
+            color: #111111;
+
+            font-size: 16px;
+
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s;
+
+        }
+
+
+        input:focus {
+
+            border-color:
+                #111111;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(0, 0, 0, 0.08);
+
+        }
+
+
+        button {
+
+            width: 100%;
+
+            height: 50px;
+
+            margin-top: 18px;
+
+            border: 0;
+
+            border-radius: 10px;
+
+            background: #111111;
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                opacity 0.2s,
+                transform 0.1s;
+
+        }
+
+
+        button:hover {
+
+            opacity: 0.9;
+
+        }
+
+
+        button:active {
+
+            transform:
+                scale(0.99);
+
+        }
+
+
+        button:disabled {
+
+            opacity: 0.6;
+
+            cursor: not-allowed;
+
+        }
+
+
+        .error {
+
+            display: none;
+
+            margin-top: 16px;
+
+            padding: 12px 14px;
+
+            border-radius: 9px;
+
+            background:
+                #fff1f1;
+
+            color:
+                #c62828;
+
+            font-size: 14px;
+
+            line-height: 1.4;
+
+        }
+
+
+        .error.show {
+
+            display: block;
+
+        }
+
+
+        .footer {
+
+            margin-top: 18px;
+
+            text-align: center;
+
+            color: #999999;
+
+            font-size: 12px;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <main class="login-container">
+
+        <section class="login-card">
+
+            <div class="logo">
+                T
+            </div>
+
+
+            <h1>
+                Threadly Admin
+            </h1>
+
+
+            <p class="subtitle">
+                Sign in to manage your products and store.
+            </p>
+
+
+            <form id="loginForm">
+
+                <label
+                    for="password"
+                >
+                    Admin Password
+                </label>
+
+
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter admin password"
+                    autocomplete="current-password"
+                    required
+                    autofocus
+                >
+
+
+                <button
+                    id="loginButton"
+                    type="submit"
+                >
+                    Login
+                </button>
+
+
+                <div
+                    id="error"
+                    class="error"
+                    role="alert"
+                ></div>
+
+            </form>
+
+        </section>
+
+
+        <div class="footer">
+            Threadly Co. Admin
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const form =
+            document.getElementById(
+                "loginForm"
+            );
+
+
+        const passwordInput =
+            document.getElementById(
+                "password"
+            );
+
+
+        const loginButton =
+            document.getElementById(
+                "loginButton"
+            );
+
+
+        const errorBox =
+            document.getElementById(
+                "error"
+            );
+
+
+        function showError(message) {
+
+            errorBox.textContent =
+                message;
+
+            errorBox.classList.add(
+                "show"
+            );
+
+        }
+
+
+        function clearError() {
+
+            errorBox.textContent =
+                "";
+
+            errorBox.classList.remove(
+                "show"
+            );
+
+        }
+
+
+        form.addEventListener(
+            "submit",
+            async function(event) {
+
+                event.preventDefault();
+
+                clearError();
+
+                loginButton.disabled =
+                    true;
+
+                loginButton.textContent =
+                    "Signing in...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/admin/login",
+                            {
+
+                                method: "POST",
+
+                                credentials:
+                                    "same-origin",
+
+                                headers: {
+
+                                    "Content-Type":
+                                        "application/json"
+
+                                },
+
+                                body:
+                                    JSON.stringify({
+
+                                        password:
+                                            passwordInput.value
+
+                                    })
+
+                            }
+                        );
+
+
+                    let data;
+
+
+                    try {
+
+                        data =
+                            await response.json();
+
+                    } catch {
+
+                        data = {};
+
+                    }
+
+
+                    if (!response.ok) {
+
+                        showError(
+
+                            data.error ||
+                            "Invalid admin password."
+
+                        );
+
+                        passwordInput.focus();
+
+                        return;
+
+                    }
+
+
+                    if (
+                        data.success
+                    ) {
+
+                        window.location.href =
+                            "/admin/";
+
+                        return;
+
+                    }
+
+
+                    showError(
+                        "Login failed."
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Login error:",
+                        error
+                    );
+
+
+                    showError(
+                        "Unable to connect to the server."
+                    );
+
+                } finally {
+
+                    loginButton.disabled =
+                        false;
+
+                    loginButton.textContent =
+                        "Login";
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
