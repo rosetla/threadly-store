@@ -83,7 +83,7 @@
 
 
         <!-- =================================================
-             CHECKOUT HEADER
+             CHECKOUT HERO
              ================================================= -->
 
         <section class="checkout-hero">
@@ -152,6 +152,7 @@
                                     name="email"
                                     placeholder="you@example.com"
                                     autocomplete="email"
+                                    maxlength="150"
                                     required
                                 >
 
@@ -742,6 +743,7 @@
                 © 2026 Threadly Co. All rights reserved.
             </p>
 
+
             <div>
 
                 <a href="#">
@@ -768,30 +770,7 @@
 
 
         /* =====================================================
-           CONFIGURATION
-           ===================================================== */
-
-        /*
-         * IMPORTANT
-         *
-         * This endpoint is expected to be provided by the
-         * Cloudflare Worker.
-         *
-         * Example:
-         *
-         * /api/products
-         *
-         * The Worker should return the current product data
-         * from D1.
-         */
-
-        const PRODUCTS_API =
-            "/api/products";
-
-
-
-        /* =====================================================
-           CART
+           CART STORAGE
            ===================================================== */
 
         function getCart() {
@@ -845,147 +824,38 @@
 
 
         /* =====================================================
-           SANITIZE CART ITEM
+           SAVE CART
            ===================================================== */
 
-        function sanitizeCartItem(
-            item
-        ) {
+        function saveCart(cart) {
 
-            if (
-                !item ||
-                typeof item !== "object"
-            ) {
+            try {
 
-                return null;
-
-            }
-
-
-            /*
-             * Product ID
-             */
-
-            const id =
-                String(
-                    item.id ?? ""
-                ).trim();
-
-
-            if (!id) {
-
-                return null;
-
-            }
-
-
-            /*
-             * Quantity
-             */
-
-            const quantity =
-                Number(
-                    item.quantity
+                localStorage.setItem(
+                    "cart",
+                    JSON.stringify(
+                        cart
+                    )
                 );
 
+            } catch (error) {
 
-            if (
-                !Number.isInteger(
-                    quantity
-                ) ||
-                quantity < 1 ||
-                quantity > 99
-            ) {
-
-                return null;
+                console.error(
+                    "Unable to save cart:",
+                    error
+                );
 
             }
 
-
-            /*
-             * Variant information
-             *
-             * These values are still treated as untrusted.
-             */
-
-            const color =
-                typeof item.color === "string"
-                    ? item.color.trim()
-                    : "";
-
-
-            const size =
-                typeof item.size === "string"
-                    ? item.size.trim()
-                    : "";
-
-
-            return {
-
-                id: id,
-
-                quantity: quantity,
-
-                color: color,
-
-                size: size
-
-            };
-
         }
 
 
 
         /* =====================================================
-           GET SAFE CART
+           FORMAT MONEY
            ===================================================== */
 
-        function getSafeCart() {
-
-            const cart =
-                getCart();
-
-
-            const safeCart =
-                [];
-
-
-            cart.forEach(
-                function(item) {
-
-                    const safeItem =
-                        sanitizeCartItem(
-                            item
-                        );
-
-
-                    if (
-                        safeItem
-                    ) {
-
-                        safeCart.push(
-                            safeItem
-                        );
-
-                    }
-
-                }
-            );
-
-
-            return safeCart;
-
-        }
-
-
-
-        /* =====================================================
-           MONEY
-           ===================================================== */
-
-        function formatMoney(
-            amount
-        ) {
+        function formatMoney(amount) {
 
             const number =
                 Number(
@@ -1004,72 +874,99 @@
             }
 
 
-            return (
-                "$" +
-                number.toFixed(2)
-            );
+            return "$" +
+                number.toFixed(2);
 
         }
 
 
 
         /* =====================================================
-           CART COUNT
+           UPDATE CART COUNT
            ===================================================== */
 
         function updateCartCount() {
 
             const cart =
-                getSafeCart();
+                getCart();
 
 
             const count =
                 cart.reduce(
                     function(total, item) {
 
-                        return (
-                            total +
-                            item.quantity
-                        );
+                        const quantity =
+                            Number(
+                                item.quantity
+                            );
+
+
+                        if (
+                            Number.isInteger(
+                                quantity
+                            ) &&
+                            quantity > 0
+                        ) {
+
+                            return (
+                                total +
+                                quantity
+                            );
+
+                        }
+
+
+                        return total;
 
                     },
                     0
                 );
 
 
-            document.getElementById(
-                "cart-count"
-            ).textContent =
-                count;
+            const cartCount =
+                document.getElementById(
+                    "cart-count"
+                );
+
+
+            if (
+                cartCount
+            ) {
+
+                cartCount.textContent =
+                    count;
+
+            }
 
         }
 
 
 
         /* =====================================================
-           PRODUCT DATA
+           GET PRODUCT FROM D1
            ===================================================== */
 
-        let products =
-            [];
+        async function getProduct(
+            productId
+        ) {
 
+            if (
+                !productId
+            ) {
 
-        let productsLoaded =
-            false;
+                return null;
 
+            }
 
-
-        /* =====================================================
-           LOAD PRODUCTS FROM WORKER
-           ===================================================== */
-
-        async function loadProducts() {
 
             try {
 
                 const response =
                     await fetch(
-                        PRODUCTS_API,
+                        "/api/products/" +
+                        encodeURIComponent(
+                            productId
+                        ),
                         {
                             method: "GET",
                             headers: {
@@ -1085,10 +982,13 @@
                     !response.ok
                 ) {
 
-                    throw new Error(
-                        "Product API returned " +
+                    console.error(
+                        "Product request failed:",
                         response.status
                     );
+
+
+                    return null;
 
                 }
 
@@ -1097,62 +997,28 @@
                     await response.json();
 
 
-                /*
-                 * Support either:
-                 *
-                 * [ ...products ]
-                 *
-                 * or:
-                 *
-                 * { products: [...] }
-                 */
-
                 if (
-                    Array.isArray(
-                        data
-                    )
+                    !data ||
+                    !data.success ||
+                    !data.product
                 ) {
 
-                    products =
-                        data;
-
-                } else if (
-                    Array.isArray(
-                        data.products
-                    )
-                ) {
-
-                    products =
-                        data.products;
-
-                } else {
-
-                    throw new Error(
-                        "Invalid product API response."
-                    );
+                    return null;
 
                 }
 
 
-                productsLoaded =
-                    true;
-
-
-                return true;
+                return data.product;
 
             } catch (error) {
 
                 console.error(
-                    "Unable to load products:",
+                    "Failed to load product:",
                     error
                 );
 
 
-                productsLoaded =
-                    false;
-
-
-                return false;
+                return null;
 
             }
 
@@ -1161,34 +1027,129 @@
 
 
         /* =====================================================
-           FIND PRODUCT
+           SAFE CART
            ===================================================== */
 
-        function findProduct(
-            productId
-        ) {
+        function getSafeCart() {
 
-            return products.find(
-                function(product) {
+            const cart =
+                getCart();
 
-                    return (
+
+            const safeCart =
+                [];
+
+
+            cart.forEach(
+                function(item) {
+
+                    if (
+                        !item ||
+                        typeof item !== "object"
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * IMPORTANT:
+                     *
+                     * cart.html uses productId.
+                     *
+                     * We intentionally do NOT trust:
+                     *
+                     * item.price
+                     * item.name
+                     * item.image
+                     *
+                     * Product information comes from D1.
+                     */
+
+                    const productId =
                         String(
-                            product.id
-                        ) ===
-                        String(
-                            productId
+                            item.productId ||
+                            ""
+                        ).trim();
+
+
+                    if (
+                        !productId
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    let quantity =
+                        Number(
+                            item.quantity
+                        );
+
+
+                    if (
+                        !Number.isInteger(
+                            quantity
                         )
-                    );
+                    ) {
+
+                        quantity = 1;
+
+                    }
+
+
+                    quantity =
+                        Math.max(
+                            1,
+                            Math.min(
+                                quantity,
+                                10
+                            )
+                        );
+
+
+                    const color =
+                        typeof item.color === "string"
+                            ? item.color.trim()
+                            : "Black";
+
+
+                    const size =
+                        typeof item.size === "string"
+                            ? item.size.trim()
+                            : "M";
+
+
+                    safeCart.push({
+
+                        productId:
+                            productId,
+
+                        color:
+                            color || "Black",
+
+                        size:
+                            size || "M",
+
+                        quantity:
+                            quantity
+
+                    });
 
                 }
             );
+
+
+            return safeCart;
 
         }
 
 
 
         /* =====================================================
-           GET PRODUCT PRICE
+           PRODUCT PRICE
            ===================================================== */
 
         function getProductPrice(
@@ -1256,9 +1217,10 @@
                 cartItem.quantity;
 
 
-            const itemTotal =
+            const total =
                 price *
                 quantity;
+
 
 
             const itemElement =
@@ -1369,39 +1331,10 @@
                 );
 
 
-            const color =
-                cartItem.color;
-
-
-            const size =
+            variant.textContent =
+                cartItem.color +
+                " / " +
                 cartItem.size;
-
-
-            if (
-                color &&
-                size
-            ) {
-
-                variant.textContent =
-                    color +
-                    " / " +
-                    size;
-
-            } else if (
-                color
-            ) {
-
-                variant.textContent =
-                    color;
-
-            } else if (
-                size
-            ) {
-
-                variant.textContent =
-                    size;
-
-            }
 
 
             info.appendChild(
@@ -1424,7 +1357,7 @@
 
             priceElement.textContent =
                 formatMoney(
-                    itemTotal
+                    total
                 );
 
 
@@ -1452,9 +1385,46 @@
                     itemElement,
 
                 total:
-                    itemTotal
+                    total
 
             };
+
+        }
+
+
+
+        /* =====================================================
+           MESSAGE
+           ===================================================== */
+
+        function showMessage(
+            text,
+            type
+        ) {
+
+            const message =
+                document.getElementById(
+                    "checkout-message"
+                );
+
+
+            message.textContent =
+                text;
+
+
+            message.className =
+                "checkout-message";
+
+
+            if (
+                type
+            ) {
+
+                message.classList.add(
+                    type
+                );
+
+            }
 
         }
 
@@ -1464,7 +1434,7 @@
            RENDER CHECKOUT
            ===================================================== */
 
-        function renderCheckout() {
+        async function renderCheckout() {
 
             const cart =
                 getSafeCart();
@@ -1476,26 +1446,16 @@
                 );
 
 
+            /*
+             * No cart
+             */
+
             if (
                 cart.length === 0
             ) {
 
                 window.location.href =
-                    "shop.html";
-
-                return;
-
-            }
-
-
-            if (
-                !productsLoaded
-            ) {
-
-                showMessage(
-                    "Unable to load current product information. Please try again.",
-                    "error"
-                );
+                    "cart.html";
 
                 return;
 
@@ -1514,57 +1474,79 @@
                 false;
 
 
-            cart.forEach(
-                function(cartItem) {
 
-                    const product =
-                        findProduct(
-                            cartItem.id
-                        );
+            /*
+             * Load every product directly from
+             * the same D1 endpoint used by cart.html.
+             */
 
+            for (
+                const cartItem of cart
+            ) {
 
-                    if (
-                        !product
-                    ) {
-
-                        invalidProduct =
-                            true;
-
-                        return;
-
-                    }
-
-
-                    const rendered =
-                        createCheckoutItem(
-                            cartItem,
-                            product
-                        );
-
-
-                    if (
-                        !rendered
-                    ) {
-
-                        invalidProduct =
-                            true;
-
-                        return;
-
-                    }
-
-
-                    subtotal +=
-                        rendered.total;
-
-
-                    itemsContainer.appendChild(
-                        rendered.element
+                const product =
+                    await getProduct(
+                        cartItem.productId
                     );
 
-                }
-            );
 
+                /*
+                 * Product no longer exists
+                 */
+
+                if (
+                    !product
+                ) {
+
+                    console.warn(
+                        "Product not found:",
+                        cartItem.productId
+                    );
+
+
+                    invalidProduct =
+                        true;
+
+
+                    continue;
+
+                }
+
+
+                const rendered =
+                    createCheckoutItem(
+                        cartItem,
+                        product
+                    );
+
+
+                if (
+                    !rendered
+                ) {
+
+                    invalidProduct =
+                        true;
+
+                    continue;
+
+                }
+
+
+                subtotal +=
+                    rendered.total;
+
+
+                itemsContainer.appendChild(
+                    rendered.element
+                );
+
+            }
+
+
+
+            /*
+             * Invalid cart
+             */
 
             if (
                 invalidProduct
@@ -1575,18 +1557,44 @@
                     "error"
                 );
 
+
+                /*
+                 * Do not calculate a misleading total.
+                 */
+
+                document.getElementById(
+                    "checkout-subtotal"
+                ).textContent =
+                    "$0.00";
+
+
+                document.getElementById(
+                    "checkout-shipping"
+                ).textContent =
+                    "—";
+
+
+                document.getElementById(
+                    "checkout-total"
+                ).textContent =
+                    "—";
+
+
                 return;
 
             }
 
 
+
             /*
-             * DEMO SHIPPING RULE
+             * Demo shipping rule.
              *
-             * This is only for frontend display.
+             * IMPORTANT:
              *
-             * The Cloudflare Worker must calculate the
-             * real shipping cost during checkout.
+             * This is display-only.
+             *
+             * The Worker must calculate the final shipping
+             * cost when creating the real payment session.
              */
 
             const shipping =
@@ -1599,6 +1607,11 @@
                 subtotal +
                 shipping;
 
+
+
+            /*
+             * SUMMARY
+             */
 
             document.getElementById(
                 "checkout-subtotal"
@@ -1643,44 +1656,7 @@
 
 
         /* =====================================================
-           MESSAGE
-           ===================================================== */
-
-        function showMessage(
-            text,
-            type
-        ) {
-
-            const message =
-                document.getElementById(
-                    "checkout-message"
-                );
-
-
-            message.textContent =
-                text;
-
-
-            message.className =
-                "checkout-message";
-
-
-            if (
-                type
-            ) {
-
-                message.classList.add(
-                    type
-                );
-
-            }
-
-        }
-
-
-
-        /* =====================================================
-           FIELD VALIDATION
+           VALIDATE FIELD
            ===================================================== */
 
         function validateField(
@@ -1692,7 +1668,7 @@
 
 
             /*
-             * Required fields
+             * Required
              */
 
             if (
@@ -1704,9 +1680,11 @@
                     "input-error"
                 );
 
+
                 return false;
 
             }
+
 
 
             /*
@@ -1721,9 +1699,11 @@
                     "input-error"
                 );
 
+
                 return false;
 
             }
+
 
 
             /*
@@ -1749,11 +1729,13 @@
                         "input-error"
                     );
 
+
                     return false;
 
                 }
 
             }
+
 
 
             /*
@@ -1778,11 +1760,13 @@
                         "input-error"
                     );
 
+
                     return false;
 
                 }
 
             }
+
 
 
             field.classList.remove(
@@ -1797,7 +1781,7 @@
 
 
         /* =====================================================
-           VALIDATE FORM
+           VALIDATE CHECKOUT
            ===================================================== */
 
         function validateCheckout() {
@@ -1848,43 +1832,39 @@
 
         function buildServerCart() {
 
-            /*
-             * IMPORTANT:
-             *
-             * Only send values that describe what the customer
-             * wants to buy.
-             *
-             * Never send:
-             *
-             * - price
-             * - subtotal
-             * - shipping
-             * - tax
-             * - total
-             *
-             * The Worker must calculate those itself.
-             */
-
             const cart =
                 getSafeCart();
 
+
+            /*
+             * ONLY send information that identifies
+             * what the customer wants to purchase.
+             *
+             * NEVER trust client-side:
+             *
+             * price
+             * subtotal
+             * shipping
+             * tax
+             * total
+             */
 
             return cart.map(
                 function(item) {
 
                     return {
 
-                        id:
-                            item.id,
-
-                        quantity:
-                            item.quantity,
+                        productId:
+                            item.productId,
 
                         color:
                             item.color,
 
                         size:
-                            item.size
+                            item.size,
+
+                        quantity:
+                            item.quantity
 
                     };
 
@@ -1896,7 +1876,7 @@
 
 
         /* =====================================================
-           BUILD CHECKOUT DATA
+           BUILD CHECKOUT REQUEST
            ===================================================== */
 
         function buildCheckoutData() {
@@ -1918,6 +1898,7 @@
                 cart:
                     buildServerCart(),
 
+
                 customer: {
 
                     email:
@@ -1935,6 +1916,7 @@
                         ).trim()
 
                 },
+
 
                 shippingAddress: {
 
@@ -1996,6 +1978,7 @@
 
                 },
 
+
                 shippingMethod:
                     String(
                         formData.get(
@@ -2031,7 +2014,7 @@
 
 
                     /*
-                     * Validate form
+                     * Validate customer information.
                      */
 
                     const valid =
@@ -2068,23 +2051,10 @@
                     }
 
 
+
                     /*
-                     * Validate product data
+                     * Validate cart again.
                      */
-
-                    if (
-                        !productsLoaded
-                    ) {
-
-                        showMessage(
-                            "Product information is still loading. Please try again.",
-                            "error"
-                        );
-
-                        return;
-
-                    }
-
 
                     const cart =
                         getSafeCart();
@@ -2099,23 +2069,16 @@
                             "error"
                         );
 
+
                         return;
 
                     }
 
 
+
                     /*
-                     * Build request.
-                     *
-                     * Notice:
-                     *
-                     * NO price
-                     * NO subtotal
-                     * NO shipping amount
-                     * NO tax
-                     * NO total
-                     *
-                     * These values must be calculated by the Worker.
+                     * Build the data that will eventually
+                     * be sent to the Cloudflare Worker.
                      */
 
                     const checkoutData =
@@ -2123,39 +2086,33 @@
 
 
                     /*
-                     * PAYMENT PLACEHOLDER
+                     * PAYMENT IS NOT CONNECTED YET.
                      *
-                     * The next stage will replace this section
-                     * with:
+                     * DO NOT process payment in the browser.
                      *
-                     * fetch("/api/checkout", {
-                     *     method: "POST",
-                     *     headers: {
-                     *         "Content-Type":
-                     *             "application/json"
-                     *     },
-                     *     body:
-                     *         JSON.stringify(
-                     *             checkoutData
-                     *         )
-                     * });
+                     * The next stage will send checkoutData
+                     * to:
+                     *
+                     * POST /api/checkout
                      *
                      * The Worker will then:
                      *
-                     * 1. Validate product IDs
-                     * 2. Read prices from D1
-                     * 3. Validate variants
-                     * 4. Validate quantity
-                     * 5. Calculate subtotal
-                     * 6. Calculate shipping
-                     * 7. Calculate tax
-                     * 8. Create payment session
+                     * 1. Validate the request
+                     * 2. Validate product IDs
+                     * 3. Read prices from D1
+                     * 4. Validate variants
+                     * 5. Validate quantities
+                     * 6. Calculate subtotal
+                     * 7. Calculate shipping
+                     * 8. Calculate tax if required
+                     * 9. Create payment session
+                     * 10. Return the payment URL/session
                      *
                      */
 
 
                     console.log(
-                        "Checkout request ready:",
+                        "Checkout data ready:",
                         checkoutData
                     );
 
@@ -2171,7 +2128,7 @@
 
 
         /* =====================================================
-           CLEAR FIELD ERRORS
+           REMOVE INPUT ERROR
            ===================================================== */
 
         document
@@ -2227,40 +2184,16 @@
             ) {
 
                 window.location.href =
-                    "shop.html";
+                    "cart.html";
 
                 return;
 
             }
 
 
-            /*
-             * Load authoritative product data
-             * from Cloudflare Worker / D1.
-             */
-
-            const loaded =
-                await loadProducts();
-
-
-            if (
-                !loaded
-            ) {
-
-                showMessage(
-                    "Unable to load current product information. Please refresh the page and try again.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            renderCheckout();
+            await renderCheckout();
 
         }
-
 
 
         initializeCheckout();
