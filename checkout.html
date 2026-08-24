@@ -765,300 +765,525 @@
          JAVASCRIPT
          ===================================================== -->
 
-    <script>
+<script>
+
+    /* =====================================================
+       CART
+       ===================================================== */
+
+    function getCart() {
+
+        return JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
+
+    }
 
 
-        /* =====================================================
-           CART
-           ===================================================== */
+    function formatMoney(amount) {
 
-        function getCart() {
+        return "$" + amount.toFixed(2);
 
-            return JSON.parse(
-                localStorage.getItem("cart")
-            ) || [];
-
-        }
-
-
-
-        function formatMoney(amount) {
-
-            return "$" + amount.toFixed(2);
-
-        }
+    }
 
 
 
-        /* =====================================================
-           CART COUNT
-           ===================================================== */
+    /* =====================================================
+       CART COUNT
+       ===================================================== */
 
-        function updateCartCount() {
+    function updateCartCount() {
 
-            const cart = getCart();
-
-
-            const count =
-                cart.reduce(
-                    function(total, item) {
-
-                        return total + item.quantity;
-
-                    },
-                    0
-                );
+        const cart =
+            getCart();
 
 
+        const count =
+            cart.reduce(
+                function(total, item) {
+
+                    return total +
+                        item.quantity;
+
+                },
+                0
+            );
+
+
+        const cartCount =
             document.getElementById(
                 "cart-count"
-            ).textContent = count;
+            );
+
+
+        if (cartCount) {
+
+            cartCount.textContent =
+                count;
 
         }
 
+    }
 
 
-        /* =====================================================
-           RENDER CHECKOUT
-           ===================================================== */
 
-        function renderCheckout() {
+    /* =====================================================
+       GET PRODUCT FROM D1
+       ===================================================== */
 
-            const cart = getCart();
+    async function getProduct(productId) {
 
+        try {
 
-            const itemsContainer =
-                document.getElementById(
-                    "checkout-items"
+            const response =
+                await fetch(
+                    `/api/product?id=${encodeURIComponent(productId)}`
                 );
 
 
-            if (cart.length === 0) {
+            const data =
+                await response.json();
 
-                window.location.href =
-                    "shop.html";
 
-                return;
+            if (
+                !response.ok ||
+                !data.success ||
+                !data.product
+            ) {
+
+                return null;
 
             }
 
 
-            itemsContainer.innerHTML = "";
+            return data.product;
 
+        } catch (error) {
 
-            let subtotal = 0;
-
-
-            cart.forEach(
-                function(item) {
-
-
-                    const itemTotal =
-                        item.price *
-                        item.quantity;
-
-
-                    subtotal += itemTotal;
-
-
-                    const itemElement =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    itemElement.className =
-                        "checkout-item";
-
-
-                    itemElement.innerHTML = `
-
-                        <div class="checkout-item-image">
-
-                            <img
-                                src="${item.image}"
-                                alt="${item.name}"
-                            >
-
-                            <span class="checkout-item-quantity">
-                                ${item.quantity}
-                            </span>
-
-                        </div>
-
-
-                        <div class="checkout-item-info">
-
-                            <strong>
-                                ${item.name}
-                            </strong>
-
-                            <span>
-                                ${item.color} / ${item.size}
-                            </span>
-
-                        </div>
-
-
-                        <strong class="checkout-item-price">
-
-                            ${formatMoney(itemTotal)}
-
-                        </strong>
-
-                    `;
-
-
-                    itemsContainer.appendChild(
-                        itemElement
-                    );
-
-                }
+            console.error(
+                "Failed to load product:",
+                error
             );
 
 
+            return null;
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       CALCULATE SHIPPING
+       ===================================================== */
+
+    function calculateShipping(subtotal) {
+
+        return subtotal >= 50
+            ? 0
+            : 5.99;
+
+    }
+
+
+
+    /* =====================================================
+       RENDER CHECKOUT
+       ===================================================== */
+
+    async function renderCheckout() {
+
+        const cart =
+            getCart();
+
+
+        const itemsContainer =
+            document.getElementById(
+                "checkout-items"
+            );
+
+
+        if (cart.length === 0) {
+
+            window.location.href =
+                "shop.html";
+
+            return;
+
+        }
+
+
+        itemsContainer.innerHTML =
+            "<p>Loading your order...</p>";
+
+
+        let subtotal = 0;
+
+
+        /*
+         * Load every product again
+         * from D1.
+         */
+
+        const verifiedItems = [];
+
+
+        for (
+            const item of cart
+        ) {
+
+            const product =
+                await getProduct(
+                    item.productId
+                );
+
+
             /*
-             * Same demo shipping rule
-             * as cart.html.
-             *
-             * Later this will be replaced
-             * with real shipping calculation.
+             * Skip product if it
+             * no longer exists.
              */
 
-            const shipping =
-                subtotal >= 50
-                    ? 0
-                    : 5.99;
+            if (!product) {
+
+                console.warn(
+                    "Product not found:",
+                    item.productId
+                );
 
 
-            const total =
-                subtotal + shipping;
+                continue;
+
+            }
 
 
-            document.getElementById(
-                "checkout-subtotal"
-            ).textContent =
-                formatMoney(subtotal);
+            /*
+             * Use D1 product data.
+             *
+             * Do not trust:
+             *
+             * item.name
+             * item.price
+             * item.image
+             *
+             * from localStorage.
+             */
 
+            verifiedItems.push({
 
-            document.getElementById(
-                "checkout-shipping"
-            ).textContent =
-                shipping === 0
-                    ? "FREE"
-                    : formatMoney(shipping);
+                productId:
+                    product.id,
 
+                name:
+                    product.name,
 
-            document.getElementById(
-                "checkout-total"
-            ).textContent =
-                formatMoney(total);
+                price:
+                    Number(product.price),
 
+                image:
+                    product.image,
 
-            updateCartCount();
+                color:
+                    item.color,
+
+                size:
+                    item.size,
+
+                quantity:
+                    item.quantity
+
+            });
 
         }
 
 
 
-        /* =====================================================
-           PAY BUTTON
-           ===================================================== */
+        /*
+         * If no valid products remain.
+         */
 
-        document
-            .getElementById("pay-button")
-            .addEventListener(
-                "click",
-                function() {
+        if (
+            verifiedItems.length === 0
+        ) {
 
-
-                    const formFields = [
-                        "email",
-                        "phone",
-                        "first-name",
-                        "last-name",
-                        "address",
-                        "city",
-                        "state",
-                        "zip"
-                    ];
-
-
-                    let valid = true;
-
-
-                    formFields.forEach(
-                        function(id) {
-
-                            const field =
-                                document.getElementById(
-                                    id
-                                );
-
-
-                            if (
-                                !field.value.trim()
-                            ) {
-
-                                field.classList.add(
-                                    "input-error"
-                                );
-
-                                valid = false;
-
-                            } else {
-
-                                field.classList.remove(
-                                    "input-error"
-                                );
-
-                            }
-
-                        }
-                    );
-
-
-                    const message =
-                        document.getElementById(
-                            "checkout-message"
-                        );
-
-
-                    if (!valid) {
-
-                        message.textContent =
-                            "Please complete all required fields.";
-
-                        message.className =
-                            "checkout-message error";
-
-                        return;
-
-                    }
-
-
-                    /*
-                     * PAYMENT PLACEHOLDER
-                     */
-
-                    message.textContent =
-                        "Payment will be connected in the next stage.";
-
-                    message.className =
-                        "checkout-message success";
-
-                }
+            localStorage.removeItem(
+                "cart"
             );
 
 
+            window.location.href =
+                "shop.html";
 
-        /* =====================================================
-           INITIALIZE
-           ===================================================== */
+            return;
 
-        renderCheckout();
+        }
 
-    </script>
+
+
+        /*
+         * Update cart with
+         * verified products.
+         */
+
+        localStorage.setItem(
+            "cart",
+            JSON.stringify(
+                verifiedItems
+            )
+        );
+
+
+        itemsContainer.innerHTML =
+            "";
+
+
+        verifiedItems.forEach(
+            function(item) {
+
+
+                const itemTotal =
+                    item.price *
+                    item.quantity;
+
+
+                subtotal +=
+                    itemTotal;
+
+
+                const itemElement =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                itemElement.className =
+                    "checkout-item";
+
+
+                itemElement.innerHTML = `
+
+                    <div class="checkout-item-image">
+
+                        <img
+                            src="${item.image}"
+                            alt="${item.name}"
+                        >
+
+                        <span class="checkout-item-quantity">
+                            ${item.quantity}
+                        </span>
+
+                    </div>
+
+
+                    <div class="checkout-item-info">
+
+                        <strong>
+                            ${item.name}
+                        </strong>
+
+                        <span>
+                            ${item.color} / ${item.size}
+                        </span>
+
+                    </div>
+
+
+                    <strong class="checkout-item-price">
+
+                        ${formatMoney(itemTotal)}
+
+                    </strong>
+
+                `;
+
+
+                itemsContainer.appendChild(
+                    itemElement
+                );
+
+            }
+        );
+
+
+
+        /* =================================================
+           SHIPPING
+           ================================================= */
+
+        const shipping =
+            calculateShipping(
+                subtotal
+            );
+
+
+        const total =
+            subtotal +
+            shipping;
+
+
+
+        /* =================================================
+           UPDATE SUMMARY
+           ================================================= */
+
+        document.getElementById(
+            "checkout-subtotal"
+        ).textContent =
+            formatMoney(
+                subtotal
+            );
+
+
+        document.getElementById(
+            "checkout-shipping"
+        ).textContent =
+            shipping === 0
+                ? "FREE"
+                : formatMoney(
+                    shipping
+                );
+
+
+        document.getElementById(
+            "checkout-total"
+        ).textContent =
+            formatMoney(
+                total
+            );
+
+
+        updateCartCount();
+
+    }
+
+
+
+    /* =====================================================
+       PAY BUTTON
+       ===================================================== */
+
+    document
+        .getElementById(
+            "pay-button"
+        )
+        .addEventListener(
+            "click",
+            function() {
+
+
+                const formFields = [
+
+                    "email",
+
+                    "phone",
+
+                    "first-name",
+
+                    "last-name",
+
+                    "address",
+
+                    "city",
+
+                    "state",
+
+                    "zip"
+
+                ];
+
+
+                let valid =
+                    true;
+
+
+                formFields.forEach(
+                    function(id) {
+
+
+                        const field =
+                            document.getElementById(
+                                id
+                            );
+
+
+                        if (
+                            !field.value.trim()
+                        ) {
+
+                            field.classList.add(
+                                "input-error"
+                            );
+
+
+                            valid =
+                                false;
+
+                        } else {
+
+                            field.classList.remove(
+                                "input-error"
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                const message =
+                    document.getElementById(
+                        "checkout-message"
+                    );
+
+
+                if (!valid) {
+
+                    message.textContent =
+                        "Please complete all required fields.";
+
+
+                    message.className =
+                        "checkout-message error";
+
+
+                    return;
+
+                }
+
+
+
+                /*
+                 * PAYMENT PLACEHOLDER
+                 *
+                 * Next step:
+                 *
+                 * 1. Create order in D1
+                 * 2. Send customer info
+                 * 3. Create Stripe payment
+                 * 4. After payment:
+                 *    send order to Printify
+                 */
+
+                message.textContent =
+                    "Order information verified. Payment will be connected next.";
+
+
+                message.className =
+                    "checkout-message success";
+
+            }
+        );
+
+
+
+    /* =====================================================
+       INITIALIZE
+       ===================================================== */
+
+    renderCheckout();
+
+</script>
 
 
 </body>
