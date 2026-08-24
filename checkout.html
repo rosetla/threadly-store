@@ -66,10 +66,7 @@
                 class="cart-link"
             >
                 Cart
-
-                <span id="cart-count">
-                    0
-                </span>
+                <span id="cart-count">0</span>
             </a>
 
         </div>
@@ -141,7 +138,7 @@
                             <label for="email">
                                 Email Address
                             </label>
-
+                            
                             <input
                                 type="email"
                                 id="email"
@@ -182,6 +179,7 @@
                                 <input
                                     type="text"
                                     id="first-name"
+                                    name="first-name"
                                     autocomplete="given-name"
                                     required
                                 >
@@ -198,6 +196,7 @@
                                 <input
                                     type="text"
                                     id="last-name"
+                                    name="last-name"
                                     autocomplete="family-name"
                                     required
                                 >
@@ -217,6 +216,7 @@
                             <input
                                 type="text"
                                 id="address"
+                                name="address"
                                 placeholder="Street address"
                                 autocomplete="street-address"
                                 required
@@ -224,16 +224,17 @@
 
                         </div>
 
-
                         <div class="form-group">
 
                             <label for="phone">
                                 Phone Number
+                                
                             </label>
 
                             <input
                                 type="tel"
                                 id="phone"
+                                name="phone"
                                 placeholder="+1 (555) 123-4567"
                                 autocomplete="tel"
                                 required
@@ -241,22 +242,17 @@
 
                         </div>
 
-
                         <div class="form-group">
 
                             <label for="apartment">
-
                                 Apartment, suite, etc.
-
-                                <span>
-                                    (optional)
-                                </span>
-
+                                <span>(optional)</span>
                             </label>
 
                             <input
                                 type="text"
                                 id="apartment"
+                                name="apartment"
                                 autocomplete="address-line2"
                             >
 
@@ -275,12 +271,12 @@
                                 <input
                                     type="text"
                                     id="city"
+                                    name="city"
                                     autocomplete="address-level2"
                                     required
                                 >
 
                             </div>
-
 
 
                             <div class="form-group">
@@ -291,6 +287,7 @@
 
                                 <select
                                     id="state"
+                                    name="state"
                                     required
                                 >
 
@@ -403,7 +400,6 @@
                             </div>
 
 
-
                             <div class="form-group">
 
                                 <label for="zip">
@@ -413,6 +409,7 @@
                                 <input
                                     type="text"
                                     id="zip"
+                                    name="zip"
                                     placeholder="12345"
                                     autocomplete="postal-code"
                                     required
@@ -432,6 +429,8 @@
 
                             <select
                                 id="country"
+                                name="country"
+                                autocomplete="country"
                                 required
                             >
 
@@ -469,7 +468,6 @@
                                 checked
                             >
 
-
                             <span class="shipping-option-info">
 
                                 <strong>
@@ -482,7 +480,6 @@
 
                             </span>
 
-
                             <strong>
                                 Calculated
                             </strong>
@@ -493,7 +490,7 @@
 
 
 
-                    <!-- PAYMENT -->
+                    <!-- PAYMENT PLACEHOLDER -->
 
                     <div class="checkout-block">
 
@@ -550,8 +547,8 @@
                         id="checkout-items"
                         class="checkout-items"
                     >
+                        <!-- Products inserted by JS -->
                     </div>
-
 
 
                     <div class="checkout-summary-lines">
@@ -602,6 +599,7 @@
                     </div>
 
 
+                    <!-- PAY BUTTON -->
 
                     <button
                         type="button"
@@ -770,621 +768,295 @@
     <script>
 
 
-    /* =====================================================
-       CART STORAGE
-       ===================================================== */
+        /* =====================================================
+           CART
+           ===================================================== */
 
-    function getCart() {
+        function getCart() {
 
-        try {
-
-            const cart =
-                JSON.parse(
-                    localStorage.getItem(
-                        "cart"
-                    )
-                );
-
-
-            if (
-                Array.isArray(cart)
-            ) {
-
-                return cart;
-
-            }
-
-
-            return [];
-
-        } catch (error) {
-
-            console.error(
-                "Failed to read cart:",
-                error
-            );
-
-
-            return [];
+            return JSON.parse(
+                localStorage.getItem("cart")
+            ) || [];
 
         }
 
-    }
+
+
+        function formatMoney(amount) {
+
+            return "$" + amount.toFixed(2);
+
+        }
 
 
 
-    /* =====================================================
-       FORMAT MONEY
-       ===================================================== */
+        /* =====================================================
+           CART COUNT
+           ===================================================== */
 
-    function formatMoney(amount) {
+        function updateCartCount() {
 
-        return "$" +
-            Number(amount || 0).toFixed(2);
-
-    }
+            const cart = getCart();
 
 
+            const count =
+                cart.reduce(
+                    function(total, item) {
 
-    /* =====================================================
-       CART COUNT
-       ===================================================== */
+                        return total + item.quantity;
 
-    function updateCartCount() {
-
-        const cart =
-            getCart();
-
-
-        const count =
-            cart.reduce(
-                function(total, item) {
-
-                    return (
-                        total +
-                        Number(
-                            item.quantity || 0
-                        )
-                    );
-
-                },
-                0
-            );
+                    },
+                    0
+                );
 
 
-        const cartCount =
             document.getElementById(
                 "cart-count"
-            );
-
-
-        if (
-            cartCount
-        ) {
-
-            cartCount.textContent =
-                count;
+            ).textContent = count;
 
         }
 
-    }
 
 
+        /* =====================================================
+           RENDER CHECKOUT
+           ===================================================== */
 
-    /* =====================================================
-       GET PRODUCT FROM API
-       ===================================================== */
+        function renderCheckout() {
 
-    async function getProduct(productId) {
+            const cart = getCart();
 
-        try {
 
-            const response =
-                await fetch(
-                    `/api/products/${encodeURIComponent(productId)}`
+            const itemsContainer =
+                document.getElementById(
+                    "checkout-items"
                 );
 
 
-            const contentType =
-                response.headers.get(
-                    "content-type"
-                ) || "";
+            if (cart.length === 0) {
 
+                window.location.href =
+                    "shop.html";
 
-            if (
-                !contentType.includes(
-                    "application/json"
-                )
-            ) {
-
-                throw new Error(
-                    "API did not return JSON."
-                );
+                return;
 
             }
 
 
-            const data =
-                await response.json();
+            itemsContainer.innerHTML = "";
 
 
-            if (
-                !response.ok ||
-                !data.success ||
-                !data.product
-            ) {
+            let subtotal = 0;
 
-                return null;
 
-            }
+            cart.forEach(
+                function(item) {
 
 
-            return data.product;
+                    const itemTotal =
+                        item.price *
+                        item.quantity;
 
 
-        } catch (error) {
+                    subtotal += itemTotal;
 
-            console.error(
-                "Failed to load product:",
-                error
-            );
 
+                    const itemElement =
+                        document.createElement(
+                            "div"
+                        );
 
-            return null;
 
-        }
+                    itemElement.className =
+                        "checkout-item";
 
-    }
 
+                    itemElement.innerHTML = `
 
+                        <div class="checkout-item-image">
 
-    /* =====================================================
-       CALCULATE SHIPPING
-       ===================================================== */
+                            <img
+                                src="${item.image}"
+                                alt="${item.name}"
+                            >
 
-    function calculateShipping(subtotal) {
+                            <span class="checkout-item-quantity">
+                                ${item.quantity}
+                            </span>
 
-        if (
-            subtotal >= 50
-        ) {
+                        </div>
 
-            return 0;
 
-        }
+                        <div class="checkout-item-info">
 
+                            <strong>
+                                ${item.name}
+                            </strong>
 
-        return 5.99;
+                            <span>
+                                ${item.color} / ${item.size}
+                            </span>
 
-    }
+                        </div>
 
 
+                        <strong class="checkout-item-price">
 
-    /* =====================================================
-       RENDER CHECKOUT
-       ===================================================== */
+                            ${formatMoney(itemTotal)}
 
-    async function renderCheckout() {
+                        </strong>
 
-        const cart =
-            getCart();
+                    `;
 
 
-        const itemsContainer =
-            document.getElementById(
-                "checkout-items"
-            );
-
-
-        const payButton =
-            document.getElementById(
-                "pay-button"
-            );
-
-
-
-        /* ================================================
-           EMPTY CART
-           ================================================ */
-
-        if (
-            cart.length === 0
-        ) {
-
-            window.location.href =
-                "cart.html";
-
-            return;
-
-        }
-
-
-
-        itemsContainer.innerHTML =
-            "<p>Loading your order...</p>";
-
-
-
-        let subtotal =
-            0;
-
-
-        const renderedItems =
-            [];
-
-
-
-        /* ================================================
-           LOAD PRODUCTS
-           ================================================ */
-
-        for (
-            const item of cart
-        ) {
-
-            const product =
-                await getProduct(
-                    item.productId
-                );
-
-
-            if (
-                !product
-            ) {
-
-                console.warn(
-                    "Could not verify product:",
-                    item.productId
-                );
-
-
-                continue;
-
-            }
-
-
-            renderedItems.push({
-
-                product:
-                    product,
-
-                item: {
-
-                    productId:
-                        product.id,
-
-                    color:
-                        item.color || "Black",
-
-                    size:
-                        item.size || "M",
-
-                    quantity:
-                        Math.max(
-                            1,
-                            Math.min(
-                                Number(
-                                    item.quantity || 1
-                                ),
-                                10
-                            )
-                        )
+                    itemsContainer.appendChild(
+                        itemElement
+                    );
 
                 }
-
-            });
-
-        }
+            );
 
 
+            /*
+             * Same demo shipping rule
+             * as cart.html.
+             *
+             * Later this will be replaced
+             * with real shipping calculation.
+             */
 
-        /* ================================================
-           NO VALID PRODUCTS
-           ================================================ */
+            const shipping =
+                subtotal >= 50
+                    ? 0
+                    : 5.99;
 
-        if (
-            renderedItems.length === 0
-        ) {
 
-            itemsContainer.innerHTML =
-                `
-                    <p>
-                        Unable to load your order.
-                        Please return to your cart
-                        and try again.
-                    </p>
-                `;
+            const total =
+                subtotal + shipping;
 
 
             document.getElementById(
                 "checkout-subtotal"
             ).textContent =
-                "$0.00";
+                formatMoney(subtotal);
 
 
             document.getElementById(
                 "checkout-shipping"
             ).textContent =
-                "$0.00";
+                shipping === 0
+                    ? "FREE"
+                    : formatMoney(shipping);
 
 
             document.getElementById(
                 "checkout-total"
             ).textContent =
-                "$0.00";
+                formatMoney(total);
 
 
-            payButton.disabled =
-                true;
-
-
-            return;
+            updateCartCount();
 
         }
 
 
 
-        /* ================================================
-           RENDER ITEMS
-           ================================================ */
+        /* =====================================================
+           PAY BUTTON
+           ===================================================== */
 
-        itemsContainer.innerHTML =
-            "";
+        document
+            .getElementById("pay-button")
+            .addEventListener(
+                "click",
+                function() {
 
 
+                    const formFields = [
+                        "email",
+                        "phone",
+                        "first-name",
+                        "last-name",
+                        "address",
+                        "city",
+                        "state",
+                        "zip"
+                    ];
 
-        renderedItems.forEach(
-            function(cartData) {
 
+                    let valid = true;
 
-                const product =
-                    cartData.product;
 
+                    formFields.forEach(
+                        function(id) {
 
-                const item =
-                    cartData.item;
+                            const field =
+                                document.getElementById(
+                                    id
+                                );
 
 
-                const itemPrice =
-                    Number(
-                        product.price || 0
-                    );
+                            if (
+                                !field.value.trim()
+                            ) {
 
+                                field.classList.add(
+                                    "input-error"
+                                );
 
-                const itemTotal =
-                    itemPrice *
-                    item.quantity;
+                                valid = false;
 
+                            } else {
 
-                subtotal +=
-                    itemTotal;
+                                field.classList.remove(
+                                    "input-error"
+                                );
 
-
-                const itemElement =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                itemElement.className =
-                    "checkout-item";
-
-
-                itemElement.innerHTML =
-                    `
-
-                    <div class="checkout-item-image">
-
-                        <img
-                            src="${product.image || ""}"
-                            alt="${product.name || "Product"}"
-                        >
-
-                        <span class="checkout-item-quantity">
-                            ${item.quantity}
-                        </span>
-
-                    </div>
-
-
-                    <div class="checkout-item-info">
-
-                        <strong>
-                            ${product.name || "Product"}
-                        </strong>
-
-                        <span>
-                            ${item.color} / ${item.size}
-                        </span>
-
-                    </div>
-
-
-                    <strong class="checkout-item-price">
-
-                        ${formatMoney(itemTotal)}
-
-                    </strong>
-
-                    `;
-
-
-                itemsContainer.appendChild(
-                    itemElement
-                );
-
-            }
-        );
-
-
-
-        /* ================================================
-           SHIPPING
-           ================================================ */
-
-        const shipping =
-            calculateShipping(
-                subtotal
-            );
-
-
-        const total =
-            subtotal +
-            shipping;
-
-
-
-        /* ================================================
-           UPDATE SUMMARY
-           ================================================ */
-
-        document.getElementById(
-            "checkout-subtotal"
-        ).textContent =
-            formatMoney(
-                subtotal
-            );
-
-
-        document.getElementById(
-            "checkout-shipping"
-        ).textContent =
-            shipping === 0
-                ? "FREE"
-                : formatMoney(
-                    shipping
-                );
-
-
-        document.getElementById(
-            "checkout-total"
-        ).textContent =
-            formatMoney(
-                total
-            );
-
-
-        updateCartCount();
-
-    }
-
-
-
-    /* =====================================================
-       PAY BUTTON
-       ===================================================== */
-
-    document
-        .getElementById(
-            "pay-button"
-        )
-        .addEventListener(
-            "click",
-            function() {
-
-
-                const formFields = [
-
-                    "email",
-
-                    "phone",
-
-                    "first-name",
-
-                    "last-name",
-
-                    "address",
-
-                    "city",
-
-                    "state",
-
-                    "zip"
-
-                ];
-
-
-                let valid =
-                    true;
-
-
-                formFields.forEach(
-                    function(id) {
-
-
-                        const field =
-                            document.getElementById(
-                                id
-                            );
-
-
-                        if (
-                            !field.value.trim()
-                        ) {
-
-                            field.classList.add(
-                                "input-error"
-                            );
-
-
-                            valid =
-                                false;
-
-                        } else {
-
-                            field.classList.remove(
-                                "input-error"
-                            );
+                            }
 
                         }
-
-                    }
-                );
-
-
-                const message =
-                    document.getElementById(
-                        "checkout-message"
                     );
 
 
-                if (
-                    !valid
-                ) {
+                    const message =
+                        document.getElementById(
+                            "checkout-message"
+                        );
+
+
+                    if (!valid) {
+
+                        message.textContent =
+                            "Please complete all required fields.";
+
+                        message.className =
+                            "checkout-message error";
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * PAYMENT PLACEHOLDER
+                     */
 
                     message.textContent =
-                        "Please complete all required fields.";
-
+                        "Payment will be connected in the next stage.";
 
                     message.className =
-                        "checkout-message error";
-
-
-                    return;
+                        "checkout-message success";
 
                 }
+            );
 
 
 
-                message.textContent =
-                    "Order information verified. Payment will be connected next.";
+        /* =====================================================
+           INITIALIZE
+           ===================================================== */
 
-
-                message.className =
-                    "checkout-message success";
-
-            }
-        );
-
-
-
-    /* =====================================================
-       INITIALIZE
-       ===================================================== */
-
-    updateCartCount();
-
-    renderCheckout();
-
+        renderCheckout();
 
     </script>
 
