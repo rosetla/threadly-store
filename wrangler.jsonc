@@ -1,9 +1,12 @@
 {
   "name": "threadly-store",
+  "main": "src/index.js",
   "compatibility_date": "2026-08-24",
 
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
   },
 
   "d1_databases": [
