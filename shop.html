@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Shop T-Shirts | Threadly Co.</title>
+
+    <meta
+        name="description"
+        content="Shop graphic t-shirts from Threadly Co. Discover funny, lifestyle, and trending designs."
+    >
+
+    <!-- CONNECT CSS -->
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="site-header">
+
+        <div class="container header-inner">
+
+
+            <!-- LOGO -->
+
+            <a
+                href="index.html"
+                class="logo"
+            >
+                THREADLY<span>CO.</span>
+            </a>
+
+
+            <!-- NAVIGATION -->
+
+            <nav class="main-nav">
+
+                <a
+                    href="shop.html"
+                    class="active"
+                >
+                    Shop
+                </a>
+
+                <a
+                    href="index.html#featured"
+                >
+                    Featured
+                </a>
+
+                <a
+                    href="index.html#about"
+                >
+                    About
+                </a>
+
+            </nav>
+
+
+            <!-- CART -->
+
+            <a
+                href="cart.html"
+                class="cart-link"
+            >
+
+                Cart
+
+                <span id="cart-count">
+                    0
+                </span>
+
+            </a>
+
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main>
+
+
+        <!-- ================= SHOP HERO ================= -->
+
+        <section class="shop-hero">
+
+            <div class="container">
+
+                <p class="section-eyebrow">
+                    THREADLY CO.
+                </p>
+
+                <h1>
+                    Graphic T-Shirts
+                </h1>
+
+                <p>
+                    Find a shirt that feels like you.
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ================= SHOP CONTENT ================= -->
+
+        <section class="shop-section">
+
+            <div class="container">
+
+
+                <!-- SHOP TOOLBAR -->
+
+                <div class="shop-toolbar">
+
+
+                    <!-- CATEGORY FILTER -->
+
+                    <div class="shop-filters">
+
+                        <button
+                            class="filter-btn active"
+                            data-category="all"
+                        >
+                            All
+                        </button>
+
+                        <button
+                            class="filter-btn"
+                            data-category="funny"
+                        >
+                            Funny
+                        </button>
+
+                        <button
+                            class="filter-btn"
+                            data-category="lifestyle"
+                        >
+                            Lifestyle
+                        </button>
+
+                        <button
+                            class="filter-btn"
+                            data-category="trending"
+                        >
+                            Trending
+                        </button>
+
+                    </div>
+
+
+                    <!-- SORT -->
+
+                    <div class="shop-sort">
+
+                        <label for="sort">
+                            Sort:
+                        </label>
+
+                        <select id="sort">
+
+                            <option value="featured">
+                                Featured
+                            </option>
+
+                            <option value="price-low">
+                                Price: Low to High
+                            </option>
+
+                            <option value="price-high">
+                                Price: High to Low
+                            </option>
+
+                            <option value="name">
+                                Name
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- ================= PRODUCTS ================= -->
+
+                <div
+                    id="shop-products"
+                    class="product-grid"
+                >
+
+
+                    <!-- PRODUCT 1 -->
+
+                    <article
+                        class="product-card"
+                        data-category="funny"
+                        data-price="29.99"
+                        data-name="Funny Graphic T-Shirt"
+                    >
+
+                        <a
+                            href="product.html?id=1"
+                            class="product-image"
+                        >
+
+                            <img
+                                src="images/product-1.jpg"
+                                alt="Funny graphic t-shirt"
+                                loading="lazy"
+                            >
+
+                            <span class="product-badge">
+                                BEST SELLER
+                            </span>
+
+                        </a>
+
+
+                        <div class="product-info">
+
+                            <h3>
+
+                                <a
+                                    href="product.html?id=1"
+                                >
+                                    Funny Graphic T-Shirt
+                                </a>
+
+                            </h3>
+
+                            <p class="product-category">
+                                Funny
+                            </p>
+
+                            <p class="product-price">
+                                $29.99
+                            </p>
+
+                        </div>
+
+                    </article>
+
+
+
+                    <!-- PRODUCT 2 -->
+
+                    <article
+                        class="product-card"
+                        data-category="lifestyle"
+                        data-price="29.99"
+                        data-name="Lifestyle Graphic T-Shirt"
+                    >
+
+                        <a
+                            href="product.html?id=2"
+                            class="product-image"
+                        >
+
+                            <img
+                                src="images/product-2.jpg"
+                                alt="Lifestyle graphic t-shirt"
+                                loading="lazy"
+                            >
+
+                        </a>
+
+
+                        <div class="product-info">
+
+                            <h3>
+
+                                <a
+                                    href="product.html?id=2"
+                                >
+                                    Lifestyle Graphic T-Shirt
+                                </a>
+
+                            </h3>
+
+                            <p class="product-category">
+                                Lifestyle
+                            </p>
+
+                            <p class="product-price">
+                                $29.99
+                            </p>
+
+                        </div>
+
+                    </article>
+
+
+
+                    <!-- PRODUCT 3 -->
+
+                    <article
+                        class="product-card"
+                        data-category="trending"
+                        data-price="27.99"
+                        data-name="Trending Graphic T-Shirt"
+                    >
+
+                        <a
+                            href="product.html?id=3"
+                            class="product-image"
+                        >
+
+                            <img
+                                src="images/product-3.jpg"
+                                alt="Trending graphic t-shirt"
+                                loading="lazy"
+                            >
+
+                        </a>
+
+
+                        <div class="product-info">
+
+                            <h3>
+
+                                <a
+                                    href="product.html?id=3"
+                                >
+                                    Trending Graphic T-Shirt
+                                </a>
+
+                            </h3>
+
+                            <p class="product-category">
+                                Trending
+                            </p>
+
+                            <p class="product-price">
+                                $27.99
+                            </p>
+
+                        </div>
+
+                    </article>
+
+
+
+                    <!-- PRODUCT 4 -->
+
+                    <article
+                        class="product-card"
+                        data-category="funny"
+                        data-price="29.99"
+                        data-name="Weekend Mood T-Shirt"
+                    >
+
+                        <a
+                            href="product.html?id=4"
+                            class="product-image"
+                        >
+
+                            <img
+                                src="images/product-4.jpg"
+                                alt="Weekend mood graphic t-shirt"
+                                loading="lazy"
+                            >
+
+                        </a>
+
+
+                        <div class="product-info">
+
+                            <h3>
+
+                                <a
+                                    href="product.html?id=4"
+                                >
+                                    Weekend Mood T-Shirt
+                                </a>
+
+                            </h3>
+
+                            <p class="product-category">
+                                Funny
+                            </p>
+
+                            <p class="product-price">
+                                $29.99
+                            </p>
+
+                        </div>
+
+                    </article>
+
+
+
+                    <!-- PRODUCT 5 -->
+
+                    <article
+                        class="product-card"
+                        data-category="lifestyle"
+                        data-price="28.99"
+                        data-name="Everyday Life T-Shirt"
+                    >
+
+                        <a
+                            href="product.html?id=5"
+                            class="product-image"
+                        >
+
+                            <img
+                                src="images/product-5.jpg"
+                                alt="Everyday life graphic t-shirt"
+                                loading="lazy"
+                            >
+
+                        </a>
+
+
+                        <div class="product-info">
+
+                            <h3>
+
+                                <a
+                                    href="product.html?id=5"
+                                >
+                                    Everyday Life T-Shirt
+                                </a>
+
+                            </h3>
+
+                            <p class="product-category">
+                                Lifestyle
+                            </p>
+
+                            <p class="product-price">
+                                $28.99
+                            </p>
+
+                        </div>
+
+                    </article>
+
+
+
+                    <!-- PRODUCT 6 -->
+
+                    <article
+                        class="product-card"
+                        data-category="trending"
+                        data-price="31.99"
+                        data-name="Classic Graphic T-Shirt"
+                    >
+
+                        <a
+                            href="product.html?id=6"
+                            class="product-image"
+                        >
+
+                            <img
+                                src="images/product-6.jpg"
+                                alt="Classic graphic t-shirt"
+                                loading="lazy"
+                            >
+
+                        </a>
+
+
+                        <div class="product-info">
+
+                            <h3>
+
+                                <a
+                                    href="product.html?id=6"
+                                >
+                                    Classic Graphic T-Shirt
+                                </a>
+
+                            </h3>
+
+                            <p class="product-category">
+                                Trending
+                            </p>
+
+                            <p class="product-price">
+                                $31.99
+                            </p>
+
+                        </div>
+
+                    </article>
+
+
+
+                </div>
+
+
+                <!-- NO PRODUCTS MESSAGE -->
+
+                <div
+                    id="no-products"
+                    style="display: none;"
+                >
+
+                    <p>
+                        No products found.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer class="site-footer">
+
+        <div class="container footer-grid">
+
+
+            <!-- BRAND -->
+
+            <div class="footer-brand">
+
+                <a
+                    href="index.html"
+                    class="logo"
+                >
+                    THREADLY<span>CO.</span>
+                </a>
+
+                <p>
+                    Graphic t-shirts made for people
+                    with their own style.
+                </p>
+
+            </div>
+
+
+            <!-- SHOP -->
+
+            <div class="footer-column">
+
+                <h3>
+                    Shop
+                </h3>
+
+                <a href="shop.html">
+                    All T-Shirts
+                </a>
+
+                <a href="shop.html?category=funny">
+                    Funny
+                </a>
+
+                <a href="shop.html?category=lifestyle">
+                    Lifestyle
+                </a>
+
+                <a href="shop.html?category=trending">
+                    Trending
+                </a>
+
+            </div>
+
+
+            <!-- HELP -->
+
+            <div class="footer-column">
+
+                <h3>
+                    Help
+                </h3>
+
+                <a href="#">
+                    Contact
+                </a>
+
+                <a href="#">
+                    Shipping
+                </a>
+
+                <a href="#">
+                    Returns
+                </a>
+
+                <a href="#">
+                    FAQ
+                </a>
+
+            </div>
+
+
+            <!-- SOCIAL -->
+
+            <div class="footer-column">
+
+                <h3>
+                    Follow
+                </h3>
+
+                <a href="#">
+                    Instagram
+                </a>
+
+                <a href="#">
+                    Facebook
+                </a>
+
+                <a href="#">
+                    TikTok
+                </a>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="container footer-bottom">
+
+            <p>
+                © 2026 Threadly Co. All rights reserved.
+            </p>
+
+            <div>
+
+                <a href="#">
+                    Privacy Policy
+                </a>
+
+                <a href="#">
+                    Terms
+                </a>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+
+
+        /* =====================================================
+           CART COUNT
+           ===================================================== */
+
+        function updateCartCount() {
+
+            const cart =
+                JSON.parse(
+                    localStorage.getItem("cart")
+                ) || [];
+
+
+            const count =
+                cart.reduce(
+                    (total, item) =>
+                        total + item.quantity,
+                    0
+                );
+
+
+            const cartCount =
+                document.getElementById(
+                    "cart-count"
+                );
+
+
+            if (cartCount) {
+
+                cartCount.textContent =
+                    count;
+
+            }
+
+        }
+
+
+        updateCartCount();
+
+
+
+        /* =====================================================
+           CATEGORY FILTER
+           ===================================================== */
+
+        const filterButtons =
+            document.querySelectorAll(
+                ".filter-btn"
+            );
+
+
+        const productCards =
+            document.querySelectorAll(
+                ".product-card"
+            );
+
+
+        const noProducts =
+            document.getElementById(
+                "no-products"
+            );
+
+
+        filterButtons.forEach(
+            function(button) {
+
+                button.addEventListener(
+                    "click",
+                    function() {
+
+
+                        /* Remove active */
+
+                        filterButtons.forEach(
+                            function(btn) {
+
+                                btn.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+
+                        /* Add active */
+
+                        button.classList.add(
+                            "active"
+                        );
+
+
+                        const category =
+                            button.dataset.category;
+
+
+                        let visibleProducts =
+                            0;
+
+
+                        productCards.forEach(
+                            function(product) {
+
+
+                                const productCategory =
+                                    product.dataset.category;
+
+
+                                if (
+                                    category === "all" ||
+                                    productCategory === category
+                                ) {
+
+                                    product.style.display =
+                                        "";
+
+                                    visibleProducts++;
+
+                                } else {
+
+                                    product.style.display =
+                                        "none";
+
+                                }
+
+                            }
+                        );
+
+
+                        if (
+                            visibleProducts === 0
+                        ) {
+
+                            noProducts.style.display =
+                                "block";
+
+                        } else {
+
+                            noProducts.style.display =
+                                "none";
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+
+        /* =====================================================
+           SORT PRODUCTS
+           ===================================================== */
+
+        const sortSelect =
+            document.getElementById(
+                "sort"
+            );
+
+
+        const productContainer =
+            document.getElementById(
+                "shop-products"
+            );
+
+
+        sortSelect.addEventListener(
+            "change",
+            function() {
+
+
+                const products =
+                    Array.from(
+                        productCards
+                    );
+
+
+                const sortType =
+                    sortSelect.value;
+
+
+                products.sort(
+                    function(a, b) {
+
+
+                        const priceA =
+                            parseFloat(
+                                a.dataset.price
+                            );
+
+
+                        const priceB =
+                            parseFloat(
+                                b.dataset.price
+                            );
+
+
+                        const nameA =
+                            a.dataset.name
+                                .toLowerCase();
+
+
+                        const nameB =
+                            b.dataset.name
+                                .toLowerCase();
+
+
+                        if (
+                            sortType ===
+                            "price-low"
+                        ) {
+
+                            return priceA - priceB;
+
+                        }
+
+
+                        if (
+                            sortType ===
+                            "price-high"
+                        ) {
+
+                            return priceB - priceA;
+
+                        }
+
+
+                        if (
+                            sortType ===
+                            "name"
+                        ) {
+
+                            return nameA.localeCompare(
+                                nameB
+                            );
+
+                        }
+
+
+                        return 0;
+
+                    }
+                );
+
+
+                products.forEach(
+                    function(product) {
+
+                        productContainer.appendChild(
+                            product
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+
+        /* =====================================================
+           URL CATEGORY FILTER
+           ===================================================== */
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const urlCategory =
+            urlParams.get(
+                "category"
+            );
+
+
+        if (urlCategory) {
+
+            const matchingButton =
+                document.querySelector(
+                    `.filter-btn[data-category="${urlCategory}"]`
+                );
+
+
+            if (matchingButton) {
+
+                matchingButton.click();
+
+            }
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>
