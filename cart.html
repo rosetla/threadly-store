@@ -414,24 +414,33 @@
     <script>
 
     /* =====================================================
-       API
-       ===================================================== */
-
-    const API_URL =
-        "https://threadly-store.YOUR-SUBDOMAIN.workers.dev";
-
-
-    /* =====================================================
-       CART
+       CART STORAGE
        ===================================================== */
 
     function getCart() {
 
-        return JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
+        try {
+
+            return JSON.parse(
+                localStorage.getItem(
+                    "cart"
+                )
+            ) || [];
+
+        } catch (error) {
+
+            console.error(
+                "Failed to read cart:",
+                error
+            );
+
+
+            return [];
+
+        }
 
     }
+
 
 
     function saveCart(cart) {
@@ -444,15 +453,18 @@
     }
 
 
+
     /* =====================================================
        FORMAT MONEY
        ===================================================== */
 
     function formatMoney(amount) {
 
-        return "$" + Number(amount).toFixed(2);
+        return "$" +
+            Number(amount).toFixed(2);
 
     }
+
 
 
     /* =====================================================
@@ -470,7 +482,9 @@
                 function(total, item) {
 
                     return total +
-                        item.quantity;
+                        Number(
+                            item.quantity || 0
+                        );
 
                 },
                 0
@@ -493,6 +507,7 @@
     }
 
 
+
     /* =====================================================
        GET PRODUCT FROM API
        ===================================================== */
@@ -503,18 +518,27 @@
 
             const response =
                 await fetch(
-                    `${API_URL}/api/products/${productId}`
+                    `/api/products/${encodeURIComponent(productId)}`
                 );
 
 
-            if (!response.ok) {
+            const data =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !data.success ||
+                !data.product
+            ) {
 
                 return null;
 
             }
 
 
-            return await response.json();
+            return data.product;
+
 
         } catch (error) {
 
@@ -529,6 +553,7 @@
         }
 
     }
+
 
 
     /* =====================================================
@@ -559,7 +584,10 @@
             );
 
 
-        /* EMPTY CART */
+
+        /* ===============================================
+           EMPTY CART
+           =============================================== */
 
         if (cart.length === 0) {
 
@@ -578,7 +606,10 @@
         }
 
 
-        /* SHOW CART */
+
+        /* ===============================================
+           SHOW CART
+           =============================================== */
 
         cartContent.style.display =
             "";
@@ -592,6 +623,7 @@
             "<p>Loading your cart...</p>";
 
 
+
         let subtotal =
             0;
 
@@ -600,13 +632,16 @@
             [];
 
 
-        cartItemsList.innerHTML =
-            "";
+        const renderedItems =
+            [];
 
 
-        /* ===============================================
-           LOAD PRODUCTS
-           =============================================== */
+        /*
+         * IMPORTANT:
+         *
+         * We do NOT immediately delete
+         * items when the API has a temporary error.
+         */
 
         for (
             let index = 0;
@@ -627,8 +662,19 @@
             if (!product) {
 
                 console.warn(
-                    "Product not found:",
+                    "Could not load product:",
                     item.productId
+                );
+
+
+                /*
+                 * Keep item temporarily.
+                 * Don't destroy the customer's cart
+                 * just because API failed once.
+                 */
+
+                validCart.push(
+                    item
                 );
 
 
@@ -637,161 +683,230 @@
             }
 
 
+
+            const verifiedItem = {
+
+                productId:
+                    product.id,
+
+                color:
+                    item.color,
+
+                size:
+                    item.size,
+
+                quantity:
+                    Number(item.quantity)
+
+            };
+
+
             validCart.push(
-                item
+                verifiedItem
             );
 
 
-            const itemPrice =
-                Number(
-                    product.price
-                );
+            renderedItems.push({
+
+                product:
+                    product,
+
+                item:
+                    verifiedItem
+
+            });
+
+        }
 
 
-            const itemTotal =
-                itemPrice *
-                item.quantity;
+
+        /*
+         * Save normalized cart.
+         */
+
+        saveCart(
+            validCart
+        );
 
 
-            subtotal +=
-                itemTotal;
+
+        /* ===============================================
+           RENDER ITEMS
+           =============================================== */
+
+        cartItemsList.innerHTML =
+            "";
 
 
-            const itemElement =
-                document.createElement(
-                    "article"
-                );
+        if (
+            renderedItems.length === 0
+        ) {
+
+            cartItemsList.innerHTML =
+                `
+                    <p>
+                        Unable to load your cart right now.
+                        Please refresh and try again.
+                    </p>
+                `;
 
 
-            itemElement.className =
-                "cart-item";
+            updateCartCount();
+
+            return;
+
+        }
 
 
-            itemElement.innerHTML = `
-
-                <div class="cart-product">
-
-                    <a
-                        href="product.html?id=${product.id}"
-                        class="cart-product-image"
-                    >
-
-                        <img
-                            src="${product.image}"
-                            alt="${product.name}"
-                        >
-
-                    </a>
+        renderedItems.forEach(
+            function(cartData, index) {
 
 
-                    <div class="cart-product-info">
+                const product =
+                    cartData.product;
+
+
+                const item =
+                    cartData.item;
+
+
+                const itemPrice =
+                    Number(
+                        product.price
+                    );
+
+
+                const itemTotal =
+                    itemPrice *
+                    item.quantity;
+
+
+                subtotal +=
+                    itemTotal;
+
+
+                const itemElement =
+                    document.createElement(
+                        "article"
+                    );
+
+
+                itemElement.className =
+                    "cart-item";
+
+
+                itemElement.innerHTML = `
+
+                    <div class="cart-product">
 
                         <a
                             href="product.html?id=${product.id}"
-                            class="cart-product-name"
+                            class="cart-product-image"
                         >
-                            ${product.name}
+
+                            <img
+                                src="${product.image}"
+                                alt="${product.name}"
+                            >
+
                         </a>
 
 
-                        <p>
-                            Color:
-                            <strong>
-                                ${item.color}
-                            </strong>
-                        </p>
+                        <div class="cart-product-info">
+
+                            <a
+                                href="product.html?id=${product.id}"
+                                class="cart-product-name"
+                            >
+                                ${product.name}
+                            </a>
 
 
-                        <p>
-                            Size:
-                            <strong>
-                                ${item.size}
-                            </strong>
-                        </p>
+                            <p>
+                                Color:
+                                <strong>
+                                    ${item.color}
+                                </strong>
+                            </p>
 
 
-                        <p class="cart-unit-price">
-                            ${formatMoney(
-                                itemPrice
-                            )}
-                        </p>
+                            <p>
+                                Size:
+                                <strong>
+                                    ${item.size}
+                                </strong>
+                            </p>
+
+
+                            <p class="cart-unit-price">
+                                ${formatMoney(itemPrice)}
+                            </p>
+
+
+                            <button
+                                type="button"
+                                class="remove-item"
+                                data-product-id="${product.id}"
+                                data-color="${item.color}"
+                                data-size="${item.size}"
+                            >
+                                Remove
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="cart-quantity">
+
+                        <button
+                            type="button"
+                            class="quantity-btn"
+                            data-action="decrease"
+                            data-product-id="${product.id}"
+                            data-color="${item.color}"
+                            data-size="${item.size}"
+                        >
+                            −
+                        </button>
+
+
+                        <span>
+                            ${item.quantity}
+                        </span>
 
 
                         <button
                             type="button"
-                            class="remove-item"
-                            data-index="${validCart.length - 1}"
+                            class="quantity-btn"
+                            data-action="increase"
+                            data-product-id="${product.id}"
+                            data-color="${item.color}"
+                            data-size="${item.size}"
                         >
-                            Remove
+                            +
                         </button>
 
                     </div>
 
-                </div>
+
+                    <div class="cart-item-total">
+
+                        ${formatMoney(itemTotal)}
+
+                    </div>
+
+                `;
 
 
-                <div class="cart-quantity">
+                cartItemsList.appendChild(
+                    itemElement
+                );
 
-                    <button
-                        type="button"
-                        class="quantity-btn"
-                        data-action="decrease"
-                        data-index="${validCart.length - 1}"
-                    >
-                        −
-                    </button>
+            }
+        );
 
-
-                    <span>
-                        ${item.quantity}
-                    </span>
-
-
-                    <button
-                        type="button"
-                        class="quantity-btn"
-                        data-action="increase"
-                        data-index="${validCart.length - 1}"
-                    >
-                        +
-                    </button>
-
-                </div>
-
-
-                <div class="cart-item-total">
-
-                    ${formatMoney(
-                        itemTotal
-                    )}
-
-                </div>
-
-            `;
-
-
-            cartItemsList.appendChild(
-                itemElement
-            );
-
-        }
-
-
-        /*
-         * Remove products that no longer
-         * exist in the database.
-         */
-
-        if (
-            validCart.length !==
-            cart.length
-        ) {
-
-            saveCart(
-                validCart
-            );
-
-        }
 
 
         /* ===============================================
@@ -807,6 +922,7 @@
         const total =
             subtotal +
             shipping;
+
 
 
         /* ===============================================
@@ -844,8 +960,47 @@
     }
 
 
+
     /* =====================================================
-       CART QUANTITY
+       FIND CART ITEM
+       ===================================================== */
+
+    function findCartItemIndex(
+        cart,
+        productId,
+        color,
+        size
+    ) {
+
+        return cart.findIndex(
+            function(item) {
+
+                return (
+
+                    String(
+                        item.productId
+                    ) ===
+                    String(
+                        productId
+                    ) &&
+
+                    item.color ===
+                    color &&
+
+                    item.size ===
+                    size
+
+                );
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       QUANTITY BUTTONS
        ===================================================== */
 
     document.addEventListener(
@@ -866,10 +1021,16 @@
             }
 
 
-            const index =
-                Number(
-                    button.dataset.index
-                );
+            const productId =
+                button.dataset.productId;
+
+
+            const color =
+                button.dataset.color;
+
+
+            const size =
+                button.dataset.size;
 
 
             const action =
@@ -880,11 +1041,21 @@
                 getCart();
 
 
-            if (!cart[index]) {
+            const index =
+                findCartItemIndex(
+                    cart,
+                    productId,
+                    color,
+                    size
+                );
+
+
+            if (index === -1) {
 
                 return;
 
             }
+
 
 
             if (
@@ -901,6 +1072,7 @@
                 }
 
             }
+
 
 
             if (
@@ -936,6 +1108,7 @@
     );
 
 
+
     /* =====================================================
        REMOVE ITEM
        ===================================================== */
@@ -958,14 +1131,36 @@
             }
 
 
-            const index =
-                Number(
-                    button.dataset.index
-                );
+            const productId =
+                button.dataset.productId;
+
+
+            const color =
+                button.dataset.color;
+
+
+            const size =
+                button.dataset.size;
 
 
             const cart =
                 getCart();
+
+
+            const index =
+                findCartItemIndex(
+                    cart,
+                    productId,
+                    color,
+                    size
+                );
+
+
+            if (index === -1) {
+
+                return;
+
+            }
 
 
             cart.splice(
@@ -983,6 +1178,7 @@
 
         }
     );
+
 
 
     /* =====================================================
@@ -1016,6 +1212,7 @@
 
             }
         );
+
 
 
     /* =====================================================
