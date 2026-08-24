@@ -147,6 +147,54 @@ export default {
 
 
         /* =====================================================
+           ADMIN AUTHENTICATION
+           ===================================================== */
+
+        function isAdminAuthenticated(request, env) {
+
+            const authHeader =
+                request.headers.get("Authorization");
+
+
+            if (!authHeader) {
+
+                return false;
+
+            }
+
+
+            if (
+                !authHeader.startsWith("Bearer ")
+            ) {
+
+                return false;
+
+            }
+
+
+            const token =
+                authHeader
+                    .slice(7)
+                    .trim();
+
+
+            if (
+                !token ||
+                !env.ADMIN_TOKEN
+            ) {
+
+                return false;
+
+            }
+
+
+            return token === env.ADMIN_TOKEN;
+
+        }
+
+
+
+        /* =====================================================
            PRODUCT FIELDS
            ===================================================== */
 
@@ -265,23 +313,6 @@ export default {
 
         /* =====================================================
            NORMALIZE COLORS
-
-           Accepted:
-
-           [
-               "Black",
-               "White"
-           ]
-
-           OR:
-
-           [
-               {
-                   name: "Black",
-                   hex: "#111111",
-                   image: "https://..."
-               }
-           ]
            ===================================================== */
 
         function normalizeColors(colors) {
@@ -541,8 +572,6 @@ export default {
 
         /* =====================================================
            GET ALL ACTIVE PRODUCTS
-
-           GET /api/products
            ===================================================== */
 
         if (
@@ -617,8 +646,6 @@ export default {
 
         /* =====================================================
            GET SINGLE PRODUCT
-
-           GET /api/products/:id
            ===================================================== */
 
         const productMatch =
@@ -708,11 +735,32 @@ export default {
            ADMIN API
            ===================================================== */
 
+        if (
+            pathname.startsWith("/api/admin/")
+        ) {
+
+            if (
+                !isAdminAuthenticated(
+                    request,
+                    env
+                )
+            ) {
+
+                return json({
+
+                    success: false,
+                    error: "Unauthorized."
+
+                }, 401);
+
+            }
+
+        }
+
+
 
         /* =====================================================
            ADMIN PRODUCT ROUTE
-
-           /api/admin/products/:id
            ===================================================== */
 
         const adminProductMatch =
@@ -724,8 +772,6 @@ export default {
 
         /* =====================================================
            ADMIN GET ALL PRODUCTS
-
-           GET /api/admin/products
            ===================================================== */
 
         if (
@@ -799,8 +845,6 @@ export default {
 
         /* =====================================================
            ADMIN GET SINGLE PRODUCT
-
-           GET /api/admin/products/:id
            ===================================================== */
 
         if (
@@ -862,8 +906,6 @@ export default {
 
         /* =====================================================
            ADMIN CREATE PRODUCT
-
-           POST /api/admin/products
            ===================================================== */
 
         if (
@@ -905,10 +947,7 @@ export default {
                 );
 
 
-
-            /* =================================================
-               VALIDATION
-               ================================================= */
+            /* VALIDATION */
 
             if (!fields.name) {
 
@@ -1039,9 +1078,7 @@ export default {
 
 
 
-            /* =================================================
-               CREATE PRODUCT
-               ================================================= */
+            /* CREATE PRODUCT */
 
             try {
 
@@ -1079,10 +1116,7 @@ export default {
                     result.meta?.last_row_id;
 
 
-
-                /* =================================================
-                   CREATE COLOR × SIZE MATRIX
-                   ================================================= */
+                /* CREATE COLOR × SIZE MATRIX */
 
                 for (const color of colors) {
 
@@ -1126,7 +1160,6 @@ export default {
                     }
 
                 }
-
 
 
                 const product =
@@ -1187,8 +1220,6 @@ export default {
 
         /* =====================================================
            ADMIN UPDATE PRODUCT
-
-           PUT /api/admin/products/:id
            ===================================================== */
 
         if (
@@ -1236,10 +1267,7 @@ export default {
                 );
 
 
-
-            /* =================================================
-               VALIDATION
-               ================================================= */
+            /* VALIDATION */
 
             if (!fields.name) {
 
@@ -1369,11 +1397,6 @@ export default {
             }
 
 
-
-            /* =================================================
-               UPDATE
-               ================================================= */
-
             try {
 
                 const existingProduct =
@@ -1397,10 +1420,7 @@ export default {
                 }
 
 
-
-                /* =============================================
-                   UPDATE PRODUCT
-                   ============================================= */
+                /* UPDATE PRODUCT */
 
                 await env.DB
                     .prepare(`
@@ -1432,10 +1452,7 @@ export default {
                     .run();
 
 
-
-                /* =============================================
-                   READ OLD VARIANTS
-                   ============================================= */
+                /* READ OLD VARIANTS */
 
                 const oldVariants =
                     await getProductVariants(
@@ -1464,10 +1481,7 @@ export default {
                 }
 
 
-
-                /* =============================================
-                   DELETE OLD VARIANTS
-                   ============================================= */
+                /* DELETE OLD VARIANTS */
 
                 await env.DB
                     .prepare(`
@@ -1478,10 +1492,7 @@ export default {
                     .run();
 
 
-
-                /* =============================================
-                   CREATE NEW COLOR × SIZE MATRIX
-                   ============================================= */
+                /* CREATE NEW MATRIX */
 
                 for (const color of colors) {
 
@@ -1535,7 +1546,6 @@ export default {
                     }
 
                 }
-
 
 
                 const product =
@@ -1596,10 +1606,6 @@ export default {
 
         /* =====================================================
            ADMIN DELETE PRODUCT
-
-           DELETE /api/admin/products/:id
-
-           Soft delete
            ===================================================== */
 
         if (
@@ -1691,8 +1697,6 @@ export default {
 
         /* =====================================================
            GET VARIANTS
-
-           GET /api/admin/products/:id/variants
            ===================================================== */
 
         if (
@@ -1765,8 +1769,6 @@ export default {
 
         /* =====================================================
            UPDATE VARIANTS
-
-           PUT /api/admin/products/:id/variants
            ===================================================== */
 
         if (
@@ -1862,7 +1864,6 @@ export default {
             }
 
 
-
             try {
 
                 const product =
@@ -1888,10 +1889,7 @@ export default {
                 }
 
 
-
-                /* =============================================
-                   OLD VARIANTS
-                   ============================================= */
+                /* OLD VARIANTS */
 
                 const oldVariants =
                     await getProductVariants(
@@ -1920,10 +1918,7 @@ export default {
                 }
 
 
-
-                /* =============================================
-                   DELETE
-                   ============================================= */
+                /* DELETE */
 
                 await env.DB
                     .prepare(`
@@ -1934,10 +1929,7 @@ export default {
                     .run();
 
 
-
-                /* =============================================
-                   CREATE NEW MATRIX
-                   ============================================= */
+                /* CREATE NEW MATRIX */
 
                 for (const color of colors) {
 
@@ -1993,7 +1985,6 @@ export default {
                 }
 
 
-
                 const variants =
                     await getProductVariants(
                         productId,
@@ -2034,8 +2025,6 @@ export default {
 
         /* =====================================================
            TEST DATABASE
-
-           GET /api/test-db
            ===================================================== */
 
         if (
