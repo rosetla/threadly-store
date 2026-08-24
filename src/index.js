@@ -14,13 +14,10 @@ export default {
         function json(data, status = 200) {
 
             return Response.json(data, {
-
                 status,
-
                 headers: {
                     "Cache-Control": "no-store"
                 }
-
             });
 
         }
@@ -29,24 +26,23 @@ export default {
         function errorResponse(message, status = 400) {
 
             return json({
-
                 success: false,
                 error: message
-
             }, status);
 
         }
 
 
-        function normalizeString(value, maxLength = 10000) {
+        function normalizeString(
+            value,
+            maxLength = 10000
+        ) {
 
             if (
                 value === null ||
                 value === undefined
             ) {
-
                 return "";
-
             }
 
             return String(value)
@@ -69,11 +65,9 @@ export default {
         function isValidStatus(status) {
 
             return [
-
                 "active",
                 "draft",
                 "inactive"
-
             ].includes(status);
 
         }
@@ -82,7 +76,6 @@ export default {
         function isValidCategory(category) {
 
             return [
-
                 "",
                 "funny",
                 "lifestyle",
@@ -90,7 +83,6 @@ export default {
                 "music",
                 "animals",
                 "other"
-
             ].includes(category);
 
         }
@@ -99,12 +91,10 @@ export default {
         function isValidPrice(price) {
 
             return (
-
                 typeof price === "number" &&
                 Number.isFinite(price) &&
                 price >= 0 &&
                 price <= 100000
-
             );
 
         }
@@ -113,9 +103,7 @@ export default {
         function isValidImageUrl(image) {
 
             if (!image) {
-
                 return true;
-
             }
 
             try {
@@ -123,10 +111,8 @@ export default {
                 const parsed = new URL(image);
 
                 return [
-
                     "http:",
                     "https:"
-
                 ].includes(parsed.protocol);
 
             } catch {
@@ -147,48 +133,473 @@ export default {
 
 
         /* =====================================================
-           ADMIN AUTHENTICATION
+           ADMIN SESSION AUTHENTICATION
            ===================================================== */
 
-        function isAdminAuthenticated(request, env) {
+        const ADMIN_SESSION_COOKIE =
+            "threadly_admin_session";
+
+        const SESSION_DURATION =
+            24 * 60 * 60;
+
+
+        function base64UrlEncode(data) {
+
+            return btoa(
+                String.fromCharCode(
+                    ...new Uint8Array(data)
+                )
+            )
+                .replace(/\+/g, "-")
+                .replace(/\//g, "_")
+                .replace(/=+$/, "");
+
+        }
+
+
+        function base64UrlDecode(value) {
+
+            value = value
+                .replace(/-/g, "+")
+                .replace(/_/g, "/");
+
+            while (value.length % 4) {
+                value += "=";
+            }
+
+            return Uint8Array.from(
+                atob(value),
+                c => c.charCodeAt(0)
+            );
+
+        }
+
+
+        async function createAdminSession(env) {
+
+            const payload = {
+
+                exp:
+                    Math.floor(
+                        Date.now() / 1000
+                    ) + SESSION_DURATION
+
+            };
+
+
+            const payloadString =
+                JSON.stringify(payload);
+
+
+            const encodedPayload =
+                base64UrlEncode(
+                    new TextEncoder().encode(
+                        payloadString
+                    )
+                );
+
+
+            const key =
+                await crypto.subtle.importKey(
+
+                    "raw",
+
+                    new TextEncoder().encode(
+                        env.ADMIN_TOKEN
+                    ),
+
+                    {
+                        name: "HMAC",
+                        hash: "SHA-256"
+                    },
+
+                    false,
+
+                    ["sign"]
+
+                );
+
+
+            const signature =
+                await crypto.subtle.sign(
+
+                    "HMAC",
+
+                    key,
+
+                    new TextEncoder().encode(
+                        encodedPayload
+                    )
+
+                );
+
+
+            const encodedSignature =
+                base64UrlEncode(signature);
+
+
+            return (
+                encodedPayload +
+                "." +
+                encodedSignature
+            );
+
+        }
+
+
+        async function verifyAdminSession(
+            request,
+            env
+        ) {
+
+            const cookieHeader =
+                request.headers.get("Cookie");
+
+
+            if (!cookieHeader) {
+                return false;
+            }
+
+
+            const cookies =
+                cookieHeader
+                    .split(";")
+                    .map(cookie =>
+                        cookie.trim()
+                    );
+
+
+            const sessionCookie =
+                cookies.find(cookie =>
+                    cookie.startsWith(
+                        `${ADMIN_SESSION_COOKIE}=`
+                    )
+                );
+
+
+            if (!sessionCookie) {
+                return false;
+            }
+
+
+            const session =
+                sessionCookie.substring(
+                    ADMIN_SESSION_COOKIE.length + 1
+                );
+
+
+            const parts =
+                session.split(".");
+
+
+            if (parts.length !== 2) {
+                return false;
+            }
+
+
+            const [
+                encodedPayload,
+                encodedSignature
+            ] = parts;
+
+
+            try {
+
+                const key =
+                    await crypto.subtle.importKey(
+
+                        "raw",
+
+                        new TextEncoder().encode(
+                            env.ADMIN_TOKEN
+                        ),
+
+                        {
+                            name: "HMAC",
+                            hash: "SHA-256"
+                        },
+
+                        false,
+
+                        ["verify"]
+
+                    );
+
+
+                const valid =
+                    await crypto.subtle.verify(
+
+                        "HMAC",
+
+                        key,
+
+                        base64UrlDecode(
+                            encodedSignature
+                        ),
+
+                        new TextEncoder().encode(
+                            encodedPayload
+                        )
+
+                    );
+
+
+                if (!valid) {
+                    return false;
+                }
+
+
+                const payload =
+                    JSON.parse(
+
+                        new TextDecoder().decode(
+                            base64UrlDecode(
+                                encodedPayload
+                            )
+                        )
+
+                    );
+
+
+                if (
+                    !payload.exp ||
+                    payload.exp <
+                    Math.floor(
+                        Date.now() / 1000
+                    )
+                ) {
+                    return false;
+                }
+
+
+                return true;
+
+
+            } catch {
+
+                return false;
+
+            }
+
+        }
+
+
+        async function isAdminAuthenticated(
+            request,
+            env
+        ) {
+
+            /*
+             * Bearer token support.
+             *
+             * This is useful for testing the API
+             * directly with Postman / curl / DevTools.
+             */
 
             const authHeader =
-                request.headers.get("Authorization");
+                request.headers.get(
+                    "Authorization"
+                );
 
 
-            if (!authHeader) {
+            if (
+                authHeader &&
+                authHeader.startsWith(
+                    "Bearer "
+                )
+            ) {
 
-                return false;
+                const token =
+                    authHeader
+                        .slice(7)
+                        .trim();
+
+
+                if (
+                    token &&
+                    env.ADMIN_TOKEN &&
+                    token === env.ADMIN_TOKEN
+                ) {
+
+                    return true;
+
+                }
+
+            }
+
+
+            /*
+             * Normal website authentication.
+             */
+
+            return await verifyAdminSession(
+                request,
+                env
+            );
+
+        }
+
+
+
+        /* =====================================================
+           ADMIN LOGIN
+           ===================================================== */
+
+        if (
+            pathname === "/api/admin/login" &&
+            method === "POST"
+        ) {
+
+            let body;
+
+
+            try {
+
+                body =
+                    await request.json();
+
+            } catch {
+
+                return errorResponse(
+                    "Invalid JSON body.",
+                    400
+                );
+
+            }
+
+
+            const password =
+                typeof body.password === "string"
+                    ? body.password.trim()
+                    : "";
+
+
+            if (!password) {
+
+                return errorResponse(
+                    "Password is required.",
+                    400
+                );
 
             }
 
 
             if (
-                !authHeader.startsWith("Bearer ")
+                !env.ADMIN_TOKEN ||
+                password !== env.ADMIN_TOKEN
             ) {
 
-                return false;
+                return errorResponse(
+                    "Invalid admin password.",
+                    401
+                );
 
             }
 
 
-            const token =
-                authHeader
-                    .slice(7)
-                    .trim();
+            const session =
+                await createAdminSession(env);
 
 
-            if (
-                !token ||
-                !env.ADMIN_TOKEN
-            ) {
+            return new Response(
 
-                return false;
+                JSON.stringify({
+                    success: true,
+                    message: "Login successful."
+                }),
+
+                {
+                    status: 200,
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "Cache-Control":
+                            "no-store",
+
+                        "Set-Cookie":
+                            `${ADMIN_SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SESSION_DURATION}`
+
+                    }
+
+                }
+
+            );
+
+        }
+
+
+
+        /* =====================================================
+           ADMIN LOGOUT
+           ===================================================== */
+
+        if (
+            pathname === "/api/admin/logout" &&
+            method === "POST"
+        ) {
+
+            return new Response(
+
+                JSON.stringify({
+                    success: true,
+                    message: "Logged out."
+                }),
+
+                {
+                    status: 200,
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "Cache-Control":
+                            "no-store",
+
+                        "Set-Cookie":
+                            `${ADMIN_SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`
+
+                    }
+
+                }
+
+            );
+
+        }
+
+
+
+        /* =====================================================
+           ADMIN SESSION CHECK
+           ===================================================== */
+
+        if (
+            pathname === "/api/admin/me" &&
+            method === "GET"
+        ) {
+
+            const authenticated =
+                await verifyAdminSession(
+                    request,
+                    env
+                );
+
+
+            if (!authenticated) {
+
+                return json({
+                    authenticated: false
+                }, 401);
 
             }
 
 
-            return token === env.ADMIN_TOKEN;
+            return json({
+                authenticated: true
+            });
 
         }
 
@@ -209,7 +620,8 @@ export default {
 
             const slug =
                 normalizeSlug(
-                    body.slug || body.name
+                    body.slug ||
+                    body.name
                 );
 
 
@@ -255,10 +667,15 @@ export default {
             return {
 
                 name,
+
                 slug,
+
                 description,
+
                 price,
+
                 image,
+
                 category,
 
                 printify_product_id:
@@ -299,9 +716,7 @@ export default {
         function isValidHex(value) {
 
             if (!value) {
-
                 return true;
-
             }
 
             return /^#[0-9A-Fa-f]{6}$/.test(
@@ -311,6 +726,7 @@ export default {
         }
 
 
+
         /* =====================================================
            NORMALIZE COLORS
            ===================================================== */
@@ -318,9 +734,7 @@ export default {
         function normalizeColors(colors) {
 
             if (!Array.isArray(colors)) {
-
                 return [];
-
             }
 
 
@@ -374,9 +788,7 @@ export default {
 
 
                 if (!name) {
-
                     continue;
-
                 }
 
 
@@ -385,9 +797,7 @@ export default {
 
 
                 if (seen.has(key)) {
-
                     continue;
-
                 }
 
 
@@ -397,7 +807,9 @@ export default {
                 result.push({
 
                     name,
+
                     hex,
+
                     image
 
                 });
@@ -418,9 +830,7 @@ export default {
         function normalizeSizes(sizes) {
 
             if (!Array.isArray(sizes)) {
-
                 return [];
-
             }
 
 
@@ -437,16 +847,12 @@ export default {
 
 
                 if (!size) {
-
                     continue;
-
                 }
 
 
                 if (seen.has(size)) {
-
                     continue;
-
                 }
 
 
@@ -476,22 +882,39 @@ export default {
             const result =
                 await env.DB
                     .prepare(`
+
                         SELECT
+
                             id,
+
                             product_id,
+
                             color_name,
+
                             color_hex,
+
                             size,
+
                             image,
+
                             printify_variant_id,
+
                             status,
+
                             created_at
+
                         FROM product_variants
+
                         WHERE product_id = ?
+
                         AND status = 'active'
+
                         ORDER BY
+
                             color_name ASC,
+
                             CASE size
+
                                 WHEN 'XS' THEN 1
                                 WHEN 'S' THEN 2
                                 WHEN 'M' THEN 3
@@ -501,9 +924,13 @@ export default {
                                 WHEN '3XL' THEN 7
                                 WHEN '4XL' THEN 8
                                 WHEN '5XL' THEN 9
+
                                 ELSE 99
+
                             END,
+
                             size ASC
+
                     `)
                     .bind(productId)
                     .all();
@@ -527,28 +954,40 @@ export default {
             const product =
                 await env.DB
                     .prepare(`
+
                         SELECT
+
                             id,
+
                             name,
+
                             slug,
+
                             description,
+
                             price,
+
                             image,
+
                             category,
+
                             printify_product_id,
+
                             status,
+
                             created_at
+
                         FROM products
+
                         WHERE id = ?
+
                     `)
                     .bind(productId)
                     .first();
 
 
             if (!product) {
-
                 return null;
-
             }
 
 
@@ -584,20 +1023,35 @@ export default {
                 const result =
                     await env.DB
                         .prepare(`
+
                             SELECT
+
                                 id,
+
                                 name,
+
                                 slug,
+
                                 description,
+
                                 price,
+
                                 image,
+
                                 category,
+
                                 printify_product_id,
+
                                 status,
+
                                 created_at
+
                             FROM products
+
                             WHERE status = 'active'
+
                             ORDER BY id DESC
+
                         `)
                         .all();
 
@@ -606,7 +1060,10 @@ export default {
                     result.results || [];
 
 
-                for (const product of products) {
+                for (
+                    const product
+                    of products
+                ) {
 
                     product.variants =
                         await getProductVariants(
@@ -620,6 +1077,7 @@ export default {
                 return json({
 
                     success: true,
+
                     products
 
                 });
@@ -660,7 +1118,9 @@ export default {
         ) {
 
             const productId =
-                Number(productMatch[1]);
+                Number(
+                    productMatch[1]
+                );
 
 
             try {
@@ -668,20 +1128,35 @@ export default {
                 const product =
                     await env.DB
                         .prepare(`
+
                             SELECT
+
                                 id,
+
                                 name,
+
                                 slug,
+
                                 description,
+
                                 price,
+
                                 image,
+
                                 category,
+
                                 printify_product_id,
+
                                 status,
+
                                 created_at
+
                             FROM products
+
                             WHERE id = ?
+
                             AND status = 'active'
+
                         `)
                         .bind(productId)
                         .first();
@@ -707,6 +1182,7 @@ export default {
                 return json({
 
                     success: true,
+
                     product
 
                 });
@@ -732,23 +1208,26 @@ export default {
 
 
         /* =====================================================
-           ADMIN API
+           ADMIN API AUTHENTICATION
            ===================================================== */
 
         if (
-            pathname.startsWith("/api/admin/")
+            pathname.startsWith(
+                "/api/admin/"
+            )
         ) {
 
             if (
-                !isAdminAuthenticated(
+                !(await isAdminAuthenticated(
                     request,
                     env
-                )
+                ))
             ) {
 
                 return json({
 
                     success: false,
+
                     error: "Unauthorized."
 
                 }, 401);
@@ -775,7 +1254,8 @@ export default {
            ===================================================== */
 
         if (
-            pathname === "/api/admin/products" &&
+            pathname ===
+                "/api/admin/products" &&
             method === "GET"
         ) {
 
@@ -784,19 +1264,33 @@ export default {
                 const result =
                     await env.DB
                         .prepare(`
+
                             SELECT
+
                                 id,
+
                                 name,
+
                                 slug,
+
                                 description,
+
                                 price,
+
                                 image,
+
                                 category,
+
                                 printify_product_id,
+
                                 status,
+
                                 created_at
+
                             FROM products
+
                             ORDER BY id DESC
+
                         `)
                         .all();
 
@@ -805,7 +1299,10 @@ export default {
                     result.results || [];
 
 
-                for (const product of products) {
+                for (
+                    const product
+                    of products
+                ) {
 
                     product.variants =
                         await getProductVariants(
@@ -819,6 +1316,7 @@ export default {
                 return json({
 
                     success: true,
+
                     products
 
                 });
@@ -880,6 +1378,7 @@ export default {
                 return json({
 
                     success: true,
+
                     product
 
                 });
@@ -909,7 +1408,8 @@ export default {
            ===================================================== */
 
         if (
-            pathname === "/api/admin/products" &&
+            pathname ===
+                "/api/admin/products" &&
             method === "POST"
         ) {
 
@@ -945,6 +1445,7 @@ export default {
                 normalizeSizes(
                     body.sizes
                 );
+
 
 
             /* VALIDATION */
@@ -1085,27 +1586,58 @@ export default {
                 const result =
                     await env.DB
                         .prepare(`
+
                             INSERT INTO products (
+
                                 name,
+
                                 slug,
+
                                 description,
+
                                 price,
+
                                 image,
+
                                 category,
+
                                 printify_product_id,
+
                                 status
+
                             )
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+
+                            VALUES (
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?
+                            )
+
                         `)
                         .bind(
 
                             fields.name,
+
                             fields.slug,
+
                             fields.description,
+
                             fields.price,
-                            fields.image || null,
-                            fields.category || null,
-                            fields.printify_product_id || null,
+
+                            fields.image ||
+                                null,
+
+                            fields.category ||
+                                null,
+
+                            fields.printify_product_id ||
+                                null,
+
                             fields.status
 
                         )
@@ -1116,24 +1648,50 @@ export default {
                     result.meta?.last_row_id;
 
 
+
                 /* CREATE COLOR × SIZE MATRIX */
 
-                for (const color of colors) {
+                for (
+                    const color
+                    of colors
+                ) {
 
-                    for (const size of sizes) {
+                    for (
+                        const size
+                        of sizes
+                    ) {
 
                         await env.DB
                             .prepare(`
+
                                 INSERT INTO product_variants (
+
                                     product_id,
+
                                     color_name,
+
                                     color_hex,
+
                                     size,
+
                                     image,
+
                                     printify_variant_id,
+
                                     status
+
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?)
+
+                                VALUES (
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?
+                                )
+
                             `)
                             .bind(
 
@@ -1196,7 +1754,9 @@ export default {
 
 
                 if (
-                    message.includes("unique")
+                    message.includes(
+                        "unique"
+                    )
                 ) {
 
                     return errorResponse(
@@ -1265,6 +1825,7 @@ export default {
                 normalizeSizes(
                     body.sizes
                 );
+
 
 
             /* VALIDATION */
@@ -1397,14 +1958,19 @@ export default {
             }
 
 
+
             try {
 
                 const existingProduct =
                     await env.DB
                         .prepare(`
+
                             SELECT id
+
                             FROM products
+
                             WHERE id = ?
+
                         `)
                         .bind(productId)
                         .first();
@@ -1420,36 +1986,61 @@ export default {
                 }
 
 
+
                 /* UPDATE PRODUCT */
 
                 await env.DB
                     .prepare(`
+
                         UPDATE products
+
                         SET
+
                             name = ?,
+
                             slug = ?,
+
                             description = ?,
+
                             price = ?,
+
                             image = ?,
+
                             category = ?,
+
                             printify_product_id = ?,
+
                             status = ?
+
                         WHERE id = ?
+
                     `)
                     .bind(
 
                         fields.name,
+
                         fields.slug,
+
                         fields.description,
+
                         fields.price,
-                        fields.image || null,
-                        fields.category || null,
-                        fields.printify_product_id || null,
+
+                        fields.image ||
+                            null,
+
+                        fields.category ||
+                            null,
+
+                        fields.printify_product_id ||
+                            null,
+
                         fields.status,
+
                         productId
 
                     )
                     .run();
+
 
 
                 /* READ OLD VARIANTS */
@@ -1466,7 +2057,8 @@ export default {
 
 
                 for (
-                    const variant of oldVariants
+                    const variant
+                    of oldVariants
                 ) {
 
                     const key =
@@ -1481,22 +2073,33 @@ export default {
                 }
 
 
+
                 /* DELETE OLD VARIANTS */
 
                 await env.DB
                     .prepare(`
+
                         DELETE FROM product_variants
+
                         WHERE product_id = ?
+
                     `)
                     .bind(productId)
                     .run();
 
 
+
                 /* CREATE NEW MATRIX */
 
-                for (const color of colors) {
+                for (
+                    const color
+                    of colors
+                ) {
 
-                    for (const size of sizes) {
+                    for (
+                        const size
+                        of sizes
+                    ) {
 
                         const key =
                             `${color.name.toLowerCase()}::${size}`;
@@ -1508,16 +2111,35 @@ export default {
 
                         await env.DB
                             .prepare(`
+
                                 INSERT INTO product_variants (
+
                                     product_id,
+
                                     color_name,
+
                                     color_hex,
+
                                     size,
+
                                     image,
+
                                     printify_variant_id,
+
                                     status
+
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?)
+
+                                VALUES (
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?
+                                )
+
                             `)
                             .bind(
 
@@ -1582,7 +2204,9 @@ export default {
 
 
                 if (
-                    message.includes("unique")
+                    message.includes(
+                        "unique"
+                    )
                 ) {
 
                     return errorResponse(
@@ -1624,9 +2248,13 @@ export default {
                 const existingProduct =
                     await env.DB
                         .prepare(`
+
                             SELECT id
+
                             FROM products
+
                             WHERE id = ?
+
                         `)
                         .bind(productId)
                         .first();
@@ -1644,9 +2272,13 @@ export default {
 
                 await env.DB
                     .prepare(`
+
                         UPDATE products
+
                         SET status = 'inactive'
+
                         WHERE id = ?
+
                     `)
                     .bind(productId)
                     .run();
@@ -1715,9 +2347,13 @@ export default {
                 const product =
                     await env.DB
                         .prepare(`
+
                             SELECT id
+
                             FROM products
+
                             WHERE id = ?
+
                         `)
                         .bind(productId)
                         .first();
@@ -1743,6 +2379,7 @@ export default {
                 return json({
 
                     success: true,
+
                     variants
 
                 });
@@ -1869,11 +2506,17 @@ export default {
                 const product =
                     await env.DB
                         .prepare(`
+
                             SELECT
+
                                 id,
+
                                 image
+
                             FROM products
+
                             WHERE id = ?
+
                         `)
                         .bind(productId)
                         .first();
@@ -1887,6 +2530,7 @@ export default {
                     );
 
                 }
+
 
 
                 /* OLD VARIANTS */
@@ -1903,7 +2547,8 @@ export default {
 
 
                 for (
-                    const variant of oldVariants
+                    const variant
+                    of oldVariants
                 ) {
 
                     const key =
@@ -1918,22 +2563,33 @@ export default {
                 }
 
 
+
                 /* DELETE */
 
                 await env.DB
                     .prepare(`
+
                         DELETE FROM product_variants
+
                         WHERE product_id = ?
+
                     `)
                     .bind(productId)
                     .run();
 
 
+
                 /* CREATE NEW MATRIX */
 
-                for (const color of colors) {
+                for (
+                    const color
+                    of colors
+                ) {
 
-                    for (const size of sizes) {
+                    for (
+                        const size
+                        of sizes
+                    ) {
 
                         const key =
                             `${color.name.toLowerCase()}::${size}`;
@@ -1945,16 +2601,35 @@ export default {
 
                         await env.DB
                             .prepare(`
+
                                 INSERT INTO product_variants (
+
                                     product_id,
+
                                     color_name,
+
                                     color_hex,
+
                                     size,
+
                                     image,
+
                                     printify_variant_id,
+
                                     status
+
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?)
+
+                                VALUES (
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?
+                                )
+
                             `)
                             .bind(
 
