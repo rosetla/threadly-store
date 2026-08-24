@@ -2,7 +2,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Test D1
+    /* =====================================================
+       TEST D1
+       ===================================================== */
+
     if (url.pathname === "/api/test-db") {
       try {
         const result = await env.DB
@@ -15,49 +18,147 @@ export default {
           database: "threadly-db",
           result
         });
+
       } catch (error) {
+
         return Response.json({
           success: false,
           error: error.message
         }, { status: 500 });
+
       }
     }
 
-    // Get products
+
+
+    /* =====================================================
+       GET ALL PRODUCTS
+       ===================================================== */
+
     if (url.pathname === "/api/products") {
       try {
-        const { results } = await env.DB
-          .prepare(`
-            SELECT
-              id,
-              name,
-              slug,
-              description,
-              price,
-              image,
-              category,
-              printify_product_id,
-              status,
-              created_at
-            FROM products
-            WHERE status = 'active'
-            ORDER BY id DESC
-          `)
-          .all();
+
+        const { results } =
+          await env.DB
+            .prepare(`
+              SELECT
+                id,
+                name,
+                slug,
+                description,
+                price,
+                image,
+                category,
+                printify_product_id,
+                status,
+                created_at
+              FROM products
+              WHERE status = 'active'
+              ORDER BY id DESC
+            `)
+            .all();
 
         return Response.json({
           success: true,
           products: results
         });
+
       } catch (error) {
+
         return Response.json({
           success: false,
           error: error.message
         }, { status: 500 });
+
       }
     }
 
-    // Serve website
+
+
+    /* =====================================================
+       GET SINGLE PRODUCT
+       /api/products/1
+       /api/products/2
+       etc.
+       ===================================================== */
+
+    if (
+      url.pathname.startsWith("/api/products/")
+    ) {
+
+      try {
+
+        const id =
+          url.pathname.split("/").pop();
+
+
+        if (
+          !id ||
+          !/^\d+$/.test(id)
+        ) {
+
+          return Response.json({
+            success: false,
+            error: "Invalid product ID"
+          }, { status: 400 });
+
+        }
+
+
+        const product =
+          await env.DB
+            .prepare(`
+              SELECT
+                id,
+                name,
+                slug,
+                description,
+                price,
+                image,
+                category,
+                printify_product_id,
+                status,
+                created_at
+              FROM products
+              WHERE id = ?
+              AND status = 'active'
+            `)
+            .bind(id)
+            .first();
+
+
+        if (!product) {
+
+          return Response.json({
+            success: false,
+            error: "Product not found"
+          }, { status: 404 });
+
+        }
+
+
+        return Response.json({
+          success: true,
+          product
+        });
+
+      } catch (error) {
+
+        return Response.json({
+          success: false,
+          error: error.message
+        }, { status: 500 });
+
+      }
+
+    }
+
+
+
+    /* =====================================================
+       WEBSITE ASSETS
+       ===================================================== */
+
     return env.ASSETS.fetch(request);
   }
 };
