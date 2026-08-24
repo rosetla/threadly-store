@@ -66,7 +66,10 @@
                 class="cart-link"
             >
                 Cart
-                <span id="cart-count">0</span>
+
+                <span id="cart-count">
+                    0
+                </span>
             </a>
 
         </div>
@@ -138,7 +141,7 @@
                             <label for="email">
                                 Email Address
                             </label>
-                            
+
                             <input
                                 type="email"
                                 id="email"
@@ -179,7 +182,6 @@
                                 <input
                                     type="text"
                                     id="first-name"
-                                    name="first-name"
                                     autocomplete="given-name"
                                     required
                                 >
@@ -196,7 +198,6 @@
                                 <input
                                     type="text"
                                     id="last-name"
-                                    name="last-name"
                                     autocomplete="family-name"
                                     required
                                 >
@@ -216,7 +217,6 @@
                             <input
                                 type="text"
                                 id="address"
-                                name="address"
                                 placeholder="Street address"
                                 autocomplete="street-address"
                                 required
@@ -224,17 +224,16 @@
 
                         </div>
 
+
                         <div class="form-group">
 
                             <label for="phone">
                                 Phone Number
-                                
                             </label>
 
                             <input
                                 type="tel"
                                 id="phone"
-                                name="phone"
                                 placeholder="+1 (555) 123-4567"
                                 autocomplete="tel"
                                 required
@@ -242,17 +241,22 @@
 
                         </div>
 
+
                         <div class="form-group">
 
                             <label for="apartment">
+
                                 Apartment, suite, etc.
-                                <span>(optional)</span>
+
+                                <span>
+                                    (optional)
+                                </span>
+
                             </label>
 
                             <input
                                 type="text"
                                 id="apartment"
-                                name="apartment"
                                 autocomplete="address-line2"
                             >
 
@@ -271,12 +275,12 @@
                                 <input
                                     type="text"
                                     id="city"
-                                    name="city"
                                     autocomplete="address-level2"
                                     required
                                 >
 
                             </div>
+
 
 
                             <div class="form-group">
@@ -287,7 +291,6 @@
 
                                 <select
                                     id="state"
-                                    name="state"
                                     required
                                 >
 
@@ -400,6 +403,7 @@
                             </div>
 
 
+
                             <div class="form-group">
 
                                 <label for="zip">
@@ -409,7 +413,6 @@
                                 <input
                                     type="text"
                                     id="zip"
-                                    name="zip"
                                     placeholder="12345"
                                     autocomplete="postal-code"
                                     required
@@ -429,8 +432,6 @@
 
                             <select
                                 id="country"
-                                name="country"
-                                autocomplete="country"
                                 required
                             >
 
@@ -468,6 +469,7 @@
                                 checked
                             >
 
+
                             <span class="shipping-option-info">
 
                                 <strong>
@@ -480,6 +482,7 @@
 
                             </span>
 
+
                             <strong>
                                 Calculated
                             </strong>
@@ -490,7 +493,7 @@
 
 
 
-                    <!-- PAYMENT PLACEHOLDER -->
+                    <!-- PAYMENT -->
 
                     <div class="checkout-block">
 
@@ -547,8 +550,8 @@
                         id="checkout-items"
                         class="checkout-items"
                     >
-                        <!-- Products inserted by JS -->
                     </div>
+
 
 
                     <div class="checkout-summary-lines">
@@ -599,7 +602,6 @@
                     </div>
 
 
-                    <!-- PAY BUTTON -->
 
                     <button
                         type="button"
@@ -765,7 +767,8 @@
          JAVASCRIPT
          ===================================================== -->
 
-<script>
+    <script>
+
 
     /* =====================================================
        CART STORAGE
@@ -775,11 +778,24 @@
 
         try {
 
-            return JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                )
-            ) || [];
+            const cart =
+                JSON.parse(
+                    localStorage.getItem(
+                        "cart"
+                    )
+                );
+
+
+            if (
+                Array.isArray(cart)
+            ) {
+
+                return cart;
+
+            }
+
+
+            return [];
 
         } catch (error) {
 
@@ -797,17 +813,6 @@
 
 
 
-    function saveCart(cart) {
-
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(cart)
-        );
-
-    }
-
-
-
     /* =====================================================
        FORMAT MONEY
        ===================================================== */
@@ -815,7 +820,7 @@
     function formatMoney(amount) {
 
         return "$" +
-            Number(amount).toFixed(2);
+            Number(amount || 0).toFixed(2);
 
     }
 
@@ -835,10 +840,12 @@
             cart.reduce(
                 function(total, item) {
 
-                    return total +
+                    return (
+                        total +
                         Number(
                             item.quantity || 0
-                        );
+                        )
+                    );
 
                 },
                 0
@@ -851,7 +858,9 @@
             );
 
 
-        if (cartCount) {
+        if (
+            cartCount
+        ) {
 
             cartCount.textContent =
                 count;
@@ -874,6 +883,25 @@
                 await fetch(
                     `/api/products/${encodeURIComponent(productId)}`
                 );
+
+
+            const contentType =
+                response.headers.get(
+                    "content-type"
+                ) || "";
+
+
+            if (
+                !contentType.includes(
+                    "application/json"
+                )
+            ) {
+
+                throw new Error(
+                    "API did not return JSON."
+                );
+
+            }
 
 
             const data =
@@ -916,9 +944,16 @@
 
     function calculateShipping(subtotal) {
 
-        return subtotal >= 50
-            ? 0
-            : 5.99;
+        if (
+            subtotal >= 50
+        ) {
+
+            return 0;
+
+        }
+
+
+        return 5.99;
 
     }
 
@@ -940,16 +975,28 @@
             );
 
 
+        const payButton =
+            document.getElementById(
+                "pay-button"
+            );
+
+
+
+        /* ================================================
+           EMPTY CART
+           ================================================ */
+
         if (
             cart.length === 0
         ) {
 
             window.location.href =
-                "shop.html";
+                "cart.html";
 
             return;
 
         }
+
 
 
         itemsContainer.innerHTML =
@@ -961,18 +1008,14 @@
             0;
 
 
-        const verifiedItems =
-            [];
-
-
-        const renderItems =
+        const renderedItems =
             [];
 
 
 
-        /* ===============================================
-           VERIFY PRODUCTS
-           =============================================== */
+        /* ================================================
+           LOAD PRODUCTS
+           ================================================ */
 
         for (
             const item of cart
@@ -984,7 +1027,9 @@
                 );
 
 
-            if (!product) {
+            if (
+                !product
+            ) {
 
                 console.warn(
                     "Could not verify product:",
@@ -992,48 +1037,39 @@
                 );
 
 
-                /*
-                 * Don't automatically destroy
-                 * the cart because API might
-                 * temporarily fail.
-                 */
-
                 continue;
 
             }
 
 
-            const verifiedItem = {
-
-                productId:
-                    product.id,
-
-                color:
-                    item.color,
-
-                size:
-                    item.size,
-
-                quantity:
-                    Number(
-                        item.quantity
-                    )
-
-            };
-
-
-            verifiedItems.push(
-                verifiedItem
-            );
-
-
-            renderItems.push({
+            renderedItems.push({
 
                 product:
                     product,
 
-                item:
-                    verifiedItem
+                item: {
+
+                    productId:
+                        product.id,
+
+                    color:
+                        item.color || "Black",
+
+                    size:
+                        item.size || "M",
+
+                    quantity:
+                        Math.max(
+                            1,
+                            Math.min(
+                                Number(
+                                    item.quantity || 1
+                                ),
+                                10
+                            )
+                        )
+
+                }
 
             });
 
@@ -1041,12 +1077,12 @@
 
 
 
-        /* ===============================================
+        /* ================================================
            NO VALID PRODUCTS
-           =============================================== */
+           ================================================ */
 
         if (
-            renderItems.length === 0
+            renderedItems.length === 0
         ) {
 
             itemsContainer.innerHTML =
@@ -1077,31 +1113,26 @@
                 "$0.00";
 
 
+            payButton.disabled =
+                true;
+
+
             return;
 
         }
 
 
 
-        /*
-         * Update cart with verified items.
-         */
-
-        saveCart(
-            verifiedItems
-        );
-
-
-
-        /* ===============================================
+        /* ================================================
            RENDER ITEMS
-           =============================================== */
+           ================================================ */
 
         itemsContainer.innerHTML =
             "";
 
 
-        renderItems.forEach(
+
+        renderedItems.forEach(
             function(cartData) {
 
 
@@ -1113,10 +1144,14 @@
                     cartData.item;
 
 
-                const itemTotal =
+                const itemPrice =
                     Number(
-                        product.price
-                    ) *
+                        product.price || 0
+                    );
+
+
+                const itemTotal =
+                    itemPrice *
                     item.quantity;
 
 
@@ -1134,13 +1169,14 @@
                     "checkout-item";
 
 
-                itemElement.innerHTML = `
+                itemElement.innerHTML =
+                    `
 
                     <div class="checkout-item-image">
 
                         <img
-                            src="${product.image}"
-                            alt="${product.name}"
+                            src="${product.image || ""}"
+                            alt="${product.name || "Product"}"
                         >
 
                         <span class="checkout-item-quantity">
@@ -1153,7 +1189,7 @@
                     <div class="checkout-item-info">
 
                         <strong>
-                            ${product.name}
+                            ${product.name || "Product"}
                         </strong>
 
                         <span>
@@ -1169,7 +1205,7 @@
 
                     </strong>
 
-                `;
+                    `;
 
 
                 itemsContainer.appendChild(
@@ -1181,9 +1217,9 @@
 
 
 
-        /* ===============================================
+        /* ================================================
            SHIPPING
-           =============================================== */
+           ================================================ */
 
         const shipping =
             calculateShipping(
@@ -1197,9 +1233,9 @@
 
 
 
-        /* ===============================================
+        /* ================================================
            UPDATE SUMMARY
-           =============================================== */
+           ================================================ */
 
         document.getElementById(
             "checkout-subtotal"
@@ -1305,14 +1341,15 @@
                 );
 
 
-
                 const message =
                     document.getElementById(
                         "checkout-message"
                     );
 
 
-                if (!valid) {
+                if (
+                    !valid
+                ) {
 
                     message.textContent =
                         "Please complete all required fields.";
@@ -1327,18 +1364,6 @@
                 }
 
 
-
-                /*
-                 * Payment placeholder
-                 *
-                 * Next step:
-                 *
-                 * 1. Create order
-                 * 2. Save customer info
-                 * 3. Create Stripe Checkout
-                 * 4. Confirm payment
-                 * 5. Send order to Printify
-                 */
 
                 message.textContent =
                     "Order information verified. Payment will be connected next.";
@@ -1356,9 +1381,12 @@
        INITIALIZE
        ===================================================== */
 
+    updateCartCount();
+
     renderCheckout();
 
-</script>
+
+    </script>
 
 
 </body>
