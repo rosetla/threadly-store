@@ -17,11 +17,118 @@
         content="Shop graphic t-shirts from Threadly Co."
     >
 
-    <!-- CONNECT CSS -->
     <link
         rel="stylesheet"
         href="css/style.css"
     >
+
+    <style>
+
+        /* =====================================================
+           VARIANT OPTIONS
+           ===================================================== */
+
+        .color-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .color-option {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            position: relative;
+            padding: 0;
+            transition: 0.15s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.05);
+        }
+
+        .color-option.active {
+            border-color: #111;
+            box-shadow: 0 0 0 2px #fff,
+                        0 0 0 4px #111;
+        }
+
+        .color-option.disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+
+        /* =====================================================
+           SIZE OPTIONS
+           ===================================================== */
+
+        .size-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .size-option {
+            min-width: 52px;
+            height: 46px;
+            padding: 0 14px;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 600;
+            transition: 0.15s ease;
+        }
+
+        .size-option:hover {
+            border-color: #111;
+        }
+
+        .size-option.active {
+            background: #111;
+            color: #fff;
+            border-color: #111;
+        }
+
+        .size-option.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            background: #f5f5f5;
+        }
+
+
+        /* =====================================================
+           OUT OF STOCK MESSAGE
+           ===================================================== */
+
+        .variant-message {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #a40000;
+            display: none;
+        }
+
+        .variant-message.show {
+            display: block;
+        }
+
+
+        /* =====================================================
+           PRODUCT IMAGE TRANSITION
+           ===================================================== */
+
+        #product-image {
+            transition: opacity 0.2s ease;
+        }
+
+    </style>
 
 </head>
 
@@ -37,9 +144,6 @@
 
         <div class="container header-inner">
 
-
-            <!-- LOGO -->
-
             <a
                 href="index.html"
                 class="logo"
@@ -47,8 +151,6 @@
                 THREADLY<span>CO.</span>
             </a>
 
-
-            <!-- NAVIGATION -->
 
             <nav class="main-nav">
 
@@ -67,13 +169,10 @@
             </nav>
 
 
-            <!-- CART -->
-
             <a
                 href="cart.html"
                 class="cart-link"
             >
-
                 Cart
 
                 <span id="cart-count">
@@ -81,7 +180,6 @@
                 </span>
 
             </a>
-
 
         </div>
 
@@ -166,8 +264,6 @@
                 <div class="product-details">
 
 
-                    <!-- CATEGORY -->
-
                     <p
                         id="product-category"
                         class="section-eyebrow"
@@ -176,14 +272,10 @@
                     </p>
 
 
-                    <!-- TITLE -->
-
                     <h1 id="product-name">
                         Graphic T-Shirt
                     </h1>
 
-
-                    <!-- PRICE -->
 
                     <p
                         id="product-price"
@@ -192,8 +284,6 @@
                         $29.99
                     </p>
 
-
-                    <!-- DESCRIPTION -->
 
                     <div class="product-description">
 
@@ -213,7 +303,10 @@
                          COLOR
                          ===================================== -->
 
-                    <div class="product-option">
+                    <div
+                        class="product-option"
+                        id="color-option-container"
+                    >
 
                         <div class="option-header">
 
@@ -222,49 +315,16 @@
                             </span>
 
                             <span id="selected-color">
-                                Black
+                                —
                             </span>
 
                         </div>
 
 
-                        <div class="color-options">
-
-                            <button
-                                type="button"
-                                class="color-option active"
-                                data-color="Black"
-                                style="background:#111111;"
-                                aria-label="Black"
-                            ></button>
-
-
-                            <button
-                                type="button"
-                                class="color-option"
-                                data-color="White"
-                                style="background:#ffffff;"
-                                aria-label="White"
-                            ></button>
-
-
-                            <button
-                                type="button"
-                                class="color-option"
-                                data-color="Gray"
-                                style="background:#888888;"
-                                aria-label="Gray"
-                            ></button>
-
-
-                            <button
-                                type="button"
-                                class="color-option"
-                                data-color="Navy"
-                                style="background:#17243a;"
-                                aria-label="Navy"
-                            ></button>
-
+                        <div
+                            class="color-options"
+                            id="color-options"
+                        >
                         </div>
 
                     </div>
@@ -275,7 +335,10 @@
                          SIZE
                          ===================================== -->
 
-                    <div class="product-option">
+                    <div
+                        class="product-option"
+                        id="size-option-container"
+                    >
 
                         <div class="option-header">
 
@@ -290,52 +353,17 @@
                         </div>
 
 
-                        <div class="size-options">
-
-                            <button
-                                type="button"
-                                class="size-option"
-                                data-size="S"
-                            >
-                                S
-                            </button>
+                        <div
+                            class="size-options"
+                            id="size-options"
+                        >
+                        </div>
 
 
-                            <button
-                                type="button"
-                                class="size-option active"
-                                data-size="M"
-                            >
-                                M
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="size-option"
-                                data-size="L"
-                            >
-                                L
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="size-option"
-                                data-size="XL"
-                            >
-                                XL
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="size-option"
-                                data-size="2XL"
-                            >
-                                2XL
-                            </button>
-
+                        <div
+                            id="variant-message"
+                            class="variant-message"
+                        >
                         </div>
 
                     </div>
@@ -400,8 +428,6 @@
                     </button>
 
 
-                    <!-- CART MESSAGE -->
-
                     <div
                         id="cart-message"
                         class="cart-message"
@@ -415,7 +441,6 @@
                          ===================================== -->
 
                     <div class="product-features">
-
 
                         <div class="feature-item">
 
@@ -454,7 +479,6 @@
                             </span>
 
                         </div>
-
 
                     </div>
 
@@ -533,8 +557,6 @@
         <div class="container footer-grid">
 
 
-            <!-- BRAND -->
-
             <div class="footer-brand">
 
                 <a
@@ -551,8 +573,6 @@
 
             </div>
 
-
-            <!-- SHOP -->
 
             <div class="footer-column">
 
@@ -579,8 +599,6 @@
             </div>
 
 
-            <!-- HELP -->
-
             <div class="footer-column">
 
                 <h3>
@@ -605,8 +623,6 @@
 
             </div>
 
-
-            <!-- SOCIAL -->
 
             <div class="footer-column">
 
@@ -662,75 +678,189 @@
 
     <script>
 
-    /* =====================================================
-       GET PRODUCT ID FROM URL
-       ===================================================== */
+        /* =====================================================
+           URL
+           ===================================================== */
 
-    const urlParams =
-        new URLSearchParams(
-            window.location.search
-        );
-
-    const productId =
-        urlParams.get("id");
-
-
-    /* =====================================================
-       PRODUCT
-       ===================================================== */
-
-    let product = null;
-
-
-    /* =====================================================
-       LOAD PRODUCT FROM D1
-       ===================================================== */
-
-    async function loadProduct() {
-
-        if (!productId) {
-
-            showProductError(
-                "Product not found."
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
             );
 
-            return;
-        }
+        const productId =
+            urlParams.get("id");
 
 
-        try {
 
-            const response =
-                await fetch(
-                    `/api/products/${productId}`
-                );
+        /* =====================================================
+           STATE
+           ===================================================== */
+
+        let product = null;
+
+        let variants = [];
+
+        let selectedColor = null;
+
+        let selectedSize = null;
+
+        let selectedVariant = null;
+
+        let quantity = 1;
 
 
-            const data =
-                await response.json();
+
+        /* =====================================================
+           DOM
+           ===================================================== */
+
+        const productImage =
+            document.getElementById(
+                "product-image"
+            );
+
+        const colorOptions =
+            document.getElementById(
+                "color-options"
+            );
+
+        const sizeOptions =
+            document.getElementById(
+                "size-options"
+            );
+
+        const selectedColorText =
+            document.getElementById(
+                "selected-color"
+            );
+
+        const variantMessage =
+            document.getElementById(
+                "variant-message"
+            );
+
+        const addToCartButton =
+            document.getElementById(
+                "add-to-cart"
+            );
 
 
-            if (
-                !response.ok ||
-                !data.success ||
-                !data.product
-            ) {
+
+        /* =====================================================
+           LOAD PRODUCT
+           ===================================================== */
+
+        async function loadProduct() {
+
+            if (!productId) {
 
                 showProductError(
                     "Product not found."
                 );
 
                 return;
+
             }
 
 
-            product =
-                data.product;
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/products/${productId}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Accept":
+                                    "application/json"
+                            },
+                            cache: "no-store"
+                        }
+                    );
 
 
-            /* =============================================
-               UPDATE PAGE
-               ============================================= */
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success ||
+                    !data.product
+                ) {
+
+                    showProductError(
+                        data.error ||
+                        "Product not found."
+                    );
+
+                    return;
+
+                }
+
+
+                product =
+                    data.product;
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * API must return:
+                 *
+                 * product.variants
+                 */
+
+                variants =
+                    Array.isArray(
+                        product.variants
+                    )
+                        ? product.variants.filter(
+                            function(variant) {
+
+                                return (
+                                    variant.status ===
+                                        "active" ||
+                                    !variant.status
+                                );
+
+                            }
+                        )
+                        : [];
+
+
+                updateProductInfo();
+
+                renderColors();
+
+                renderSizes();
+
+                initializeSelection();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load product:",
+                    error
+                );
+
+
+                showProductError(
+                    "Unable to load this product."
+                );
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           UPDATE PRODUCT INFO
+           ===================================================== */
+
+        function updateProductInfo() {
 
             document.title =
                 `${product.name} | Threadly Co.`;
@@ -745,31 +875,33 @@
             document.getElementById(
                 "product-category"
             ).textContent =
-                product.category.toUpperCase();
+                String(
+                    product.category || "GRAPHIC TEE"
+                ).toUpperCase();
 
 
             document.getElementById(
                 "product-price"
             ).textContent =
-                `$${Number(product.price).toFixed(2)}`;
+                `$${Number(
+                    product.price
+                ).toFixed(2)}`;
 
 
-            document.getElementById(
-                "product-image"
-            ).src =
-                product.image;
+            productImage.src =
+                product.image ||
+                "images/product-1.jpg";
 
 
-            document.getElementById(
-                "product-image"
-            ).alt =
+            productImage.alt =
                 product.name;
 
 
             document.getElementById(
                 "product-description-text"
             ).textContent =
-                product.description;
+                product.description ||
+                "";
 
 
             document.getElementById(
@@ -777,10 +909,6 @@
             ).textContent =
                 product.name;
 
-
-            /* =============================================
-               UPDATE META DESCRIPTION
-               ============================================= */
 
             const metaDescription =
                 document.querySelector(
@@ -792,290 +920,1053 @@
 
                 metaDescription.setAttribute(
                     "content",
-                    product.description
+                    product.description ||
+                    product.name
                 );
 
             }
 
-        } catch (error) {
+        }
 
-            console.error(
-                "Failed to load product:",
-                error
+
+
+        /* =====================================================
+           GET COLORS
+           ===================================================== */
+
+        function getAvailableColors() {
+
+            const colors = [];
+
+            variants.forEach(
+                function(variant) {
+
+                    const name =
+                        String(
+                            variant.color_name || ""
+                        ).trim();
+
+
+                    if (!name) {
+
+                        return;
+
+                    }
+
+
+                    const exists =
+                        colors.some(
+                            function(color) {
+
+                                return (
+                                    color.name
+                                        .toLowerCase() ===
+                                    name.toLowerCase()
+                                );
+
+                            }
+                        );
+
+
+                    if (!exists) {
+
+                        colors.push({
+
+                            name,
+
+                            hex:
+                                variant.color_hex ||
+                                "#111111"
+
+                        });
+
+                    }
+
+                }
             );
 
 
-            showProductError(
-                "Unable to load this product."
-            );
+            return colors;
 
         }
 
-    }
 
 
+        /* =====================================================
+           RENDER COLORS
+           ===================================================== */
 
-    /* =====================================================
-       PRODUCT ERROR
-       ===================================================== */
+        function renderColors() {
 
-    function showProductError(message) {
-
-        document.getElementById(
-            "product-name"
-        ).textContent =
-            message;
+            colorOptions.innerHTML = "";
 
 
-        document.getElementById(
-            "product-description-text"
-        ).textContent =
-            "Please return to the shop and try again.";
+            const colors =
+                getAvailableColors();
 
 
-        document.getElementById(
-            "add-to-cart"
-        ).disabled =
-            true;
+            if (
+                colors.length === 0
+            ) {
 
-    }
+                document
+                    .getElementById(
+                        "color-option-container"
+                    )
+                    .style.display =
+                    "none";
 
+                selectedColor = null;
 
+                return;
 
-    /* =====================================================
-       COLOR SELECTION
-       ===================================================== */
-
-    let selectedColor = "Black";
-
-
-    const colorButtons =
-        document.querySelectorAll(
-            ".color-option"
-        );
+            }
 
 
-    const selectedColorText =
-        document.getElementById(
-            "selected-color"
-        );
+            colors.forEach(
+                function(color) {
+
+                    const button =
+                        document.createElement(
+                            "button"
+                        );
 
 
-    colorButtons.forEach(
-        function(button) {
-
-            button.addEventListener(
-                "click",
-                function() {
+                    button.type =
+                        "button";
 
 
-                    colorButtons.forEach(
-                        function(btn) {
+                    button.className =
+                        "color-option";
 
-                            btn.classList.remove(
-                                "active"
+
+                    button.dataset.color =
+                        color.name;
+
+
+                    button.setAttribute(
+                        "aria-label",
+                        color.name
+                    );
+
+
+                    button.title =
+                        color.name;
+
+
+                    button.style.background =
+                        color.hex;
+
+
+                    /*
+                     * Add a light border for
+                     * white / very light colors.
+                     */
+
+                    if (
+                        isLightColor(
+                            color.hex
+                        )
+                    ) {
+
+                        button.style.borderColor =
+                            "#aaa";
+
+                    }
+
+
+                    button.addEventListener(
+                        "click",
+                        function() {
+
+                            selectColor(
+                                color.name
                             );
 
                         }
                     );
 
 
-                    button.classList.add(
-                        "active"
+                    colorOptions.appendChild(
+                        button
                     );
-
-
-                    selectedColor =
-                        button.dataset.color;
-
-
-                    selectedColorText.textContent =
-                        selectedColor;
 
                 }
             );
 
         }
-    );
 
 
 
-    /* =====================================================
-       SIZE SELECTION
-       ===================================================== */
+        /* =====================================================
+           LIGHT COLOR DETECTION
+           ===================================================== */
 
-    let selectedSize = "M";
+        function isLightColor(hex) {
 
+            if (
+                typeof hex !== "string"
+            ) {
 
-    const sizeButtons =
-        document.querySelectorAll(
-            ".size-option"
-        );
+                return false;
 
-
-    sizeButtons.forEach(
-        function(button) {
-
-            button.addEventListener(
-                "click",
-                function() {
+            }
 
 
-                    sizeButtons.forEach(
-                        function(btn) {
+            const value =
+                hex.replace(
+                    "#",
+                    ""
+                );
 
-                            btn.classList.remove(
-                                "active"
+
+            if (
+                value.length !== 6
+            ) {
+
+                return false;
+
+            }
+
+
+            const r =
+                parseInt(
+                    value.substring(0, 2),
+                    16
+                );
+
+
+            const g =
+                parseInt(
+                    value.substring(2, 4),
+                    16
+                );
+
+
+            const b =
+                parseInt(
+                    value.substring(4, 6),
+                    16
+                );
+
+
+            const brightness =
+                (
+                    r * 299 +
+                    g * 587 +
+                    b * 114
+                ) / 1000;
+
+
+            return brightness > 220;
+
+        }
+
+
+
+        /* =====================================================
+           GET SIZES
+           ===================================================== */
+
+        function getAvailableSizes(
+            colorName = null
+        ) {
+
+            let source =
+                variants;
+
+
+            /*
+             * If a color is selected,
+             * only show sizes that exist
+             * for that color.
+             */
+
+            if (colorName) {
+
+                source =
+                    variants.filter(
+                        function(variant) {
+
+                            return (
+                                String(
+                                    variant.color_name
+                                ).toLowerCase() ===
+                                String(
+                                    colorName
+                                ).toLowerCase()
+                            );
+
+                        }
+                    );
+
+            }
+
+
+            const sizes = [];
+
+
+            source.forEach(
+                function(variant) {
+
+                    const size =
+                        String(
+                            variant.size || ""
+                        ).trim();
+
+
+                    if (!size) {
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !sizes.includes(
+                            size
+                        )
+                    ) {
+
+                        sizes.push(
+                            size
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /*
+             * Normal clothing size order.
+             */
+
+            const order = [
+                "XS",
+                "S",
+                "M",
+                "L",
+                "XL",
+                "2XL",
+                "3XL",
+                "4XL",
+                "5XL"
+            ];
+
+
+            sizes.sort(
+                function(a, b) {
+
+                    const indexA =
+                        order.indexOf(
+                            a.toUpperCase()
+                        );
+
+
+                    const indexB =
+                        order.indexOf(
+                            b.toUpperCase()
+                        );
+
+
+                    if (
+                        indexA === -1 &&
+                        indexB === -1
+                    ) {
+
+                        return a.localeCompare(
+                            b
+                        );
+
+                    }
+
+
+                    if (
+                        indexA === -1
+                    ) {
+
+                        return 1;
+
+                    }
+
+
+                    if (
+                        indexB === -1
+                    ) {
+
+                        return -1;
+
+                    }
+
+
+                    return indexA - indexB;
+
+                }
+            );
+
+
+            return sizes;
+
+        }
+
+
+
+        /* =====================================================
+           RENDER SIZES
+           ===================================================== */
+
+        function renderSizes() {
+
+            sizeOptions.innerHTML = "";
+
+
+            const sizes =
+                getAvailableSizes(
+                    selectedColor
+                );
+
+
+            if (
+                sizes.length === 0
+            ) {
+
+                document
+                    .getElementById(
+                        "size-option-container"
+                    )
+                    .style.display =
+                    "none";
+
+                selectedSize = null;
+
+                return;
+
+            }
+
+
+            document
+                .getElementById(
+                    "size-option-container"
+                )
+                .style.display =
+                "";
+
+
+            sizes.forEach(
+                function(size) {
+
+                    const button =
+                        document.createElement(
+                            "button"
+                        );
+
+
+                    button.type =
+                        "button";
+
+
+                    button.className =
+                        "size-option";
+
+
+                    button.dataset.size =
+                        size;
+
+
+                    button.textContent =
+                        size;
+
+
+                    button.addEventListener(
+                        "click",
+                        function() {
+
+                            selectSize(
+                                size
                             );
 
                         }
                     );
 
 
-                    button.classList.add(
-                        "active"
+                    sizeOptions.appendChild(
+                        button
                     );
 
-
-                    selectedSize =
-                        button.dataset.size;
-
                 }
             );
+
+
+            /*
+             * Automatically select the
+             * first available size.
+             */
+
+            if (
+                !sizes.includes(
+                    selectedSize
+                )
+            ) {
+
+                selectedSize =
+                    sizes[0];
+
+            }
+
+
+            updateSizeUI();
+
+            updateSelectedVariant();
 
         }
-    );
 
 
 
-    /* =====================================================
-       QUANTITY
-       ===================================================== */
+        /* =====================================================
+           SELECT COLOR
+           ===================================================== */
 
-    let quantity = 1;
+        function selectColor(
+            colorName
+        ) {
+
+            selectedColor =
+                colorName;
 
 
-    const quantityDisplay =
-        document.getElementById(
-            "quantity"
-        );
+            selectedColorText.textContent =
+                colorName;
 
 
-    document
-        .getElementById("quantity-minus")
-        .addEventListener(
-            "click",
-            function() {
+            /*
+             * Update active color button.
+             */
 
-                if (quantity > 1) {
+            document
+                .querySelectorAll(
+                    ".color-option"
+                )
+                .forEach(
+                    function(button) {
 
-                    quantity--;
+                        button.classList.toggle(
+                            "active",
+                            button.dataset.color ===
+                                colorName
+                        );
 
-                    quantityDisplay.textContent =
-                        quantity;
+                    }
+                );
+
+
+            /*
+             * Rebuild available sizes
+             * for this color.
+             */
+
+            renderSizes();
+
+
+            /*
+             * Change product image if
+             * the variant has its own image.
+             */
+
+            const colorVariant =
+                variants.find(
+                    function(variant) {
+
+                        return (
+                            String(
+                                variant.color_name
+                            ).toLowerCase() ===
+                            String(
+                                colorName
+                            ).toLowerCase() &&
+                            variant.image
+                        );
+
+                    }
+                );
+
+
+            if (
+                colorVariant &&
+                colorVariant.image
+            ) {
+
+                changeProductImage(
+                    colorVariant.image
+                );
+
+            } else {
+
+                changeProductImage(
+                    product.image
+                );
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           SELECT SIZE
+           ===================================================== */
+
+        function selectSize(
+            size
+        ) {
+
+            selectedSize =
+                size;
+
+
+            updateSizeUI();
+
+            updateSelectedVariant();
+
+        }
+
+
+
+        /* =====================================================
+           UPDATE SIZE UI
+           ===================================================== */
+
+        function updateSizeUI() {
+
+            document
+                .querySelectorAll(
+                    ".size-option"
+                )
+                .forEach(
+                    function(button) {
+
+                        button.classList.toggle(
+                            "active",
+                            button.dataset.size ===
+                                selectedSize
+                        );
+
+                    }
+                );
+
+        }
+
+
+
+        /* =====================================================
+           FIND VARIANT
+           ===================================================== */
+
+        function updateSelectedVariant() {
+
+            selectedVariant =
+                variants.find(
+                    function(variant) {
+
+                        return (
+
+                            String(
+                                variant.color_name
+                            ).toLowerCase() ===
+                            String(
+                                selectedColor
+                            ).toLowerCase()
+
+                            &&
+
+                            String(
+                                variant.size
+                            ).toUpperCase() ===
+                            String(
+                                selectedSize
+                            ).toUpperCase()
+
+                        );
+
+                    }
+                );
+
+
+            if (
+                selectedVariant
+            ) {
+
+                variantMessage.classList.remove(
+                    "show"
+                );
+
+
+                addToCartButton.disabled =
+                    false;
+
+
+                /*
+                 * Variant-specific image.
+                 */
+
+                if (
+                    selectedVariant.image
+                ) {
+
+                    changeProductImage(
+                        selectedVariant.image
+                    );
 
                 }
 
-            }
-        );
+            } else {
+
+                variantMessage.textContent =
+                    "This color and size combination is unavailable.";
+
+                variantMessage.classList.add(
+                    "show"
+                );
 
 
-    document
-        .getElementById("quantity-plus")
-        .addEventListener(
-            "click",
-            function() {
-
-                if (quantity < 10) {
-
-                    quantity++;
-
-                    quantityDisplay.textContent =
-                        quantity;
-
-                }
+                addToCartButton.disabled =
+                    true;
 
             }
-        );
+
+        }
 
 
 
-    /* =====================================================
-       CART
-       ===================================================== */
+        /* =====================================================
+           INITIALIZE SELECTION
+           ===================================================== */
 
-    function getCart() {
+        function initializeSelection() {
 
-        return JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
-
-    }
+            const colors =
+                getAvailableColors();
 
 
+            if (
+                colors.length === 0
+            ) {
 
-    function saveCart(cart) {
+                addToCartButton.disabled =
+                    false;
 
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(cart)
-        );
+                return;
 
-    }
-
-
-
-    function updateCartCount() {
-
-        const cart =
-            getCart();
+            }
 
 
-        const count =
-            cart.reduce(
-                function(total, item) {
+            /*
+             * Select first color from DB.
+             */
 
-                    return total +
-                        item.quantity;
-
-                },
-                0
-            );
+            selectedColor =
+                colors[0].name;
 
 
-        const cartCount =
+            selectedColorText.textContent =
+                selectedColor;
+
+
+            /*
+             * Render sizes for first color.
+             */
+
+            renderSizes();
+
+
+            /*
+             * Mark color active.
+             */
+
+            document
+                .querySelectorAll(
+                    ".color-option"
+                )
+                .forEach(
+                    function(button) {
+
+                        button.classList.toggle(
+                            "active",
+                            button.dataset.color ===
+                                selectedColor
+                        );
+
+                    }
+                );
+
+
+            updateSelectedVariant();
+
+        }
+
+
+
+        /* =====================================================
+           CHANGE PRODUCT IMAGE
+           ===================================================== */
+
+        function changeProductImage(
+            image
+        ) {
+
+            if (!image) {
+
+                return;
+
+            }
+
+
+            productImage.style.opacity =
+                "0.4";
+
+
+            const newImage =
+                new Image();
+
+
+            newImage.onload =
+                function() {
+
+                    productImage.src =
+                        image;
+
+                    productImage.style.opacity =
+                        "1";
+
+                };
+
+
+            newImage.onerror =
+                function() {
+
+                    productImage.style.opacity =
+                        "1";
+
+                };
+
+
+            newImage.src =
+                image;
+
+        }
+
+
+
+        /* =====================================================
+           ERROR
+           ===================================================== */
+
+        function showProductError(
+            message
+        ) {
+
             document.getElementById(
-                "cart-count"
-            );
+                "product-name"
+            ).textContent =
+                message;
 
 
-        if (cartCount) {
+            document.getElementById(
+                "product-description-text"
+            ).textContent =
+                "Please return to the shop and try again.";
 
-            cartCount.textContent =
-                count;
+
+            addToCartButton.disabled =
+                true;
+
+
+            document.getElementById(
+                "color-option-container"
+            ).style.display =
+                "none";
+
+
+            document.getElementById(
+                "size-option-container"
+            ).style.display =
+                "none";
 
         }
 
-    }
+
+
+        /* =====================================================
+           QUANTITY
+           ===================================================== */
+
+        const quantityDisplay =
+            document.getElementById(
+                "quantity"
+            );
+
+
+        document
+            .getElementById(
+                "quantity-minus"
+            )
+            .addEventListener(
+                "click",
+                function() {
+
+                    if (
+                        quantity > 1
+                    ) {
+
+                        quantity--;
+
+                        quantityDisplay.textContent =
+                            quantity;
+
+                    }
+
+                }
+            );
+
+
+        document
+            .getElementById(
+                "quantity-plus"
+            )
+            .addEventListener(
+                "click",
+                function() {
+
+                    if (
+                        quantity < 10
+                    ) {
+
+                        quantity++;
+
+                        quantityDisplay.textContent =
+                            quantity;
+
+                    }
+
+                }
+            );
 
 
 
-    updateCartCount();
+        /* =====================================================
+           CART
+           ===================================================== */
+
+        function getCart() {
+
+            try {
+
+                return JSON.parse(
+                    localStorage.getItem(
+                        "cart"
+                    )
+                ) || [];
+
+            } catch {
+
+                return [];
+
+            }
+
+        }
 
 
 
-    /* =====================================================
-       ADD TO CART
-       ===================================================== */
+        function saveCart(
+            cart
+        ) {
 
-    document
-        .getElementById("add-to-cart")
-        .addEventListener(
+            localStorage.setItem(
+                "cart",
+                JSON.stringify(
+                    cart
+                )
+            );
+
+        }
+
+
+
+        function updateCartCount() {
+
+            const cart =
+                getCart();
+
+
+            const count =
+                cart.reduce(
+                    function(
+                        total,
+                        item
+                    ) {
+
+                        return (
+                            total +
+                            Number(
+                                item.quantity
+                            )
+                        );
+
+                    },
+                    0
+                );
+
+
+            const cartCount =
+                document.getElementById(
+                    "cart-count"
+                );
+
+
+            if (cartCount) {
+
+                cartCount.textContent =
+                    count;
+
+            }
+
+        }
+
+
+
+        /* =====================================================
+           ADD TO CART
+           ===================================================== */
+
+        addToCartButton.addEventListener(
             "click",
             function() {
 
+                if (
+                    !product
+                ) {
 
-                if (!product) {
+                    return;
+
+                }
+
+
+                /*
+                 * If variants exist,
+                 * require a real variant.
+                 */
+
+                if (
+                    variants.length > 0 &&
+                    !selectedVariant
+                ) {
+
+                    variantMessage.textContent =
+                        "Please select an available color and size.";
+
+                    variantMessage.classList.add(
+                        "show"
+                    );
 
                     return;
 
@@ -1086,9 +1977,25 @@
                     getCart();
 
 
+                const variantId =
+                    selectedVariant
+                        ? selectedVariant.id
+                        : null;
+
+
                 /*
-                 * Product + Color + Size
-                 * = Separate cart item
+                 * Product + Variant
+                 * = separate cart item.
+                 *
+                 * This prevents:
+                 *
+                 * Black M
+                 *
+                 * and
+                 *
+                 * Black L
+                 *
+                 * from becoming one item.
                  */
 
                 const existingItem =
@@ -1096,21 +2003,32 @@
                         function(item) {
 
                             return (
-                                item.productId ===
-                                productId &&
 
-                                item.color ===
-                                selectedColor &&
+                                String(
+                                    item.productId
+                                ) ===
+                                String(
+                                    productId
+                                )
 
-                                item.size ===
-                                selectedSize
+                                &&
+
+                                String(
+                                    item.variantId
+                                ) ===
+                                String(
+                                    variantId
+                                )
+
                             );
 
                         }
                     );
 
 
-                if (existingItem) {
+                if (
+                    existingItem
+                ) {
 
                     existingItem.quantity +=
                         quantity;
@@ -1122,13 +2040,19 @@
                         productId:
                             productId,
 
+                        variantId:
+                            variantId,
+
                         name:
                             product.name,
 
                         price:
-                            Number(product.price),
+                            Number(
+                                product.price
+                            ),
 
                         image:
+                            selectedVariant?.image ||
                             product.image,
 
                         color:
@@ -1145,7 +2069,9 @@
                 }
 
 
-                saveCart(cart);
+                saveCart(
+                    cart
+                );
 
 
                 updateCartCount();
@@ -1182,13 +2108,15 @@
 
 
 
-    /* =====================================================
-       START
-       ===================================================== */
+        /* =====================================================
+           START
+           ===================================================== */
 
-    loadProduct();
+        updateCartCount();
 
-</script>
+        loadProduct();
+
+    </script>
 
 
 </body>
