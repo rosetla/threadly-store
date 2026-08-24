@@ -1,1 +1,16 @@
+{
+  "name": "threadly-store",
+  "compatibility_date": "2026-08-24",
 
+  "assets": {
+    "directory": "."
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "threadly-db",
+      "database_id": "edb9239d-c1a2-43ca-a0bf-d33c83dc8a92"
+    }
+  ]
+}
