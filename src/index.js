@@ -5106,11 +5106,11 @@
                         error
                     );
 
-
-                    return errorResponse(
-                        "Failed to load order.",
-                        500
-                    );
+                    return json({
+                        success: false,
+                        error: "Failed to load order.",
+                        debug: error?.message || String(error)
+                    }, 500);
 
                 }
 
