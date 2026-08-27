@@ -4831,15 +4831,15 @@
                 } catch (error) {
 
                     console.error(
-                        "ADMIN GET ORDERS error:",
+                        "ADMIN GET ORDER error:",
                         error
                     );
 
-
-                    return errorResponse(
-                        "Failed to load orders.",
-                        500
-                    );
+                    return json({
+                        success: false,
+                        error: "Failed to load order.",
+                        debug: error?.message || String(error)
+                    }, 500);
 
                 }
 
