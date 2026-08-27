@@ -7580,6 +7580,1251 @@
             }
 
             /* =====================================================
+            ADMIN SYNC ONE PRINTIFY PRODUCT
+            ===================================================== */
+
+            const adminPrintifySyncMatch =
+                pathname.match(
+                    /^\/api\/admin\/printify\/products\/([^/]+)\/sync$/
+                );
+
+
+            if (
+                adminPrintifySyncMatch &&
+                method === "POST"
+            ) {
+
+                const printifyProductId =
+                    decodeURIComponent(
+                        adminPrintifySyncMatch[1]
+                    );
+
+
+                try {
+
+                    /* =============================================
+                    VALIDATE PRINTIFY CONFIG
+                    ============================================= */
+
+                    if (!env.PRINTIFY_API_TOKEN) {
+
+                        return errorResponse(
+                            "Printify API token is not configured.",
+                            500
+                        );
+
+                    }
+
+
+                    if (!env.PRINTIFY_SHOP_ID) {
+
+                        return errorResponse(
+                            "Printify shop ID is not configured.",
+                            500
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                    GET PRODUCT FROM PRINTIFY
+                    ============================================= */
+
+                    const printifyUrl =
+                        `https://api.printify.com/v1/shops/${env.PRINTIFY_SHOP_ID}/products/${encodeURIComponent(printifyProductId)}.json`;
+
+
+                    const response =
+                        await fetch(
+                            printifyUrl,
+                            {
+
+                                method:
+                                    "GET",
+
+                                headers: {
+
+                                    "Authorization":
+                                        `Bearer ${env.PRINTIFY_API_TOKEN}`,
+
+                                    "Content-Type":
+                                        "application/json"
+
+                                }
+
+                            }
+                        );
+
+
+                    const printifyProduct =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        console.error(
+                            "PRINTIFY SYNC GET PRODUCT error:",
+                            printifyProduct
+                        );
+
+
+                        return json({
+
+                            success:
+                                false,
+
+                            error:
+                                "Failed to get product from Printify.",
+
+                            printify_status:
+                                response.status,
+
+                            details:
+                                printifyProduct
+
+                        }, response.status);
+
+                    }
+
+
+
+                    /* =============================================
+                    BASIC PRODUCT DATA
+                    ============================================= */
+
+                    const name =
+                        normalizeString(
+                            printifyProduct.title,
+                            200
+                        );
+
+
+                    if (!name) {
+
+                        return errorResponse(
+                            "Printify product has no title.",
+                            400
+                        );
+
+                    }
+
+
+                    const description =
+                        normalizeString(
+                            printifyProduct.description,
+                            10000
+                        );
+
+
+                    /* =============================================
+                    PRODUCT IMAGE
+                    ============================================= */
+
+                    const images =
+                        Array.isArray(
+                            printifyProduct.images
+                        )
+                            ? printifyProduct.images
+                            : [];
+
+
+                    const defaultImage =
+                        images.find(
+                            image =>
+                                image?.is_default &&
+                                isValidImageUrl(
+                                    image?.src
+                                )
+                        );
+
+
+                    const firstValidImage =
+                        images.find(
+                            image =>
+                                isValidImageUrl(
+                                    image?.src
+                                )
+                        );
+
+
+                    const productImage =
+                        defaultImage?.src ||
+                        firstValidImage?.src ||
+                        null;
+
+
+
+                    if (!productImage) {
+
+                        return errorResponse(
+                            "Printify product has no valid image.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                    CATEGORY
+                    ============================================= */
+
+                    /*
+                    * Printify does not necessarily provide
+                    * our exact store category.
+                    *
+                    * Use the existing product category
+                    * when updating an existing product.
+                    *
+                    * For a new product use "t-shirts".
+                    */
+
+                    let category =
+                        "t-shirts";
+
+
+
+                    /* =============================================
+                    EXISTING PRODUCT
+                    ============================================= */
+
+                    const existingProduct =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    category,
+
+                                    slug
+
+                                FROM products
+
+                                WHERE printify_product_id = ?
+
+                            `)
+                            .bind(
+                                printifyProductId
+                            )
+                            .first();
+
+
+                    if (
+                        existingProduct?.category
+                    ) {
+
+                        category =
+                            existingProduct.category;
+
+                    }
+
+
+
+                    /* =============================================
+                    SLUG
+                    ============================================= */
+
+                    function makeSlug(value) {
+
+                        return String(
+                            value || ""
+                        )
+                            .toLowerCase()
+                            .trim()
+                            .replace(
+                                /['’]/g,
+                                ""
+                            )
+                            .replace(
+                                /[^a-z0-9]+/g,
+                                "-"
+                            )
+                            .replace(
+                                /^-+|-+$/g,
+                                ""
+                            )
+                            .slice(
+                                0,
+                                150
+                            );
+
+                    }
+
+
+                    let slug =
+                        existingProduct?.slug ||
+                        makeSlug(name);
+
+
+                    if (!slug) {
+
+                        slug =
+                            "product-" +
+                            String(
+                                printifyProductId
+                            ).slice(
+                                0,
+                                12
+                            );
+
+                    }
+
+
+
+                    /* =============================================
+                    COLORS + SIZES
+                    ============================================= */
+
+                    const printifyOptions =
+                        Array.isArray(
+                            printifyProduct.options
+                        )
+                            ? printifyProduct.options
+                            : [];
+
+
+                    const colorOption =
+                        printifyOptions.find(
+                            option =>
+                                String(
+                                    option?.type || ""
+                                ).toLowerCase() === "color"
+                        );
+
+
+                    const sizeOption =
+                        printifyOptions.find(
+                            option =>
+                                String(
+                                    option?.type || ""
+                                ).toLowerCase() === "size"
+                        );
+
+
+                    const colorValues =
+                        Array.isArray(
+                            colorOption?.values
+                        )
+                            ? colorOption.values
+                            : [];
+
+
+                    const sizeValues =
+                        Array.isArray(
+                            sizeOption?.values
+                        )
+                            ? sizeOption.values
+                            : [];
+
+
+
+                    /* =============================================
+                    MAP PRINTIFY OPTION IDs
+                    ============================================= */
+
+                    const colorMap =
+                        new Map();
+
+
+                    for (
+                        const color
+                        of colorValues
+                    ) {
+
+                        colorMap.set(
+                            Number(
+                                color.id
+                            ),
+                            {
+
+                                name:
+                                    String(
+                                        color.title || ""
+                                    ).trim(),
+
+                                hex:
+                                    Array.isArray(
+                                        color.colors
+                                    ) &&
+                                    color.colors[0]
+                                        ? color.colors[0]
+                                        : null
+
+                            }
+                        );
+
+                    }
+
+
+                    const sizeMap =
+                        new Map();
+
+
+                    for (
+                        const size
+                        of sizeValues
+                    ) {
+
+                        sizeMap.set(
+                            Number(
+                                size.id
+                            ),
+                            String(
+                                size.title || ""
+                            ).trim()
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                    VALID VARIANTS
+                    ============================================= */
+
+                    const printifyVariants =
+                        Array.isArray(
+                            printifyProduct.variants
+                        )
+                            ? printifyProduct.variants
+                            : [];
+
+
+                    const validVariants =
+                        printifyVariants.filter(
+                            variant =>
+                                variant &&
+                                variant.is_enabled !== false &&
+                                variant.is_available !== false
+                        );
+
+
+                    if (!validVariants.length) {
+
+                        return errorResponse(
+                            "Printify product has no available variants.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                    BUILD VARIANT MATRIX
+                    ============================================= */
+
+                    const variantRows =
+                        [];
+
+
+                    for (
+                        const variant
+                        of validVariants
+                    ) {
+
+                        const optionIds =
+                            Array.isArray(
+                                variant.options
+                            )
+                                ? variant.options
+                                : [];
+
+
+                        let color =
+                            null;
+
+
+                        let size =
+                            null;
+
+
+                        for (
+                            const optionId
+                            of optionIds
+                        ) {
+
+                            const numericId =
+                                Number(
+                                    optionId
+                                );
+
+
+                            if (
+                                colorMap.has(
+                                    numericId
+                                )
+                            ) {
+
+                                color =
+                                    colorMap.get(
+                                        numericId
+                                    );
+
+                            }
+
+
+                            if (
+                                sizeMap.has(
+                                    numericId
+                                )
+                            ) {
+
+                                size =
+                                    sizeMap.get(
+                                        numericId
+                                    );
+
+                            }
+
+                        }
+
+
+
+                        /*
+                        * Some Printify products may have
+                        * unusual option structures.
+                        *
+                        * In that case fall back to the
+                        * variant title.
+                        */
+
+                        if (
+                            !color ||
+                            !size
+                        ) {
+
+                            const titleParts =
+                                String(
+                                    variant.title || ""
+                                )
+                                    .split(
+                                        " / "
+                                    )
+                                    .map(
+                                        value =>
+                                            value.trim()
+                                    );
+
+
+                            if (!size) {
+
+                                size =
+                                    titleParts.find(
+                                        part =>
+                                            sizeValues.some(
+                                                item =>
+                                                    String(
+                                                        item.title
+                                                    ).trim()
+                                                    .toUpperCase() ===
+                                                    part.toUpperCase()
+                                            )
+                                    ) ||
+                                    null;
+
+                            }
+
+
+                            if (!color) {
+
+                                const possibleColor =
+                                    titleParts.find(
+                                        part =>
+                                            colorValues.some(
+                                                item =>
+                                                    String(
+                                                        item.title
+                                                    ).trim()
+                                                    .toLowerCase() ===
+                                                    part.toLowerCase()
+                                            )
+                                    );
+
+
+                                if (
+                                    possibleColor
+                                ) {
+
+                                    const matchingColor =
+                                        colorValues.find(
+                                            item =>
+                                                String(
+                                                    item.title
+                                                ).trim()
+                                                .toLowerCase() ===
+                                                possibleColor.toLowerCase()
+                                        );
+
+
+                                    color = {
+
+                                        name:
+                                            String(
+                                                matchingColor?.title ||
+                                                possibleColor
+                                            ).trim(),
+
+                                        hex:
+                                            Array.isArray(
+                                                matchingColor?.colors
+                                            ) &&
+                                            matchingColor.colors[0]
+                                                ? matchingColor.colors[0]
+                                                : null
+
+                                    };
+
+                                }
+
+                            }
+
+                        }
+
+
+                        /*
+                        * We need both color and size
+                        * for Threadly's current variant model.
+                        */
+
+                        if (
+                            !color ||
+                            !color.name ||
+                            !size
+                        ) {
+
+                            console.warn(
+                                "Skipping unmappable Printify variant:",
+                                variant
+                            );
+
+                            continue;
+
+                        }
+
+
+
+                        /* =========================================
+                        VARIANT IMAGE
+                        ========================================= */
+
+                        const variantImage =
+                            images.find(
+                                image =>
+
+                                    Array.isArray(
+                                        image?.variant_ids
+                                    ) &&
+
+                                    image.variant_ids.some(
+                                        id =>
+                                            String(id) ===
+                                            String(variant.id)
+                                    ) &&
+
+                                    isValidImageUrl(
+                                        image?.src
+                                    )
+                            );
+
+
+                        const image =
+                            variantImage?.src ||
+                            productImage;
+
+
+
+                        /* =========================================
+                        ADD VARIANT
+                        ========================================= */
+
+                        variantRows.push({
+
+                            colorName:
+                                color.name,
+
+                            colorHex:
+                                color.hex,
+
+                            size,
+
+                            image,
+
+                            printifyVariantId:
+                                String(
+                                    variant.id
+                                ),
+
+                            status:
+                                "active"
+
+                        });
+
+                    }
+
+
+
+                    if (!variantRows.length) {
+
+                        return errorResponse(
+                            "Unable to map any Printify variants to color/size.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                    UNIQUE COLORS
+                    ============================================= */
+
+                    const uniqueColors =
+                        new Map();
+
+
+                    for (
+                        const row
+                        of variantRows
+                    ) {
+
+                        const key =
+                            row.colorName
+                                .toLowerCase();
+
+
+                        if (
+                            !uniqueColors.has(
+                                key
+                            )
+                        ) {
+
+                            uniqueColors.set(
+                                key,
+                                {
+
+                                    name:
+                                        row.colorName,
+
+                                    hex:
+                                        row.colorHex,
+
+                                    image:
+                                        row.image
+
+                                }
+                            );
+
+                        }
+
+                    }
+
+
+
+                    /* =============================================
+                    UNIQUE SIZES
+                    ============================================= */
+
+                    const uniqueSizes =
+                        [];
+
+
+                    const sizeSet =
+                        new Set();
+
+
+                    for (
+                        const row
+                        of variantRows
+                    ) {
+
+                        const key =
+                            row.size
+                                .toUpperCase();
+
+
+                        if (
+                            !sizeSet.has(
+                                key
+                            )
+                        ) {
+
+                            sizeSet.add(
+                                key
+                            );
+
+                            uniqueSizes.push(
+                                row.size
+                            );
+
+                        }
+
+                    }
+
+
+
+                    /* =============================================
+                    PRODUCT PRICE
+                    ============================================= */
+
+                    /*
+                    * Printify "price" is stored in cents.
+                    *
+                    * Threadly currently stores the
+                    * customer selling price in dollars.
+                    *
+                    * We therefore use the existing price
+                    * when updating an existing product.
+                    *
+                    * For a new product use the first
+                    * Printify variant price as a temporary
+                    * fallback.
+                    */
+
+                    let price =
+                        existingProduct
+                            ? null
+                            : null;
+
+
+                    if (
+                        existingProduct
+                    ) {
+
+                        const currentPrice =
+                            await env.DB
+                                .prepare(`
+
+                                    SELECT price
+
+                                    FROM products
+
+                                    WHERE id = ?
+
+                                `)
+                                .bind(
+                                    existingProduct.id
+                                )
+                                .first();
+
+
+                        price =
+                            Number(
+                                currentPrice?.price || 0
+                            );
+
+                    }
+
+
+                    if (
+                        !Number.isFinite(price) ||
+                        price <= 0
+                    ) {
+
+                        const firstVariant =
+                            validVariants[0];
+
+
+                        price =
+                            Number(
+                                firstVariant?.price || 0
+                            ) / 100;
+
+
+                        /*
+                        * Temporary fallback.
+                        * Add your actual retail markup
+                        * before selling publicly.
+                        */
+
+                        price =
+                            Number(
+                                price.toFixed(2)
+                            );
+
+                    }
+
+
+
+                    /* =============================================
+                    UPSERT PRODUCT
+                    ============================================= */
+
+                    let productId;
+
+
+                    if (
+                        existingProduct
+                    ) {
+
+                        productId =
+                            existingProduct.id;
+
+
+                        await env.DB
+                            .prepare(`
+
+                                UPDATE products
+
+                                SET
+
+                                    name = ?,
+
+                                    slug = ?,
+
+                                    description = ?,
+
+                                    price = ?,
+
+                                    image = ?,
+
+                                    category = ?,
+
+                                    printify_product_id = ?,
+
+                                    status = 'active'
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+
+                                name,
+
+                                slug,
+
+                                description,
+
+                                price,
+
+                                productImage,
+
+                                category,
+
+                                printifyProductId,
+
+                                productId
+
+                            )
+                            .run();
+
+                    } else {
+
+                        const result =
+                            await env.DB
+                                .prepare(`
+
+                                    INSERT INTO products (
+
+                                        name,
+
+                                        slug,
+
+                                        description,
+
+                                        price,
+
+                                        image,
+
+                                        category,
+
+                                        printify_product_id,
+
+                                        status
+
+                                    )
+
+                                    VALUES (
+
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        ?,
+                                        'active'
+
+                                    )
+
+                                `)
+                                .bind(
+
+                                    name,
+
+                                    slug,
+
+                                    description,
+
+                                    price,
+
+                                    productImage,
+
+                                    category,
+
+                                    printifyProductId
+
+                                )
+                                .run();
+
+
+                        productId =
+                            result.meta
+                                ?.last_row_id;
+
+
+                        if (!productId) {
+
+                            throw new Error(
+                                "Unable to create product in D1."
+                            );
+
+                        }
+
+                    }
+
+
+
+                    /* =============================================
+                    READ OLD VARIANTS
+                    ============================================= */
+
+                    const oldVariants =
+                        await getProductVariants(
+                            productId,
+                            env
+                        );
+
+
+                    const oldMap =
+                        new Map();
+
+
+                    for (
+                        const variant
+                        of oldVariants
+                    ) {
+
+                        const key =
+                            `${String(
+                                variant.color_name
+                            ).toLowerCase()}::${String(
+                                variant.size
+                            ).toUpperCase()}`;
+
+
+                        oldMap.set(
+                            key,
+                            variant
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                    DELETE CURRENT VARIANTS
+                    ============================================= */
+
+                    await env.DB
+                        .prepare(`
+
+                            DELETE FROM product_variants
+
+                            WHERE product_id = ?
+
+                        `)
+                        .bind(
+                            productId
+                        )
+                        .run();
+
+
+
+                    /* =============================================
+                    INSERT PRINTIFY VARIANTS
+                    ============================================= */
+
+                    let insertedVariants =
+                        0;
+
+
+                    for (
+                        const row
+                        of variantRows
+                    ) {
+
+                        const key =
+                            `${row.colorName.toLowerCase()}::${row.size.toUpperCase()}`;
+
+
+                        const oldVariant =
+                            oldMap.get(
+                                key
+                            );
+
+
+                        await env.DB
+                            .prepare(`
+
+                                INSERT INTO product_variants (
+
+                                    product_id,
+
+                                    color_name,
+
+                                    color_hex,
+
+                                    size,
+
+                                    image,
+
+                                    printify_variant_id,
+
+                                    status
+
+                                )
+
+                                VALUES (
+
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?
+
+                                )
+
+                            `)
+                            .bind(
+
+                                productId,
+
+                                row.colorName,
+
+                                row.colorHex ||
+                                    null,
+
+                                row.size,
+
+                                row.image ||
+                                    productImage,
+
+                                row.printifyVariantId,
+
+                                row.status
+
+                            )
+                            .run();
+
+
+                        insertedVariants++;
+
+                    }
+
+
+
+                    /* =============================================
+                    GET FINAL PRODUCT
+                    ============================================= */
+
+                    const finalProduct =
+                        await getProductWithVariants(
+                            productId,
+                            env
+                        );
+
+
+                    return json({
+
+                        success:
+                            true,
+
+                        message:
+                            "Printify product synced successfully.",
+
+                        printify_product_id:
+                            printifyProductId,
+
+                        product_id:
+                            productId,
+
+                        product: {
+
+                            id:
+                                finalProduct?.id,
+
+                            name:
+                                finalProduct?.name,
+
+                            slug:
+                                finalProduct?.slug,
+
+                            price:
+                                finalProduct?.price,
+
+                            image:
+                                finalProduct?.image,
+
+                            category:
+                                finalProduct?.category,
+
+                            status:
+                                finalProduct?.status,
+
+                            printify_product_id:
+                                finalProduct?.printify_product_id
+
+                        },
+
+                        sync: {
+
+                            colors:
+                                uniqueColors.size,
+
+                            sizes:
+                                uniqueSizes.length,
+
+                            variants:
+                                insertedVariants
+
+                        }
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ADMIN PRINTIFY SYNC error:",
+                        error
+                    );
+
+
+                    return json({
+
+                        success:
+                            false,
+
+                        error:
+                            "Failed to sync Printify product.",
+
+                        debug:
+                            error?.message ||
+                            String(error)
+
+                    }, 500);
+
+                }
+
+            }
+
+            /* =====================================================
             UNKNOWN API
             ===================================================== */
 
