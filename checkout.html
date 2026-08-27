@@ -1857,7 +1857,7 @@
                         productId:
                             item.productId,
 
-                        color:
+                        color:  
                             item.color,
 
                         size:
@@ -2084,44 +2084,136 @@
                     const checkoutData =
                         buildCheckoutData();
 
-
-                    /*
-                     * PAYMENT IS NOT CONNECTED YET.
-                     *
-                     * DO NOT process payment in the browser.
-                     *
-                     * The next stage will send checkoutData
-                     * to:
-                     *
-                     * POST /api/checkout
-                     *
-                     * The Worker will then:
-                     *
-                     * 1. Validate the request
-                     * 2. Validate product IDs
-                     * 3. Read prices from D1
-                     * 4. Validate variants
-                     * 5. Validate quantities
-                     * 6. Calculate subtotal
-                     * 7. Calculate shipping
-                     * 8. Calculate tax if required
-                     * 9. Create payment session
-                     * 10. Return the payment URL/session
-                     *
-                     */
+                                        const payButton =
+                        document.getElementById(
+                            "pay-button"
+                        );
 
 
-                    console.log(
-                        "Checkout data ready:",
-                        checkoutData
-                    );
+                    try {
+
+                        payButton.disabled =
+                            true;
 
 
-                    showMessage(
-                        "Payment will be connected in the next stage.",
-                        "success"
-                    );
+                        payButton.textContent =
+                            "CONNECTING TO PAYPAL...";
 
+
+                        showMessage(
+                            "Preparing secure PayPal checkout...",
+                            ""
+                        );
+
+
+                        const response =
+                            await fetch(
+                                "/api/checkout",
+                                {
+
+                                    method:
+                                        "POST",
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json",
+
+                                        "Accept":
+                                            "application/json"
+
+                                    },
+
+                                    body:
+                                        JSON.stringify(
+                                            checkoutData
+                                        )
+
+                                }
+                            );
+
+
+                        const data =
+                            await response.json();
+
+
+                        if (
+                            !response.ok ||
+                            !data.success
+                        ) {
+
+                            throw new Error(
+                                data.error ||
+                                "Unable to start checkout."
+                            );
+
+                        }
+
+
+                        if (
+                            !data.approvalUrl
+                        ) {
+
+                            throw new Error(
+                                "PayPal approval URL was not returned."
+                            );
+
+                        }
+
+
+                        /*
+                         * Save order information temporarily.
+                         */
+
+                        sessionStorage.setItem(
+                            "threadly_pending_order",
+                            JSON.stringify({
+
+                                orderId:
+                                    data.orderId,
+
+                                orderNumber:
+                                    data.orderNumber,
+
+                                paypalOrderId:
+                                    data.paypalOrderId
+
+                            })
+                        );
+
+
+                        /*
+                         * Redirect customer to PayPal.
+                         */
+
+                        window.location.href =
+                            data.approvalUrl;
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Checkout error:",
+                            error
+                        );
+
+
+                        showMessage(
+                            error.message ||
+                            "Unable to start checkout. Please try again.",
+                            "error"
+                        );
+
+
+                        payButton.disabled =
+                            false;
+
+
+                        payButton.textContent =
+                            "PAY NOW";
+
+                    }
+                    
                 }
             );
 
