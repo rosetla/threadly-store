@@ -4693,40 +4693,65 @@
                         of orders
                     ) {
 
-                        const itemSummary =
+                        const itemsResult =
                             await env.DB
                                 .prepare(`
 
                                     SELECT
 
-                                        COUNT(*) AS line_count,
+                                        id,
 
-                                        COALESCE(
-                                            SUM(quantity),
-                                            0
-                                        ) AS item_count
+                                        order_id,
+
+                                        product_id,
+
+                                        variant_id,
+
+                                        product_name,
+
+                                        color,
+
+                                        size,
+
+                                        price,
+
+                                        quantity
 
                                     FROM order_items
 
                                     WHERE order_id = ?
 
+                                    ORDER BY id ASC
+
                                 `)
                                 .bind(
                                     order.id
                                 )
-                                .first();
+                                .all();
+
+
+                        const items =
+                            itemsResult.results || [];
+
+
+                        order.items =
+                            items;
 
 
                         order.line_count =
-                            Number(
-                                itemSummary?.line_count ||
-                                0
-                            );
+                            items.length;
 
 
                         order.item_count =
-                            Number(
-                                itemSummary?.item_count ||
+                            items.reduce(
+                                (
+                                    total,
+                                    item
+                                ) =>
+                                    total +
+                                    Number(
+                                        item.quantity || 0
+                                    ),
                                 0
                             );
 
