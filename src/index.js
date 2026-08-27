@@ -1379,7 +1379,6 @@
             }
 
 
-
             /* =====================================================
             ADMIN SESSION CHECK
             ===================================================== */
@@ -1508,12 +1507,10 @@
                             "/products/" +
                             encodeURIComponent(
                                 printifyProductId
-
-                            )
+                            ) +
+                            ".json"
 
                         );
-
-
 
                     if (!printifyProduct) {
 
