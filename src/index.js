@@ -1688,10 +1688,7 @@
 
                                     printify_product_id = ?,
 
-                                    status = 'active',
-
-                                    updated_at =
-                                        CURRENT_TIMESTAMP
+                                    status = 'active'
 
                                 WHERE id = ?
 
