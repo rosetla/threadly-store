@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Payment Complete | Threadly Co.
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <main>
+
+        <section class="checkout-section">
+
+            <div class="container">
+
+                <div
+                    class="payment-result"
+                    style="
+                        max-width: 600px;
+                        margin: 80px auto;
+                        text-align: center;
+                    "
+                >
+
+                    <p
+                        class="section-eyebrow"
+                    >
+                        THREADLY CO.
+                    </p>
+
+
+                    <h1
+                        id="payment-title"
+                    >
+                        Processing Payment
+                    </h1>
+
+
+                    <p
+                        id="payment-message"
+                    >
+                        Please wait while we confirm your payment.
+                    </p>
+
+
+                    <div
+                        id="payment-actions"
+                    >
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <script>
+
+
+        async function capturePayment() {
+
+            const params =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+
+            /*
+             * PayPal normally returns the order ID
+             * in the token parameter.
+             */
+
+            const paypalOrderId =
+                params.get(
+                    "token"
+                );
+
+
+            const title =
+                document.getElementById(
+                    "payment-title"
+                );
+
+
+            const message =
+                document.getElementById(
+                    "payment-message"
+                );
+
+
+            const actions =
+                document.getElementById(
+                    "payment-actions"
+                );
+
+
+            if (!paypalOrderId) {
+
+                title.textContent =
+                    "Payment Error";
+
+
+                message.textContent =
+                    "We could not find your PayPal order.";
+
+
+                actions.innerHTML =
+                    '<a href="cart.html" class="btn">RETURN TO CART</a>';
+
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/paypal/capture",
+                        {
+
+                            method:
+                                "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify({
+
+                                    paypalOrderId:
+                                        paypalOrderId
+
+                                })
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.error ||
+                        "Unable to confirm payment."
+                    );
+
+                }
+
+
+
+                /*
+                 * Payment successful.
+                 *
+                 * Clear local cart.
+                 */
+
+                localStorage.removeItem(
+                    "cart"
+                );
+
+
+                sessionStorage.removeItem(
+                    "threadly_pending_order"
+                );
+
+
+                title.textContent =
+                    "Order Confirmed!";
+
+
+                message.innerHTML =
+                    "Thank you for your order.<br>" +
+                    "Your order number is <strong>" +
+                    data.orderNumber +
+                    "</strong>.";
+
+
+                actions.innerHTML =
+                    '<a href="index.html" class="btn">CONTINUE SHOPPING</a>';
+
+
+            } catch (error) {
+
+                console.error(
+                    "Capture error:",
+                    error
+                );
+
+
+                title.textContent =
+                    "Payment Could Not Be Confirmed";
+
+
+                message.textContent =
+                    error.message ||
+                    "Please contact support if you completed the payment.";
+
+
+                actions.innerHTML =
+                    '<a href="index.html" class="btn">RETURN HOME</a>';
+
+            }
+
+        }
+
+
+        capturePayment();
+
+
+    </script>
+
+
+</body>
+
+</html>
