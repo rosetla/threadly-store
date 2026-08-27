@@ -130,7 +130,279 @@
 
             }
 
+                        /* =====================================================
+            PAYPAL HELPERS
+            ===================================================== */
 
+            function getPayPalBaseUrl(env) {
+
+                if (
+                    String(
+                        env.PAYPAL_MODE || ""
+                    ).toLowerCase() === "live"
+                ) {
+
+                    return "https://api-m.paypal.com";
+
+                }
+
+
+                return "https://api-m.sandbox.paypal.com";
+
+            }
+
+
+
+            async function getPayPalAccessToken(env) {
+
+                if (
+                    !env.PAYPAL_CLIENT_ID ||
+                    !env.PAYPAL_CLIENT_SECRET
+                ) {
+
+                    throw new Error(
+                        "PayPal credentials are not configured."
+                    );
+
+                }
+
+
+                const credentials =
+                    btoa(
+                        `${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_CLIENT_SECRET}`
+                    );
+
+
+                const response =
+                    await fetch(
+                        getPayPalBaseUrl(env) +
+                        "/v1/oauth2/token",
+                        {
+                            method: "POST",
+
+                            headers: {
+
+                                "Authorization":
+                                    `Basic ${credentials}`,
+
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded",
+
+                                "Accept":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                "grant_type=client_credentials"
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.access_token
+                ) {
+
+                    console.error(
+                        "PayPal token error:",
+                        data
+                    );
+
+
+                    throw new Error(
+                        "Unable to authenticate with PayPal."
+                    );
+
+                }
+
+
+                return data.access_token;
+
+            }
+
+
+
+            async function createPayPalOrder(
+                env,
+                orderData
+            ) {
+
+                const accessToken =
+                    await getPayPalAccessToken(
+                        env
+                    );
+
+
+                const response =
+                    await fetch(
+                        getPayPalBaseUrl(env) +
+                        "/v2/checkout/orders",
+                        {
+                            method: "POST",
+
+                            headers: {
+
+                                "Authorization":
+                                    `Bearer ${accessToken}`,
+
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json",
+
+                                "Prefer":
+                                    "return=representation",
+
+                                "PayPal-Request-Id":
+                                    crypto.randomUUID()
+
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    orderData
+                                )
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        "PayPal create order error:",
+                        data
+                    );
+
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to create PayPal order."
+                    );
+
+                }
+
+
+                return data;
+
+            }
+
+
+
+            async function capturePayPalOrder(
+                env,
+                paypalOrderId
+            ) {
+
+                const accessToken =
+                    await getPayPalAccessToken(
+                        env
+                    );
+
+
+                const response =
+                    await fetch(
+                        getPayPalBaseUrl(env) +
+                        "/v2/checkout/orders/" +
+                        encodeURIComponent(
+                            paypalOrderId
+                        ) +
+                        "/capture",
+                        {
+                            method: "POST",
+
+                            headers: {
+
+                                "Authorization":
+                                    `Bearer ${accessToken}`,
+
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json",
+
+                                "PayPal-Request-Id":
+                                    crypto.randomUUID()
+
+                            },
+
+                            body:
+                                "{}"
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        "PayPal capture error:",
+                        data
+                    );
+
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to capture PayPal payment."
+                    );
+
+                }
+
+
+                return data;
+
+            }
+
+
+
+            function createOrderNumber() {
+
+                const timestamp =
+                    Date.now()
+                        .toString()
+                        .slice(-10);
+
+
+                const random =
+                    crypto.randomUUID()
+                        .replace(/-/g, "")
+                        .slice(0, 6)
+                        .toUpperCase();
+
+
+                return (
+                    "TC-" +
+                    timestamp +
+                    "-" +
+                    random
+                );
+
+            }
+
+
+
+            function formatUsd(amount) {
+
+                return Number(amount)
+                    .toFixed(2);
+
+            }
 
             /* =====================================================
             ADMIN SESSION AUTHENTICATION
@@ -2760,6 +3032,1279 @@
                         ? env.ADMIN_TOKEN.length
                         : 0
                 });
+
+            }
+
+                        /* =====================================================
+            CREATE PAYPAL CHECKOUT
+            ===================================================== */
+
+            if (
+                pathname === "/api/checkout" &&
+                method === "POST"
+            ) {
+
+                let body;
+
+
+                try {
+
+                    body =
+                        await request.json();
+
+                } catch {
+
+                    return errorResponse(
+                        "Invalid JSON body.",
+                        400
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   VALIDATE CART
+                   ============================================= */
+
+                const cart =
+                    Array.isArray(
+                        body.cart
+                    )
+                        ? body.cart
+                        : [];
+
+
+                if (
+                    cart.length === 0 ||
+                    cart.length > 50
+                ) {
+
+                    return errorResponse(
+                        "Your cart is empty or invalid.",
+                        400
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   CUSTOMER
+                   ============================================= */
+
+                const customer =
+                    body.customer || {};
+
+
+                const email =
+                    normalizeString(
+                        customer.email,
+                        150
+                    );
+
+
+                const phone =
+                    normalizeString(
+                        customer.phone,
+                        30
+                    );
+
+
+                if (
+                    !email ||
+                    !email.includes("@")
+                ) {
+
+                    return errorResponse(
+                        "A valid email address is required.",
+                        400
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   SHIPPING ADDRESS
+                   ============================================= */
+
+                const address =
+                    body.shippingAddress || {};
+
+
+                const firstName =
+                    normalizeString(
+                        address.firstName,
+                        50
+                    );
+
+
+                const lastName =
+                    normalizeString(
+                        address.lastName,
+                        50
+                    );
+
+
+                const addressLine =
+                    normalizeString(
+                        address.address,
+                        150
+                    );
+
+
+                const apartment =
+                    normalizeString(
+                        address.apartment,
+                        100
+                    );
+
+
+                const city =
+                    normalizeString(
+                        address.city,
+                        80
+                    );
+
+
+                const state =
+                    normalizeString(
+                        address.state,
+                        50
+                    ).toUpperCase();
+
+
+                const zip =
+                    normalizeString(
+                        address.zip,
+                        20
+                    );
+
+
+                const country =
+                    normalizeString(
+                        address.country,
+                        2
+                    ).toUpperCase();
+
+
+                if (
+                    !firstName ||
+                    !lastName ||
+                    !addressLine ||
+                    !city ||
+                    !state ||
+                    !zip ||
+                    !country
+                ) {
+
+                    return errorResponse(
+                        "Shipping address is incomplete.",
+                        400
+                    );
+
+                }
+
+
+                if (
+                    country !== "US"
+                ) {
+
+                    return errorResponse(
+                        "Currently, shipping is only available in the United States.",
+                        400
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   LOAD PRODUCTS FROM DATABASE
+                   NEVER TRUST CLIENT PRICE
+                   ============================================= */
+
+                const validatedItems =
+                    [];
+
+
+                let subtotal =
+                    0;
+
+
+                for (
+                    const cartItem
+                    of cart
+                ) {
+
+                    const productId =
+                        Number(
+                            cartItem.productId
+                        );
+
+
+                    if (
+                        !Number.isInteger(
+                            productId
+                        ) ||
+                        productId <= 0
+                    ) {
+
+                        return errorResponse(
+                            "Invalid product ID.",
+                            400
+                        );
+
+                    }
+
+
+                    const color =
+                        normalizeVariantColor(
+                            cartItem.color
+                        );
+
+
+                    const size =
+                        normalizeVariantSize(
+                            cartItem.size
+                        );
+
+
+                    let quantity =
+                        Number(
+                            cartItem.quantity
+                        );
+
+
+                    if (
+                        !Number.isInteger(
+                            quantity
+                        )
+                    ) {
+
+                        return errorResponse(
+                            "Invalid product quantity.",
+                            400
+                        );
+
+                    }
+
+
+                    quantity =
+                        Math.max(
+                            1,
+                            Math.min(
+                                quantity,
+                                10
+                            )
+                        );
+
+
+                    if (
+                        !color ||
+                        !size
+                    ) {
+
+                        return errorResponse(
+                            "Please select a valid color and size.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* GET PRODUCT */
+
+                    const product =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    name,
+
+                                    price,
+
+                                    status
+
+                                FROM products
+
+                                WHERE id = ?
+
+                                AND status = 'active'
+
+                            `)
+                            .bind(
+                                productId
+                            )
+                            .first();
+
+
+                    if (!product) {
+
+                        return errorResponse(
+                            "One of the products is no longer available.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* GET EXACT VARIANT */
+
+                    const variant =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    color_name,
+
+                                    size,
+
+                                    printify_variant_id,
+
+                                    status
+
+                                FROM product_variants
+
+                                WHERE product_id = ?
+
+                                AND LOWER(color_name) = LOWER(?)
+
+                                AND UPPER(size) = UPPER(?)
+
+                                AND status = 'active'
+
+                            `)
+                            .bind(
+
+                                productId,
+
+                                color,
+
+                                size
+
+                            )
+                            .first();
+
+
+                    if (!variant) {
+
+                        return errorResponse(
+                            `${product.name} in ${color} / ${size} is not available.`,
+                            400
+                        );
+
+                    }
+
+
+
+                    const price =
+                        Number(
+                            product.price
+                        );
+
+
+                    if (
+                        !Number.isFinite(
+                            price
+                        ) ||
+                        price < 0
+                    ) {
+
+                        return errorResponse(
+                            "Invalid product price.",
+                            500
+                        );
+
+                    }
+
+
+                    const lineTotal =
+                        price *
+                        quantity;
+
+
+                    subtotal +=
+                        lineTotal;
+
+
+                    validatedItems.push({
+
+                        productId:
+                            product.id,
+
+                        variantId:
+                            variant.id,
+
+                        productName:
+                            product.name,
+
+                        color:
+                            variant.color_name,
+
+                        size:
+                            variant.size,
+
+                        price,
+
+                        quantity,
+
+                        lineTotal,
+
+                        printifyVariantId:
+                            variant.printify_variant_id
+
+                    });
+
+                }
+
+
+
+                /* =============================================
+                   SHIPPING
+                   ============================================= */
+
+                const shipping =
+                    subtotal >= 50
+                        ? 0
+                        : 5.99;
+
+
+                /*
+                 * TAX
+                 *
+                 * Currently set to 0 for the sandbox/demo stage.
+                 * Real tax calculation should be added later.
+                 */
+
+                const tax =
+                    0;
+
+
+                const total =
+                    subtotal +
+                    shipping +
+                    tax;
+
+
+
+                /* =============================================
+                   CREATE LOCAL ORDER FIRST
+                   ============================================= */
+
+                const orderNumber =
+                    createOrderNumber();
+
+
+                let localOrderId;
+
+
+                try {
+
+                    const result =
+                        await env.DB
+                            .prepare(`
+
+                                INSERT INTO orders (
+
+                                    order_number,
+
+                                    customer_email,
+
+                                    customer_first_name,
+
+                                    customer_last_name,
+
+                                    shipping_address,
+
+                                    shipping_apartment,
+
+                                    shipping_city,
+
+                                    shipping_state,
+
+                                    shipping_zip,
+
+                                    shipping_country,
+
+                                    customer_phone,
+
+                                    subtotal,
+
+                                    shipping,
+
+                                    tax,
+
+                                    total,
+
+                                    currency,
+
+                                    status,
+
+                                    payment_status
+
+                                )
+
+                                VALUES (
+
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    'USD',
+                                    'pending',
+                                    'unpaid'
+
+                                )
+
+                            `)
+                            .bind(
+
+                                orderNumber,
+
+                                email,
+
+                                firstName,
+
+                                lastName,
+
+                                addressLine,
+
+                                apartment ||
+                                    null,
+
+                                city,
+
+                                state,
+
+                                zip,
+
+                                country,
+
+                                phone ||
+                                    null,
+
+                                subtotal,
+
+                                shipping,
+
+                                tax,
+
+                                total
+
+                            )
+                            .run();
+
+
+                    localOrderId =
+                        result.meta
+                            ?.last_row_id;
+
+
+                    if (!localOrderId) {
+
+                        throw new Error(
+                            "Unable to create local order."
+                        );
+
+                    }
+
+
+
+                    /* =========================================
+                       CREATE ORDER ITEMS
+                       ========================================= */
+
+                    for (
+                        const item
+                        of validatedItems
+                    ) {
+
+                        await env.DB
+                            .prepare(`
+
+                                INSERT INTO order_items (
+
+                                    order_id,
+
+                                    product_id,
+
+                                    variant_id,
+
+                                    product_name,
+
+                                    color,
+
+                                    size,
+
+                                    price,
+
+                                    quantity
+
+                                )
+
+                                VALUES (
+
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?,
+                                    ?
+
+                                )
+
+                            `)
+                            .bind(
+
+                                localOrderId,
+
+                                item.productId,
+
+                                item.variantId,
+
+                                item.productName,
+
+                                item.color,
+
+                                item.size,
+
+                                item.price,
+
+                                item.quantity
+
+                            )
+                            .run();
+
+                    }
+
+
+                } catch (error) {
+
+                    console.error(
+                        "CREATE LOCAL ORDER error:",
+                        error
+                    );
+
+
+                    return errorResponse(
+                        "Unable to create your order.",
+                        500
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   CREATE PAYPAL ORDER
+                   ============================================= */
+
+                try {
+
+                    const successUrl =
+                        url.origin +
+                        "/payment-success.html";
+
+
+                    const cancelUrl =
+                        url.origin +
+                        "/checkout.html?cancelled=1";
+
+
+                    const paypalItems =
+                        validatedItems.map(
+                            function(item) {
+
+                                return {
+
+                                    name:
+                                        item.productName,
+
+                                    quantity:
+                                        String(
+                                            item.quantity
+                                        ),
+
+                                    category:
+                                        "PHYSICAL_GOODS",
+
+                                    sku:
+                                        String(
+                                            item.variantId
+                                        ),
+
+                                    unit_amount: {
+
+                                        currency_code:
+                                            "USD",
+
+                                        value:
+                                            formatUsd(
+                                                item.price
+                                            )
+
+                                    }
+
+                                };
+
+                            }
+                        );
+
+
+                    const paypalOrder =
+                        await createPayPalOrder(
+                            env,
+                            {
+
+                                intent:
+                                    "CAPTURE",
+
+
+                                payment_source: {
+
+                                    paypal: {
+
+                                        experience_context: {
+
+                                            return_url:
+                                                successUrl,
+
+                                            cancel_url:
+                                                cancelUrl,
+
+                                            user_action:
+                                                "PAY_NOW",
+
+                                            shipping_preference:
+                                                "SET_PROVIDED_ADDRESS"
+
+                                        }
+
+                                    }
+
+                                },
+
+
+                                purchase_units: [
+
+                                    {
+
+                                        reference_id:
+                                            String(
+                                                localOrderId
+                                            ),
+
+                                        invoice_id:
+                                            orderNumber,
+
+                                        description:
+                                            "Threadly Co. Order " +
+                                            orderNumber,
+
+
+                                        amount: {
+
+                                            currency_code:
+                                                "USD",
+
+                                            value:
+                                                formatUsd(
+                                                    total
+                                                ),
+
+                                            breakdown: {
+
+                                                item_total: {
+
+                                                    currency_code:
+                                                        "USD",
+
+                                                    value:
+                                                        formatUsd(
+                                                            subtotal
+                                                        )
+
+                                                },
+
+
+                                                shipping: {
+
+                                                    currency_code:
+                                                        "USD",
+
+                                                    value:
+                                                        formatUsd(
+                                                            shipping
+                                                        )
+
+                                                },
+
+
+                                                tax_total: {
+
+                                                    currency_code:
+                                                        "USD",
+
+                                                    value:
+                                                        formatUsd(
+                                                            tax
+                                                        )
+
+                                                }
+
+                                            }
+
+                                        },
+
+
+                                        items:
+                                            paypalItems,
+
+
+                                        shipping: {
+
+                                            name: {
+
+                                                full_name:
+                                                    firstName +
+                                                    " " +
+                                                    lastName
+
+                                            },
+
+
+                                            address: {
+
+                                                address_line_1:
+                                                    addressLine,
+
+                                                address_line_2:
+                                                    apartment ||
+                                                    undefined,
+
+                                                admin_area_2:
+                                                    city,
+
+                                                admin_area_1:
+                                                    state,
+
+                                                postal_code:
+                                                    zip,
+
+                                                country_code:
+                                                    country
+
+                                            }
+
+                                        }
+
+                                    }
+
+                                ]
+
+                            }
+                        );
+
+
+                    if (
+                        !paypalOrder ||
+                        !paypalOrder.id
+                    ) {
+
+                        throw new Error(
+                            "PayPal did not return an order ID."
+                        );
+
+                    }
+
+
+
+                    /* =========================================
+                       SAVE PAYPAL ORDER ID
+                       ========================================= */
+
+                    await env.DB
+                        .prepare(`
+
+                            UPDATE orders
+
+                            SET
+
+                                paypal_order_id = ?,
+
+                                updated_at = CURRENT_TIMESTAMP
+
+                            WHERE id = ?
+
+                        `)
+                        .bind(
+
+                            paypalOrder.id,
+
+                            localOrderId
+
+                        )
+                        .run();
+
+
+
+                    /* =========================================
+                       FIND APPROVAL URL
+                       ========================================= */
+
+                    const approvalLink =
+                        Array.isArray(
+                            paypalOrder.links
+                        )
+                            ? paypalOrder.links.find(
+                                link =>
+                                    link.rel === "payer-action" ||
+                                    link.rel === "approve"
+                            )
+                            : null;
+
+
+                    if (
+                        !approvalLink ||
+                        !approvalLink.href
+                    ) {
+
+                        throw new Error(
+                            "PayPal approval URL was not returned."
+                        );
+
+                    }
+
+
+                    return json({
+
+                        success: true,
+
+                        orderId:
+                            localOrderId,
+
+                        orderNumber,
+
+                        paypalOrderId:
+                            paypalOrder.id,
+
+                        approvalUrl:
+                            approvalLink.href
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "CREATE PAYPAL ORDER error:",
+                        error
+                    );
+
+
+                    /*
+                     * Keep the order in the database
+                     * but mark it as failed.
+                     */
+
+                    if (localOrderId) {
+
+                        await env.DB
+                            .prepare(`
+
+                                UPDATE orders
+
+                                SET
+
+                                    status = 'failed',
+
+                                    updated_at = CURRENT_TIMESTAMP
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+                                localOrderId
+                            )
+                            .run();
+
+                    }
+
+
+                    return errorResponse(
+                        "Unable to start PayPal checkout.",
+                        500
+                    );
+
+                }
+
+            }
+
+
+
+            /* =====================================================
+            CAPTURE PAYPAL PAYMENT
+            ===================================================== */
+
+            if (
+                pathname === "/api/paypal/capture" &&
+                method === "POST"
+            ) {
+
+                let body;
+
+
+                try {
+
+                    body =
+                        await request.json();
+
+                } catch {
+
+                    return errorResponse(
+                        "Invalid JSON body.",
+                        400
+                    );
+
+                }
+
+
+                const paypalOrderId =
+                    normalizeString(
+                        body.paypalOrderId,
+                        100
+                    );
+
+
+                if (!paypalOrderId) {
+
+                    return errorResponse(
+                        "PayPal order ID is required.",
+                        400
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   FIND LOCAL ORDER
+                   ============================================= */
+
+                const order =
+                    await env.DB
+                        .prepare(`
+
+                            SELECT
+
+                                id,
+
+                                order_number,
+
+                                payment_status,
+
+                                status,
+
+                                paypal_order_id
+
+                            FROM orders
+
+                            WHERE paypal_order_id = ?
+
+                        `)
+                        .bind(
+                            paypalOrderId
+                        )
+                        .first();
+
+
+                if (!order) {
+
+                    return errorResponse(
+                        "Order not found.",
+                        404
+                    );
+
+                }
+
+
+
+                /*
+                 * Prevent duplicate capture attempts.
+                 */
+
+                if (
+                    order.payment_status === "paid"
+                ) {
+
+                    return json({
+
+                        success: true,
+
+                        alreadyCaptured: true,
+
+                        orderNumber:
+                            order.order_number
+
+                    });
+
+                }
+
+
+
+                /* =============================================
+                   CAPTURE FROM PAYPAL
+                   ============================================= */
+
+                try {
+
+                    const paypalResult =
+                        await capturePayPalOrder(
+                            env,
+                            paypalOrderId
+                        );
+
+
+                    if (
+                        paypalResult.status !==
+                        "COMPLETED"
+                    ) {
+
+                        console.error(
+                            "Unexpected PayPal status:",
+                            paypalResult
+                        );
+
+
+                        return errorResponse(
+                            "Payment was not completed.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =========================================
+                       GET CAPTURE ID
+                       ========================================= */
+
+                    let captureId =
+                        null;
+
+
+                    const purchaseUnit =
+                        paypalResult
+                            .purchase_units
+                            ?.[0];
+
+
+                    const capture =
+                        purchaseUnit
+                            ?.payments
+                            ?.captures
+                            ?.[0];
+
+
+                    if (
+                        capture &&
+                        capture.id
+                    ) {
+
+                        captureId =
+                            capture.id;
+
+                    }
+
+
+
+                    /* =========================================
+                       UPDATE LOCAL ORDER
+                       ========================================= */
+
+                    await env.DB
+                        .prepare(`
+
+                            UPDATE orders
+
+                            SET
+
+                                payment_status = 'paid',
+
+                                status = 'processing',
+
+                                paypal_capture_id = ?,
+
+                                updated_at = CURRENT_TIMESTAMP
+
+                            WHERE id = ?
+
+                        `)
+                        .bind(
+
+                            captureId,
+
+                            order.id
+
+                        )
+                        .run();
+
+
+                    return json({
+
+                        success: true,
+
+                        orderNumber:
+                            order.order_number,
+
+                        orderId:
+                            order.id,
+
+                        paypalOrderId,
+
+                        paypalCaptureId:
+                            captureId
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "PAYPAL CAPTURE error:",
+                        error
+                    );
+
+
+                    return errorResponse(
+                        "Unable to capture PayPal payment.",
+                        500
+                    );
+
+                }
 
             }
 
