@@ -5,7 +5,7 @@
             const url = new URL(request.url);
             const pathname = url.pathname;
             const method = request.method;
-
+            
 
             /* =====================================================
             HELPERS
@@ -130,7 +130,362 @@
 
             }
 
-                        /* =====================================================
+            /* =====================================================
+            PRINTIFY HELPERS
+            ===================================================== */
+
+            function getPrintifyHeaders(env) {
+
+                if (!env.PRINTIFY_API_TOKEN) {
+
+                    throw new Error(
+                        "PRINTIFY_API_TOKEN is not configured."
+                    );
+
+                }
+
+                return {
+
+                    "Authorization":
+                        `Bearer ${env.PRINTIFY_API_TOKEN}`,
+
+                    "Content-Type":
+                        "application/json",
+
+                    "Accept":
+                        "application/json"
+
+                };
+
+            }
+
+
+
+            async function printifyRequest(
+                env,
+                endpoint,
+                options = {}
+            ) {
+
+                const response =
+                    await fetch(
+                        `https://api.printify.com/v1${endpoint}`,
+                        {
+
+                            method:
+                                options.method || "GET",
+
+                            headers:
+                                getPrintifyHeaders(env),
+
+                            body:
+                                options.body
+                                    ? JSON.stringify(
+                                        options.body
+                                    )
+                                    : undefined
+
+                        }
+                    );
+
+
+                const text =
+                    await response.text();
+
+
+                let data;
+
+
+                try {
+
+                    data =
+                        text
+                            ? JSON.parse(text)
+                            : null;
+
+                } catch {
+
+                    data = {
+                        raw: text
+                    };
+
+                }
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        "PRINTIFY API ERROR:",
+                        response.status,
+                        data
+                    );
+
+
+                    throw new Error(
+
+                        `Printify API error ${response.status}: ` +
+                        (
+                            data?.message ||
+                            data?.error ||
+                            data?.raw ||
+                            "Unknown error"
+                        )
+
+                    );
+
+                }
+
+
+                return data;
+
+            }
+
+
+
+            function createSlugFromTitle(title) {
+
+                return String(title || "")
+
+                    .normalize("NFKD")
+
+                    .replace(
+                        /[\u0300-\u036f]/g,
+                        ""
+                    )
+
+                    .toLowerCase()
+
+                    .replace(
+                        /[^a-z0-9]+/g,
+                        "-"
+                    )
+
+                    .replace(
+                        /^-+|-+$/g,
+                        ""
+                    )
+
+                    .slice(
+                        0,
+                        180
+                    );
+
+            }
+
+
+
+            function getPrintifyVariantImage(
+                product,
+                variantId
+            ) {
+
+                if (
+                    !Array.isArray(
+                        product.images
+                    )
+                ) {
+
+                    return null;
+
+                }
+
+
+                /*
+                * Prefer a default image belonging
+                * to this exact variant.
+                */
+
+                const exactDefault =
+                    product.images.find(
+                        image =>
+
+                            Array.isArray(
+                                image.variant_ids
+                            ) &&
+
+                            image.variant_ids.includes(
+                                Number(variantId)
+                            ) &&
+
+                            image.is_default === true
+                    );
+
+
+                if (
+                    exactDefault?.src
+                ) {
+
+                    return exactDefault.src;
+
+                }
+
+
+
+                /*
+                * Otherwise use any image belonging
+                * to this exact variant.
+                */
+
+                const exactImage =
+                    product.images.find(
+                        image =>
+
+                            Array.isArray(
+                                image.variant_ids
+                            ) &&
+
+                            image.variant_ids.includes(
+                                Number(variantId)
+                            ) &&
+
+                            image.src
+                    );
+
+
+                if (
+                    exactImage?.src
+                ) {
+
+                    return exactImage.src;
+
+                }
+
+
+
+                /*
+                * Finally fall back to the first
+                * available product image.
+                */
+
+                const fallback =
+                    product.images.find(
+                        image =>
+                            image?.src
+                    );
+
+
+                return fallback?.src ||
+                    null;
+
+            }
+
+
+
+            function getPrintifyOptionMaps(
+                product
+            ) {
+
+                const colorMap =
+                    new Map();
+
+                const sizeMap =
+                    new Map();
+
+
+                const options =
+                    Array.isArray(
+                        product.options
+                    )
+                        ? product.options
+                        : [];
+
+
+                for (
+                    const option
+                    of options
+                ) {
+
+                    const type =
+                        String(
+                            option.type || ""
+                        ).toLowerCase();
+
+
+                    const values =
+                        Array.isArray(
+                            option.values
+                        )
+                            ? option.values
+                            : [];
+
+
+                    if (
+                        type === "color" ||
+                        type === "colour"
+                    ) {
+
+                        for (
+                            const value
+                            of values
+                        ) {
+
+                            colorMap.set(
+
+                                Number(
+                                    value.id
+                                ),
+
+                                {
+
+                                    name:
+                                        value.title,
+
+                                    hex:
+                                        Array.isArray(
+                                            value.colors
+                                        )
+                                            ? (
+                                                value.colors[0] ||
+                                                "#000000"
+                                            )
+                                            : "#000000"
+
+                                }
+
+                            );
+
+                        }
+
+                    }
+
+
+                    if (
+                        type === "size"
+                    ) {
+
+                        for (
+                            const value
+                            of values
+                        ) {
+
+                            sizeMap.set(
+
+                                Number(
+                                    value.id
+                                ),
+
+                                value.title
+
+                            );
+
+                        }
+
+                    }
+
+                }
+
+
+                return {
+
+                    colorMap,
+
+                    sizeMap
+
+                };
+
+            }
+
+            /* =====================================================
             PAYPAL HELPERS
             ===================================================== */
 
@@ -2048,7 +2403,92 @@
 
             }
 
+            /* =====================================================
+            ADMIN PRINTIFY PRODUCTS
+            ===================================================== */
 
+
+            /* =====================================================
+            GET PRINTIFY PRODUCTS
+            ===================================================== */
+
+            if (
+                pathname === "/api/admin/printify/products" &&
+                method === "GET"
+            ) {
+
+                try {
+
+                    const page =
+                        Math.max(
+                            1,
+                            Number(
+                                url.searchParams.get(
+                                    "page"
+                                ) || 1
+                            )
+                        );
+
+
+                    const limit =
+                        Math.min(
+                            50,
+                            Math.max(
+                                1,
+                                Number(
+                                    url.searchParams.get(
+                                        "limit"
+                                    ) || 20
+                                )
+                            )
+                        );
+
+
+                    const result =
+                        await printifyRequest(
+                            env,
+                            `/shops/${env.PRINTIFY_SHOP_ID}/products.json` +
+                            `?page=${page}&limit=${limit}`
+                        );
+
+
+                    return json({
+
+                        success: true,
+
+                        shop_id:
+                            String(
+                                env.PRINTIFY_SHOP_ID
+                            ),
+
+                        ...result
+
+                    });
+
+                } catch (error) {
+
+                    console.error(
+                        "GET PRINTIFY PRODUCTS error:",
+                        error
+                    );
+
+
+                    return json({
+
+                        success: false,
+
+                        error:
+                            "Failed to load Printify products.",
+
+                        debug:
+                            error?.message ||
+                            String(error)
+
+                    }, 500);
+
+                }
+
+            }
 
             /* =====================================================
             ADMIN UPDATE PRODUCT
