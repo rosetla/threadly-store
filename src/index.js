@@ -4693,65 +4693,40 @@
                         of orders
                     ) {
 
-                        const itemsResult =
+                        const itemSummary =
                             await env.DB
                                 .prepare(`
 
                                     SELECT
 
-                                        id,
+                                        COUNT(*) AS line_count,
 
-                                        order_id,
-
-                                        product_id,
-
-                                        variant_id,
-
-                                        product_name,
-
-                                        color,
-
-                                        size,
-
-                                        price,
-
-                                        quantity
+                                        COALESCE(
+                                            SUM(quantity),
+                                            0
+                                        ) AS item_count
 
                                     FROM order_items
 
                                     WHERE order_id = ?
 
-                                    ORDER BY id ASC
-
                                 `)
                                 .bind(
                                     order.id
                                 )
-                                .all();
-
-
-                        const items =
-                            itemsResult.results || [];
-
-
-                        order.items =
-                            items;
+                                .first();
 
 
                         order.line_count =
-                            items.length;
+                            Number(
+                                itemSummary?.line_count ||
+                                0
+                            );
 
 
                         order.item_count =
-                            items.reduce(
-                                (
-                                    total,
-                                    item
-                                ) =>
-                                    total +
-                                    Number(
-                                        item.quantity || 0
-                                    ),
+                            Number(
+                                itemSummary?.item_count ||
                                 0
                             );
 
