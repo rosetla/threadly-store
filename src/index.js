@@ -5543,6 +5543,102 @@
             }
 
             /* =====================================================
+            PRINTIFY SHOP DEBUG
+            ===================================================== */
+
+            if (
+                pathname === "/api/debug-printify-shop" &&
+                method === "GET"
+            ) {
+
+                try {
+
+                    if (!env.PRINTIFY_API_TOKEN) {
+
+                        return errorResponse(
+                            "PRINTIFY_API_TOKEN is not configured.",
+                            500
+                        );
+
+                    }
+
+
+                    const response =
+                        await fetch(
+                            "https://api.printify.com/v1/shops.json",
+                            {
+                                method: "GET",
+
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${env.PRINTIFY_API_TOKEN}`,
+
+                                    "Content-Type":
+                                        "application/json"
+                                }
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        console.error(
+                            "PRINTIFY SHOP API error:",
+                            data
+                        );
+
+
+                        return json({
+
+                            success: false,
+
+                            status:
+                                response.status,
+
+                            error:
+                                data
+
+                        }, response.status);
+
+                    }
+
+
+                    return json({
+
+                        success: true,
+
+                        shops:
+                            data
+
+                    });
+
+                } catch (error) {
+
+                    console.error(
+                        "PRINTIFY SHOP DEBUG error:",
+                        error
+                    );
+
+
+                    return json({
+
+                        success: false,
+
+                        error:
+                            error?.message ||
+                            String(error)
+
+                    }, 500);
+
+                }
+
+            }
+
+            /* =====================================================
             UNKNOWN API
             ===================================================== */
 
