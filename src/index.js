@@ -4309,6 +4309,40 @@
             }
 
             /* =====================================================
+            PAYPAL DEBUG
+            ===================================================== */
+
+            if (
+                pathname === "/api/debug-paypal" &&
+                method === "GET"
+            ) {
+
+                return json({
+
+                    mode:
+                        env.PAYPAL_MODE || null,
+
+                    clientIdExists:
+                        !!env.PAYPAL_CLIENT_ID,
+
+                    clientIdLength:
+                        env.PAYPAL_CLIENT_ID
+                            ? env.PAYPAL_CLIENT_ID.length
+                            : 0,
+
+                    secretExists:
+                        !!env.PAYPAL_CLIENT_SECRET,
+
+                    secretLength:
+                        env.PAYPAL_CLIENT_SECRET
+                            ? env.PAYPAL_CLIENT_SECRET.length
+                            : 0
+
+                });
+
+            }
+
+            /* =====================================================
             UNKNOWN API
             ===================================================== */
 
