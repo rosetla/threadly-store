@@ -9624,6 +9624,272 @@
             }
 
             /* =====================================================
+            ADMIN SYNC ALL PRINTIFY PRODUCTS
+            ===================================================== */
+
+            if (
+                pathname === "/api/admin/printify/products/sync-all" &&
+                method === "POST"
+            ) {
+                try {
+
+                    /* =============================================
+                    VALIDATE PRINTIFY CONFIG
+                    ============================================= */
+
+                    if (!env.PRINTIFY_API_TOKEN) {
+                        return errorResponse(
+                            "Printify API token is not configured.",
+                            500
+                        );
+                    }
+
+                    if (!env.PRINTIFY_SHOP_ID) {
+                        return errorResponse(
+                            "Printify shop ID is not configured.",
+                            500
+                        );
+                    }
+
+
+                    /* =============================================
+                    GET ALL PRODUCTS FROM PRINTIFY
+                    ============================================= */
+
+                    const printifyUrl =
+                        `https://api.printify.com/v1/shops/${env.PRINTIFY_SHOP_ID}/products.json`;
+
+                    const response =
+                        await fetch(
+                            printifyUrl,
+                            {
+                                method: "GET",
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${env.PRINTIFY_API_TOKEN}`,
+                                    "Content-Type":
+                                        "application/json"
+                                }
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        console.error(
+                            "PRINTIFY SYNC ALL API error:",
+                            data
+                        );
+
+                        return json({
+                            success: false,
+                            error:
+                                "Failed to get products from Printify.",
+                            printify_status:
+                                response.status,
+                            details:
+                                data
+                        }, response.status);
+                    }
+
+
+                    /* =============================================
+                    GET PRODUCT ARRAY
+                    ============================================= */
+
+                    const products =
+                        Array.isArray(data?.data)
+                            ? data.data
+                            : [];
+
+
+                    if (!products.length) {
+
+                        return json({
+                            success: true,
+                            message:
+                                "No products found in Printify.",
+                            total:
+                                0,
+                            synced:
+                                0,
+                            failed:
+                                0,
+                            results:
+                                []
+                        });
+                    }
+
+
+                    /* =============================================
+                    SYNC RESULTS
+                    ============================================= */
+
+                    const results = [];
+
+                    let synced = 0;
+                    let failed = 0;
+
+
+                    /* =============================================
+                    SYNC EACH PRODUCT
+                    ============================================= */
+
+                    for (
+                        const printifyProduct
+                        of products
+                    ) {
+
+                        const printifyProductId =
+                            String(
+                                printifyProduct?.id || ""
+                            );
+
+
+                        if (!printifyProductId) {
+
+                            failed++;
+
+                            results.push({
+                                success: false,
+                                error:
+                                    "Product has no Printify ID."
+                            });
+
+                            continue;
+                        }
+
+
+                        try {
+
+                            /*
+                            * IMPORTANT:
+                            *
+                            * This currently uses the same
+                            * sync endpoint logic.
+                            *
+                            * We will refactor this into
+                            * a shared function next.
+                            */
+
+                            const syncUrl =
+                                new URL(
+                                    `/api/admin/printify/products/${encodeURIComponent(printifyProductId)}/sync`,
+                                    request.url
+                                );
+
+
+                            const syncResponse =
+                                await fetch(
+                                    syncUrl.toString(),
+                                    {
+                                        method: "POST"
+                                    }
+                                );
+
+
+                            const syncData =
+                                await syncResponse.json();
+
+
+                            if (!syncResponse.ok) {
+
+                                failed++;
+
+                                results.push({
+                                    success: false,
+                                    printify_product_id:
+                                        printifyProductId,
+                                    error:
+                                        syncData
+                                });
+
+                                continue;
+                            }
+
+
+                            synced++;
+
+                            results.push({
+                                success: true,
+                                printify_product_id:
+                                    printifyProductId,
+                                product_id:
+                                    syncData?.product_id || null,
+                                product:
+                                    syncData?.product || null,
+                                sync:
+                                    syncData?.sync || null
+                            });
+
+
+                        } catch (error) {
+
+                            failed++;
+
+                            console.error(
+                                "SYNC ALL product error:",
+                                printifyProductId,
+                                error
+                            );
+
+
+                            results.push({
+                                success: false,
+                                printify_product_id:
+                                    printifyProductId,
+                                error:
+                                    error?.message ||
+                                    String(error)
+                            });
+                        }
+                    }
+
+
+                    /* =============================================
+                    FINAL RESPONSE
+                    ============================================= */
+
+                    return json({
+                        success:
+                            failed === 0,
+
+                        message:
+                            "Printify sync all completed.",
+
+                        total:
+                            products.length,
+
+                        synced,
+
+                        failed,
+
+                        results
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "PRINTIFY SYNC ALL error:",
+                        error
+                    );
+
+
+                    return json({
+                        success: false,
+                        error:
+                            error?.message ||
+                            String(error)
+                    }, 500);
+                }
+            }
+
+            /* =====================================================
             UNKNOWN API
             ===================================================== */
 
