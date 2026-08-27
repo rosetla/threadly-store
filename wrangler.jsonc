@@ -3,6 +3,10 @@
   "main": "src/index.js",
   "compatibility_date": "2026-08-24",
 
+  "vars": {
+    "PAYPAL_MODE": "sandbox"
+  },
+
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
