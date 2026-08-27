@@ -566,6 +566,14 @@
 
 <button
     type="button"
+    id="sync-printify"
+    class="admin-btn"
+>
+    SYNC ALL PRINTIFY
+</button>
+
+<button
+    type="button"
     id="refresh-products"
     class="admin-btn secondary"
 >
@@ -956,6 +964,10 @@ Loading...
 
 <option value="lifestyle">
     Lifestyle
+</option>
+
+<option value="t-shirts">
+    T-Shirts
 </option>
 
 <option value="trending">
@@ -1392,7 +1404,8 @@ Maroon
 
 const API_BASE = "/api/admin/products";
 const ORDERS_API_BASE = "/api/admin/orders";
-
+const PRINTIFY_SYNC_API =
+    "/api/admin/printify/sync";
 
 /* =====================================================
    STATE
@@ -2655,6 +2668,173 @@ async function deactivateProduct(
 
 }
 
+/* =====================================================
+   SYNC ALL PRINTIFY PRODUCTS
+   ===================================================== */
+
+async function syncAllPrintifyProducts() {
+
+    const syncButton =
+        document.getElementById(
+            "sync-printify"
+        );
+
+    if (!syncButton) {
+        return;
+    }
+
+
+    const confirmed =
+        window.confirm(
+            "Sync all products from Printify?\n\n" +
+            "New Printify products will be added to the website, " +
+            "and existing products will be updated."
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const originalText =
+        syncButton.textContent;
+
+
+    syncButton.disabled = true;
+
+    syncButton.textContent =
+        "SYNCING PRINTIFY...";
+
+
+    errorBox.style.display =
+        "none";
+
+    successBox.style.display =
+        "none";
+
+
+    try {
+
+        const response =
+            await fetch(
+                PRINTIFY_SYNC_API,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Accept":
+                            "application/json",
+
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    cache: "no-store"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Failed to sync Printify products."
+            );
+
+        }
+
+
+        /*
+         * Reload products from D1
+         */
+
+        await loadProducts();
+
+
+        /*
+         * Build success message
+         */
+
+        const created =
+            Number(
+                data.created ||
+                data.added ||
+                data.new_products ||
+                0
+            );
+
+
+        const updated =
+            Number(
+                data.updated ||
+                data.synced ||
+                0
+            );
+
+
+        const variants =
+            Number(
+                data.variants ||
+                0
+            );
+
+
+        let message =
+            "Printify sync completed successfully.";
+
+
+        if (
+            created ||
+            updated ||
+            variants
+        ) {
+
+            message +=
+                ` Created: ${created},` +
+                ` Updated: ${updated},` +
+                ` Variants: ${variants}.`;
+
+        }
+
+
+        showSuccess(
+            message
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Printify sync error:",
+            error
+        );
+
+
+        showError(
+            error.message ||
+            "Failed to sync Printify products."
+        );
+
+
+    } finally {
+
+        syncButton.disabled = false;
+
+        syncButton.textContent =
+            originalText;
+
+    }
+
+}
 
 /* =====================================================
    EVENTS
@@ -2667,6 +2847,12 @@ document
         () => openModal()
     );
 
+document
+    .getElementById("sync-printify")
+    .addEventListener(
+        "click",
+        syncAllPrintifyProducts
+    );
 
 document
     .getElementById("refresh-products")
