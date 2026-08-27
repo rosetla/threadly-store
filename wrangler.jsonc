@@ -19,5 +19,11 @@
       "database_name": "threadly-db",
       "database_id": "edb9239d-c1a2-43ca-a0bf-d33c83dc8a92"
     }
-  ]
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "remote": true
+    }
+  ] 
 }
