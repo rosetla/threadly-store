@@ -4685,7 +4685,7 @@
 
 
                     /* =============================================
-                       GET ITEM COUNTS
+                    GET ORDER ITEMS + COUNTS
                     ============================================= */
 
                     for (
@@ -4693,42 +4693,109 @@
                         of orders
                     ) {
 
-                        const itemSummary =
+                        const itemsResult =
                             await env.DB
                                 .prepare(`
 
                                     SELECT
 
-                                        COUNT(*) AS line_count,
+                                        id,
 
-                                        COALESCE(
-                                            SUM(quantity),
-                                            0
-                                        ) AS item_count
+                                        order_id,
+
+                                        product_id,
+
+                                        variant_id,
+
+                                        product_name,
+
+                                        color,
+
+                                        size,
+
+                                        price,
+
+                                        quantity,
+
+                                        created_at
 
                                     FROM order_items
 
                                     WHERE order_id = ?
 
+                                    ORDER BY id ASC
+
                                 `)
                                 .bind(
                                     order.id
                                 )
-                                .first();
+                                .all();
 
+
+                        const items =
+                            itemsResult.results || [];
+
+
+                        /* =========================================
+                        ATTACH ITEMS TO ORDER
+                        ========================================= */
+
+                        order.items =
+                            items;
+
+
+                        /* =========================================
+                        ITEM COUNTS
+                        ========================================= */
 
                         order.line_count =
-                            Number(
-                                itemSummary?.line_count ||
-                                0
-                            );
+                            items.length;
 
 
                         order.item_count =
-                            Number(
-                                itemSummary?.item_count ||
+                            items.reduce(
+                                (
+                                    total,
+                                    item
+                                ) =>
+                                    total +
+                                    Number(
+                                        item.quantity || 0
+                                    ),
                                 0
                             );
+
+
+                        /* =========================================
+                        NORMALIZE ITEM NUMBERS
+                        ========================================= */
+
+                        for (
+                            const item
+                            of order.items
+                        ) {
+
+                            item.price =
+                                Number(
+                                    item.price || 0
+                                );
+
+
+                            item.quantity =
+                                Number(
+                                    item.quantity || 0
+                                );
+
+
+                            item.line_total =
+                                Number(
+                                    (
+                                        item.price *
+                                        item.quantity
+                                    ).toFixed(2)
+                                );
+
+                        }
 
                     }
 
