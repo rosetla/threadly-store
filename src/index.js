@@ -7467,6 +7467,119 @@
             }
 
             /* =====================================================
+            PRINTIFY GET PRODUCTS
+            ===================================================== */
+
+            if (
+                pathname === "/api/printify/products" &&
+                method === "GET"
+            ) {
+
+                try {
+
+                    if (!env.PRINTIFY_API_TOKEN) {
+
+                        return errorResponse(
+                            "Printify API token is not configured.",
+                            500
+                        );
+
+                    }
+
+                    if (!env.PRINTIFY_SHOP_ID) {
+
+                        return errorResponse(
+                            "Printify shop ID is not configured.",
+                            500
+                        );
+
+                    }
+
+
+                    const printifyUrl =
+                        `https://api.printify.com/v1/shops/${env.PRINTIFY_SHOP_ID}/products.json`;
+
+
+                    const response =
+                        await fetch(
+                            printifyUrl,
+                            {
+                                method: "GET",
+
+                                headers: {
+
+                                    "Authorization":
+                                        `Bearer ${env.PRINTIFY_API_TOKEN}`,
+
+                                    "Content-Type":
+                                        "application/json"
+
+                                }
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        console.error(
+                            "PRINTIFY GET PRODUCTS error:",
+                            data
+                        );
+
+                        return json({
+
+                            success: false,
+
+                            error:
+                                "Printify API request failed.",
+
+                            printify_status:
+                                response.status,
+
+                            details:
+                                data
+
+                        }, response.status);
+
+                    }
+
+
+                    return json({
+
+                        success: true,
+
+                        shop_id:
+                            String(
+                                env.PRINTIFY_SHOP_ID
+                            ),
+
+                        data
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "PRINTIFY GET PRODUCTS exception:",
+                        error
+                    );
+
+
+                    return errorResponse(
+                        "Unable to connect to Printify.",
+                        500
+                    );
+
+                }
+
+            }
+
+            /* =====================================================
             UNKNOWN API
             ===================================================== */
 
