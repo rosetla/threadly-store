@@ -4683,7 +4683,6 @@
                         [];
 
 
-
                     /* =============================================
                     GET ITEM COUNTS
                     ============================================= */
@@ -4986,8 +4985,6 @@
                                     price,
 
                                     quantity,
-
-                                    created_at
 
                                 FROM order_items
 
@@ -5467,8 +5464,6 @@
                                     price,
 
                                     quantity,
-
-                                    created_at
 
                                 FROM order_items
 
