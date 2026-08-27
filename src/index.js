@@ -4685,7 +4685,7 @@
 
 
                     /* =============================================
-                    GET ORDER ITEMS + COUNTS
+                    GET ITEM COUNTS
                     ============================================= */
 
                     for (
@@ -4693,107 +4693,55 @@
                         of orders
                     ) {
 
-                        const itemsResult =
-                            await env.DB
-                                .prepare(`
+                        try {
 
-                                    SELECT
+                            const itemSummary =
+                                await env.DB
+                                    .prepare(`
 
-                                        id,
+                                        SELECT
 
-                                        order_id,
+                                            COUNT(*) AS line_count,
 
-                                        product_id,
+                                            COALESCE(
+                                                SUM(quantity),
+                                                0
+                                            ) AS item_count
 
-                                        variant_id,
+                                        FROM order_items
 
-                                        product_name,
+                                        WHERE order_id = ?
 
-                                        color,
-
-                                        size,
-
-                                        price,
-
-                                        quantity,
-
-                                        created_at
-
-                                    FROM order_items
-
-                                    WHERE order_id = ?
-
-                                    ORDER BY id ASC
-
-                                `)
-                                .bind(
-                                    order.id
-                                )
-                                .all();
+                                    `)
+                                    .bind(
+                                        order.id
+                                    )
+                                    .first();
 
 
-                        const items =
-                            itemsResult.results || [];
+                            order.line_count =
+                                Number(
+                                    itemSummary?.line_count || 0
+                                );
 
 
-                        /* =========================================
-                        ATTACH ITEMS TO ORDER
-                        ========================================= */
-
-                        order.items =
-                            items;
+                            order.item_count =
+                                Number(
+                                    itemSummary?.item_count || 0
+                                );
 
 
-                        /* =========================================
-                        ITEM COUNTS
-                        ========================================= */
+                        } catch (error) {
 
-                        order.line_count =
-                            items.length;
-
-
-                        order.item_count =
-                            items.reduce(
-                                (
-                                    total,
-                                    item
-                                ) =>
-                                    total +
-                                    Number(
-                                        item.quantity || 0
-                                    ),
-                                0
+                            console.error(
+                                "GET ORDER ITEM COUNT error:",
+                                error
                             );
 
 
-                        /* =========================================
-                        NORMALIZE ITEM NUMBERS
-                        ========================================= */
+                            order.line_count = 0;
 
-                        for (
-                            const item
-                            of order.items
-                        ) {
-
-                            item.price =
-                                Number(
-                                    item.price || 0
-                                );
-
-
-                            item.quantity =
-                                Number(
-                                    item.quantity || 0
-                                );
-
-
-                            item.line_total =
-                                Number(
-                                    (
-                                        item.price *
-                                        item.quantity
-                                    ).toFixed(2)
-                                );
+                            order.item_count = 0;
 
                         }
 
