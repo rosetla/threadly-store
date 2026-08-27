@@ -5639,6 +5639,108 @@
             }
 
             /* =====================================================
+            PRINTIFY PRODUCTS DEBUG
+            ===================================================== */
+
+            if (
+                pathname === "/api/debug-printify-products" &&
+                method === "GET"
+            ) {
+
+                try {
+
+                    if (!env.PRINTIFY_API_TOKEN) {
+
+                        return errorResponse(
+                            "PRINTIFY_API_TOKEN is not configured.",
+                            500
+                        );
+
+                    }
+
+
+                    const shopId =
+                        "28689890";
+
+
+                    const response =
+                        await fetch(
+                            `https://api.printify.com/v1/shops/${shopId}/products.json`,
+                            {
+                                method: "GET",
+
+                                headers: {
+                                    "Authorization":
+                                        `Bearer ${env.PRINTIFY_API_TOKEN}`,
+
+                                    "Content-Type":
+                                        "application/json"
+                                }
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        console.error(
+                            "PRINTIFY PRODUCTS API error:",
+                            data
+                        );
+
+
+                        return json({
+
+                            success: false,
+
+                            status:
+                                response.status,
+
+                            error:
+                                data
+
+                        }, response.status);
+
+                    }
+
+
+                    return json({
+
+                        success: true,
+
+                        shop_id:
+                            shopId,
+
+                        data
+
+                    });
+
+                } catch (error) {
+
+                    console.error(
+                        "PRINTIFY PRODUCTS DEBUG error:",
+                        error
+                    );
+
+
+                    return json({
+
+                        success: false,
+
+                        error:
+                            error?.message ||
+                            String(error)
+
+                    }, 500);
+
+                }
+
+            }
+
+            /* =====================================================
             UNKNOWN API
             ===================================================== */
 
