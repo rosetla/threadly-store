@@ -604,6 +604,68 @@
 
             }
 
+            async function createPrintifyOrder(
+                env,
+                orderData
+            ) {
+
+                const response =
+                    await fetch(
+
+                        `https://api.printify.com/v1/shops/${env.PRINTIFY_SHOP_ID}/orders.json`,
+
+                        {
+
+                            method:
+                                "POST",
+
+                            headers: {
+
+                                "Authorization":
+                                    `Bearer ${env.PRINTIFY_API_TOKEN}`,
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    orderData
+                                )
+
+                        }
+
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        "PRINTIFY CREATE ORDER ERROR:",
+                        data
+                    );
+
+
+                    throw new Error(
+                        data?.errors
+                            ? JSON.stringify(
+                                data.errors
+                            )
+                            : "Failed to create Printify order."
+                    );
+
+                }
+
+
+                return data;
+
+            }
+
             /* =====================================================
             PAYPAL HELPERS
             ===================================================== */
@@ -1349,7 +1411,750 @@
 
             }
 
+            /* =====================================================
+            PRINTIFY PRODUCT SYNC
+            ===================================================== */
 
+            if (
+                pathname.startsWith(
+                    "/api/admin/printify/products/"
+                ) &&
+                pathname.endsWith("/sync") &&
+                method === "POST"
+            ) {
+
+                const authenticated =
+                    await isAdminAuthenticated(
+                        request,
+                        env
+                    );
+
+
+
+                if (!authenticated) {
+
+                    return json({
+                        success: false,
+                        error: "Unauthorized."
+                    }, 401);
+
+                }
+
+
+
+                try {
+
+                    const pathParts =
+                        pathname
+                            .split("/")
+                            .filter(Boolean);
+
+
+
+                    /*
+                    Example:
+
+                    /api/admin/printify/products/ABC123/sync
+
+                    [
+                        "api",
+                        "admin",
+                        "printify",
+                        "products",
+                        "ABC123",
+                        "sync"
+                    ]
+                    */
+
+                    const productIndex =
+                        pathParts.indexOf(
+                            "products"
+                        );
+
+
+
+                    const printifyProductId =
+                        pathParts[
+                            productIndex + 1
+                        ];
+
+
+
+                    if (!printifyProductId) {
+
+                        return json({
+                            success: false,
+                            error:
+                                "Printify product ID is required."
+                        }, 400);
+
+                    }
+
+
+
+                    /*
+                    Get product from Printify
+                    */
+
+                    const printifyProduct =
+                        await printifyRequest(
+
+                            env,
+
+                            "/shops/" +
+                            encodeURIComponent(
+                                env.PRINTIFY_SHOP_ID
+                            ) +
+                            "/products/" +
+                            encodeURIComponent(
+                                printifyProductId
+
+                            )
+
+                        );
+
+
+
+                    if (!printifyProduct) {
+
+                        throw new Error(
+                            "Printify product not found."
+                        );
+
+                    }
+
+
+
+                    /*
+                    Build option maps.
+
+                    colorMap:
+                    Printify color option ID
+                    ->
+                    {
+                        name,
+                        hex
+                    }
+
+                    sizeMap:
+                    Printify size option ID
+                    ->
+                    size name
+                    */
+
+                    const {
+                        colorMap,
+                        sizeMap
+
+                    } =
+                        getPrintifyOptionMaps(
+                            printifyProduct
+                        );
+
+
+
+                    /*
+                    Product image
+                    */
+
+                    const mainImage =
+                        Array.isArray(
+                            printifyProduct.images
+                        )
+                            ? (
+                                printifyProduct.images.find(
+                                    image =>
+                                        image?.is_default === true &&
+                                        image?.src
+                                )?.src ||
+
+                                printifyProduct.images.find(
+                                    image =>
+                                        image?.src
+                                )?.src ||
+
+                                ""
+                            )
+                            : "";
+
+
+
+                    /*
+                    Generate slug
+                    */
+
+                    const slug =
+                        createSlugFromTitle(
+                            printifyProduct.title
+                        );
+
+
+
+                    /*
+                    Default price.
+
+                    Printify price is usually in cents.
+                    */
+
+                    let defaultPrice =
+                        0;
+
+
+
+                    if (
+                        Array.isArray(
+                            printifyProduct.variants
+                        ) &&
+                        printifyProduct.variants.length > 0
+                    ) {
+
+                        const firstActiveVariant =
+                            printifyProduct.variants.find(
+                                variant =>
+                                    variant.is_enabled !== false
+                            ) ||
+                            printifyProduct.variants[0];
+
+
+
+                        defaultPrice =
+                            Number(
+                                firstActiveVariant.price || 0
+                            ) / 100;
+
+                    }
+
+
+
+                    /*
+                    Check whether this Printify product
+                    already exists in D1.
+                    */
+
+                    const existingProduct =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+                                    id
+
+                                FROM products
+
+                                WHERE printify_product_id = ?
+
+                                LIMIT 1
+
+                            `)
+                            .bind(
+                                String(
+                                    printifyProduct.id
+                                )
+                            )
+                            .first();
+
+
+
+                    let productId;
+
+
+
+                    if (existingProduct) {
+
+                        productId =
+                            existingProduct.id;
+
+
+
+                        /*
+                        Update existing product
+                        */
+
+                        await env.DB
+                            .prepare(`
+
+                                UPDATE products
+
+                                SET
+
+                                    name = ?,
+
+                                    slug = ?,
+
+                                    description = ?,
+
+                                    price = ?,
+
+                                    image = ?,
+
+                                    printify_product_id = ?,
+
+                                    status = 'active',
+
+                                    updated_at =
+                                        CURRENT_TIMESTAMP
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+
+                                String(
+                                    printifyProduct.title || ""
+                                ),
+
+                                slug,
+
+                                String(
+                                    printifyProduct.description || ""
+                                ),
+
+                                defaultPrice,
+
+                                mainImage,
+
+                                String(
+                                    printifyProduct.id
+                                ),
+
+                                productId
+
+                            )
+                            .run();
+
+                    } else {
+
+                        /*
+                        Create product
+                        */
+
+                        const result =
+                            await env.DB
+                                .prepare(`
+
+                                    INSERT INTO products (
+
+                                        name,
+
+                                        slug,
+
+                                        description,
+
+                                        price,
+
+                                        image,
+
+                                        printify_product_id,
+
+                                        status
+
+                                    )
+
+                                    VALUES (
+
+                                        ?,
+
+                                        ?,
+
+                                        ?,
+
+                                        ?,
+
+                                        ?,
+
+                                        ?,
+
+                                        'active'
+
+                                    )
+
+                                `)
+                                .bind(
+
+                                    String(
+                                        printifyProduct.title || ""
+                                    ),
+
+                                    slug,
+
+                                    String(
+                                        printifyProduct.description || ""
+                                    ),
+
+                                    defaultPrice,
+
+                                    mainImage,
+
+                                    String(
+                                        printifyProduct.id
+                                    )
+
+                                )
+                                .run();
+
+
+
+                        productId =
+                            result.meta.last_row_id;
+
+                    }
+
+
+
+                    /*
+                    Remove old variants.
+
+                    Since this is a sync operation,
+                    we rebuild variants from Printify.
+                    */
+
+                    await env.DB
+                        .prepare(`
+
+                            DELETE FROM product_variants
+
+                            WHERE product_id = ?
+
+                        `)
+                        .bind(
+                            productId
+                        )
+                        .run();
+
+
+
+                    let syncedVariants = 0;
+
+                    const syncedColors =
+                        new Set();
+
+                    const syncedSizes =
+                        new Set();
+
+
+
+                    const variants =
+                        Array.isArray(
+                            printifyProduct.variants
+                        )
+                            ? printifyProduct.variants
+                            : [];
+
+
+
+                    /*
+                    Sync every enabled variant
+                    */
+
+                    for (
+                        const variant
+                        of variants
+                    ) {
+
+                        /*
+                        Skip disabled variants
+                        */
+
+                        if (
+                            variant.is_enabled === false
+                        ) {
+
+                            continue;
+
+                        }
+
+
+
+                        const optionIds =
+                            Array.isArray(
+                                variant.options
+                            )
+                                ? variant.options
+                                : [];
+
+
+
+                        let colorName = "";
+
+                        let colorHex = "";
+
+                        let size = "";
+
+
+
+                        /*
+                        Find color and size
+                        from option IDs.
+                        */
+
+                        for (
+                            const optionId
+                            of optionIds
+                        ) {
+
+                            const numericOptionId =
+                                Number(optionId);
+
+
+
+                            if (
+                                colorMap.has(
+                                    numericOptionId
+                                )
+                            ) {
+
+                                const color =
+                                    colorMap.get(
+                                        numericOptionId
+                                    );
+
+
+
+                                colorName =
+                                    String(
+                                        color?.name || ""
+                                    );
+
+
+
+                                colorHex =
+                                    String(
+                                        color?.hex ||
+                                        "#000000"
+                                    );
+
+                            }
+
+
+
+                            if (
+                                sizeMap.has(
+                                    numericOptionId
+                                )
+                            ) {
+
+                                size =
+                                    String(
+                                        sizeMap.get(
+                                            numericOptionId
+                                        ) || ""
+                                    );
+
+                            }
+
+                        }
+
+
+
+                        /*
+                        Ignore malformed variants.
+                        */
+
+                        if (
+                            !colorName &&
+                            !size
+                        ) {
+
+                            console.log(
+                                "Skipping variant without color or size:",
+                                variant
+                            );
+
+                            continue;
+
+                        }
+
+
+
+                        /*
+                        Get image belonging to this variant
+                        */
+
+                        const variantImage =
+                            getPrintifyVariantImage(
+
+                                printifyProduct,
+
+                                variant.id
+
+                            ) ||
+                            mainImage ||
+                            "";
+
+
+
+                        /*
+                        Insert variant
+                        */
+
+                        await env.DB
+                            .prepare(`
+
+                                INSERT INTO product_variants (
+
+                                    product_id,
+
+                                    color_name,
+
+                                    color_hex,
+
+                                    size,
+
+                                    image,
+
+                                    printify_variant_id,
+
+                                    status,
+
+                                    created_at
+
+                                )
+
+                                VALUES (
+
+                                    ?,
+
+                                    ?,
+
+                                    ?,
+
+                                    ?,
+
+                                    ?,
+
+                                    ?,
+
+                                    'active',
+
+                                    CURRENT_TIMESTAMP
+
+                                )
+
+                            `)
+                            .bind(
+
+                                productId,
+
+                                colorName || null,
+
+                                colorHex || null,
+
+                                size || null,
+
+                                variantImage,
+
+                                String(
+                                    variant.id
+                                )
+
+                            )
+                            .run();
+
+
+
+                        syncedVariants++;
+
+
+
+                        if (colorName) {
+
+                            syncedColors.add(
+                                colorName
+                            );
+
+                        }
+
+
+
+                        if (size) {
+
+                            syncedSizes.add(
+                                size
+                            );
+
+                        }
+
+                    }
+
+
+
+                    /*
+                    Return sync result
+                    */
+
+                    const product =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT *
+
+                                FROM products
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+                                productId
+                            )
+                            .first();
+
+
+
+                    return json({
+
+                        success: true,
+
+                        message:
+                            "Printify product synced successfully.",
+
+                        printify_product_id:
+                            String(
+                                printifyProduct.id
+                            ),
+
+                        product_id:
+                            productId,
+
+                        product,
+
+                        sync: {
+
+                            colors:
+                                syncedColors.size,
+
+                            sizes:
+                                syncedSizes.size,
+
+                            variants:
+                                syncedVariants
+
+                        }
+
+                    });
+
+
+
+                } catch (error) {
+
+                    console.error(
+                        "PRINTIFY PRODUCT SYNC ERROR:",
+                        error
+                    );
+
+
+
+                    return json({
+
+                        success: false,
+
+                        error:
+                            error?.message ||
+                            "Failed to sync Printify product."
+
+                    }, 500);
+
+                }
+
+            }
 
             /* =====================================================
             PRODUCT FIELDS
