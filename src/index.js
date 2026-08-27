@@ -4326,7 +4326,9 @@
                 return [
                     "pending",
                     "processing",
+                    "shipping",
                     "shipped",
+                    "completed",
                     "delivered",
                     "cancelled",
                     "failed"
@@ -5297,20 +5299,20 @@
 
                     if (
                         (
+                            newStatus === "shipping" ||
                             newStatus === "shipped" ||
+                            newStatus === "completed" ||
                             newStatus === "delivered"
                         ) &&
                         newPaymentStatus !== "paid"
                     ) {
 
                         return errorResponse(
-                            "An order must be paid before it can be marked as shipped or delivered.",
+                            "An order must be paid before it can be marked as shipping or completed.",
                             400
                         );
 
                     }
-
-
 
                     /*
                      * A refunded order should not remain
@@ -5459,7 +5461,7 @@
 
                                     price,
 
-                                    quantity,
+                                    quantity
 
                                 FROM order_items
 
