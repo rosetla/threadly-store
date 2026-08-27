@@ -4956,8 +4956,6 @@
 
                     }
 
-
-
                     /* =============================================
                        GET ORDER ITEMS
                     ============================================= */
@@ -4984,7 +4982,7 @@
 
                                     price,
 
-                                    quantity,
+                                    quantity
 
                                 FROM order_items
 
@@ -5002,8 +5000,6 @@
                     const items =
                         itemsResult.results ||
                         [];
-
-
 
                     /* =============================================
                        NORMALIZE NUMBERS
