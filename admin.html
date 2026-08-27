@@ -2929,16 +2929,49 @@ function getOrderItems(order) {
 
 function getOrderItemCount(order) {
 
+    /* =============================================
+       USE SERVER-CALCULATED COUNT FIRST
+       ============================================= */
+
+    if (
+        order &&
+        order.item_count !== undefined &&
+        order.item_count !== null
+    ) {
+
+        const count =
+            Number(order.item_count);
+
+        if (
+            Number.isFinite(count)
+        ) {
+
+            return count;
+
+        }
+
+    }
+
+
+    /* =============================================
+       FALLBACK TO ITEMS ARRAY
+       ============================================= */
+
     const items =
         getOrderItems(order);
 
+
     return items.reduce(
-        (total, item) => {
+        (
+            total,
+            item
+        ) => {
 
             const quantity =
                 Number(
                     item.quantity || 0
                 );
+
 
             return (
                 total +
@@ -2952,6 +2985,7 @@ function getOrderItemCount(order) {
         },
         0
     );
+
 }
 
 
@@ -3993,7 +4027,7 @@ document
 
 ordersTableBody.addEventListener(
     "click",
-    event => {
+    async event => {
 
         const button =
             event.target.closest(
@@ -4010,17 +4044,96 @@ ordersTableBody.addEventListener(
             button.dataset.orderView;
 
 
-        const order =
-            orders.find(
-                item =>
-                    String(item.id) ===
-                    String(id)
+        if (!id) {
+            return;
+        }
+
+
+        /* =============================================
+           LOAD FULL ORDER DETAILS
+           ============================================= */
+
+        orderDetails.innerHTML = `
+            <div class="admin-state">
+                Loading order details...
+            </div>
+        `;
+
+
+        orderModal.classList.add("open");
+
+        orderModal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `${ORDERS_API_BASE}/${encodeURIComponent(id)}`,
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        },
+
+                        cache: "no-store"
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !data.success ||
+                !data.order
+            ) {
+
+                throw new Error(
+                    data.error ||
+                    "Failed to load order details."
+                );
+
+            }
+
+
+            /* =============================================
+               USE FULL ORDER FROM API
+               ============================================= */
+
+            openOrderModal(
+                data.order
             );
 
 
-        if (order) {
+        } catch (error) {
 
-            openOrderModal(order);
+            console.error(
+                "Load order details error:",
+                error
+            );
+
+
+            orderDetails.innerHTML = `
+
+                <div
+                    class="admin-error"
+                    style="display:block;"
+                >
+                    ${escapeHtml(
+                        error.message ||
+                        "Failed to load order details."
+                    )}
+                </div>
+
+            `;
 
         }
 
