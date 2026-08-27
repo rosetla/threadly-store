@@ -4312,6 +4312,1198 @@
             PAYPAL DEBUG
             ===================================================== */
 
+                        /* =====================================================
+            ADMIN ORDERS API
+            ===================================================== */
+
+
+            /* =====================================================
+            ORDER STATUS HELPERS
+            ===================================================== */
+
+            function isValidOrderStatus(status) {
+
+                return [
+                    "pending",
+                    "processing",
+                    "shipped",
+                    "delivered",
+                    "cancelled",
+                    "failed"
+                ].includes(status);
+
+            }
+
+
+            function isValidPaymentStatus(status) {
+
+                return [
+                    "unpaid",
+                    "paid",
+                    "refunded"
+                ].includes(status);
+
+            }
+
+
+
+            /* =====================================================
+            ADMIN ORDER ROUTE MATCH
+            ===================================================== */
+
+            const adminOrderMatch =
+                pathname.match(
+                    /^\/api\/admin\/orders\/(\d+)$/
+                );
+
+
+
+            /* =====================================================
+            ADMIN GET ALL ORDERS
+            ===================================================== */
+
+            if (
+                pathname === "/api/admin/orders" &&
+                method === "GET"
+            ) {
+
+                try {
+
+                    const search =
+                        normalizeString(
+                            url.searchParams.get("search"),
+                            200
+                        );
+
+
+                    const status =
+                        normalizeString(
+                            url.searchParams.get("status"),
+                            30
+                        ).toLowerCase();
+
+
+                    const paymentStatus =
+                        normalizeString(
+                            url.searchParams.get(
+                                "payment_status"
+                            ),
+                            30
+                        ).toLowerCase();
+
+
+
+                    /* =============================================
+                       PAGINATION
+                    ============================================= */
+
+                    let page =
+                        Number(
+                            url.searchParams.get("page")
+                        );
+
+
+                    let limit =
+                        Number(
+                            url.searchParams.get("limit")
+                        );
+
+
+                    if (
+                        !Number.isInteger(page) ||
+                        page < 1
+                    ) {
+
+                        page = 1;
+
+                    }
+
+
+                    if (
+                        !Number.isInteger(limit) ||
+                        limit < 1
+                    ) {
+
+                        limit = 20;
+
+                    }
+
+
+                    limit =
+                        Math.min(
+                            limit,
+                            100
+                        );
+
+
+                    const offset =
+                        (page - 1) *
+                        limit;
+
+
+
+                    /* =============================================
+                       VALIDATE FILTERS
+                    ============================================= */
+
+                    if (
+                        status &&
+                        !isValidOrderStatus(status)
+                    ) {
+
+                        return errorResponse(
+                            "Invalid order status.",
+                            400
+                        );
+
+                    }
+
+
+                    if (
+                        paymentStatus &&
+                        !isValidPaymentStatus(
+                            paymentStatus
+                        )
+                    ) {
+
+                        return errorResponse(
+                            "Invalid payment status.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                       BUILD WHERE CLAUSE
+                    ============================================= */
+
+                    const conditions = [];
+                    const bindings = [];
+
+
+                    if (search) {
+
+                        conditions.push(`
+
+                            (
+                                order_number LIKE ?
+                                OR customer_email LIKE ?
+                                OR customer_first_name LIKE ?
+                                OR customer_last_name LIKE ?
+                                OR (
+                                    customer_first_name ||
+                                    ' ' ||
+                                    customer_last_name
+                                ) LIKE ?
+                            )
+
+                        `);
+
+
+                        const searchPattern =
+                            `%${search}%`;
+
+
+                        bindings.push(
+                            searchPattern,
+                            searchPattern,
+                            searchPattern,
+                            searchPattern,
+                            searchPattern
+                        );
+
+                    }
+
+
+                    if (status) {
+
+                        conditions.push(
+                            "status = ?"
+                        );
+
+
+                        bindings.push(
+                            status
+                        );
+
+                    }
+
+
+                    if (paymentStatus) {
+
+                        conditions.push(
+                            "payment_status = ?"
+                        );
+
+
+                        bindings.push(
+                            paymentStatus
+                        );
+
+                    }
+
+
+
+                    const whereClause =
+                        conditions.length
+                            ? "WHERE " +
+                              conditions.join(
+                                  " AND "
+                              )
+                            : "";
+
+
+
+                    /* =============================================
+                       COUNT ORDERS
+                    ============================================= */
+
+                    const countQuery = `
+
+                        SELECT
+
+                            COUNT(*) AS total
+
+                        FROM orders
+
+                        ${whereClause}
+
+                    `;
+
+
+                    const countResult =
+                        await env.DB
+                            .prepare(
+                                countQuery
+                            )
+                            .bind(
+                                ...bindings
+                            )
+                            .first();
+
+
+                    const totalOrders =
+                        Number(
+                            countResult?.total || 0
+                        );
+
+
+                    const totalPages =
+                        Math.ceil(
+                            totalOrders /
+                            limit
+                        );
+
+
+
+                    /* =============================================
+                       GET ORDERS
+                    ============================================= */
+
+                    const ordersQuery = `
+
+                        SELECT
+
+                            id,
+
+                            order_number,
+
+                            customer_email,
+
+                            customer_first_name,
+
+                            customer_last_name,
+
+                            shipping_address,
+
+                            shipping_apartment,
+
+                            shipping_city,
+
+                            shipping_state,
+
+                            shipping_zip,
+
+                            shipping_country,
+
+                            customer_phone,
+
+                            subtotal,
+
+                            shipping,
+
+                            tax,
+
+                            total,
+
+                            currency,
+
+                            status,
+
+                            payment_status,
+
+                            paypal_order_id,
+
+                            paypal_capture_id,
+
+                            created_at,
+
+                            updated_at
+
+                        FROM orders
+
+                        ${whereClause}
+
+                        ORDER BY id DESC
+
+                        LIMIT ?
+
+                        OFFSET ?
+
+                    `;
+
+
+                    const ordersResult =
+                        await env.DB
+                            .prepare(
+                                ordersQuery
+                            )
+                            .bind(
+                                ...bindings,
+                                limit,
+                                offset
+                            )
+                            .all();
+
+
+                    const orders =
+                        ordersResult.results ||
+                        [];
+
+
+
+                    /* =============================================
+                       GET ITEM COUNTS
+                    ============================================= */
+
+                    for (
+                        const order
+                        of orders
+                    ) {
+
+                        const itemSummary =
+                            await env.DB
+                                .prepare(`
+
+                                    SELECT
+
+                                        COUNT(*) AS line_count,
+
+                                        COALESCE(
+                                            SUM(quantity),
+                                            0
+                                        ) AS item_count
+
+                                    FROM order_items
+
+                                    WHERE order_id = ?
+
+                                `)
+                                .bind(
+                                    order.id
+                                )
+                                .first();
+
+
+                        order.line_count =
+                            Number(
+                                itemSummary?.line_count ||
+                                0
+                            );
+
+
+                        order.item_count =
+                            Number(
+                                itemSummary?.item_count ||
+                                0
+                            );
+
+                    }
+
+
+
+                    /* =============================================
+                       TOTAL REVENUE FOR CURRENT FILTER
+                    ============================================= */
+
+                    const revenueResult =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    COALESCE(
+                                        SUM(total),
+                                        0
+                                    ) AS revenue
+
+                                FROM orders
+
+                                ${whereClause}
+
+                            `)
+                            .bind(
+                                ...bindings
+                            )
+                            .first();
+
+
+                    const filteredRevenue =
+                        Number(
+                            revenueResult?.revenue ||
+                            0
+                        );
+
+
+
+                    /* =============================================
+                       RESPONSE
+                    ============================================= */
+
+                    return json({
+
+                        success: true,
+
+                        orders,
+
+                        pagination: {
+
+                            page,
+
+                            limit,
+
+                            total:
+                                totalOrders,
+
+                            totalPages,
+
+                            hasNextPage:
+                                page <
+                                totalPages,
+
+                            hasPreviousPage:
+                                page > 1
+
+                        },
+
+                        summary: {
+
+                            totalOrders,
+
+                            filteredRevenue:
+                                Number(
+                                    filteredRevenue.toFixed(
+                                        2
+                                    )
+                                )
+
+                        }
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ADMIN GET ORDERS error:",
+                        error
+                    );
+
+
+                    return errorResponse(
+                        "Failed to load orders.",
+                        500
+                    );
+
+                }
+
+            }
+
+
+
+            /* =====================================================
+            ADMIN GET SINGLE ORDER
+            ===================================================== */
+
+            if (
+                adminOrderMatch &&
+                method === "GET"
+            ) {
+
+                const orderId =
+                    Number(
+                        adminOrderMatch[1]
+                    );
+
+
+                try {
+
+                    if (
+                        !Number.isInteger(
+                            orderId
+                        ) ||
+                        orderId <= 0
+                    ) {
+
+                        return errorResponse(
+                            "Invalid order ID.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                       GET ORDER
+                    ============================================= */
+
+                    const order =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    order_number,
+
+                                    customer_email,
+
+                                    customer_first_name,
+
+                                    customer_last_name,
+
+                                    shipping_address,
+
+                                    shipping_apartment,
+
+                                    shipping_city,
+
+                                    shipping_state,
+
+                                    shipping_zip,
+
+                                    shipping_country,
+
+                                    customer_phone,
+
+                                    subtotal,
+
+                                    shipping,
+
+                                    tax,
+
+                                    total,
+
+                                    currency,
+
+                                    status,
+
+                                    payment_status,
+
+                                    paypal_order_id,
+
+                                    paypal_capture_id,
+
+                                    created_at,
+
+                                    updated_at
+
+                                FROM orders
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+                                orderId
+                            )
+                            .first();
+
+
+                    if (!order) {
+
+                        return errorResponse(
+                            "Order not found.",
+                            404
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                       GET ORDER ITEMS
+                    ============================================= */
+
+                    const itemsResult =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    order_id,
+
+                                    product_id,
+
+                                    variant_id,
+
+                                    product_name,
+
+                                    color,
+
+                                    size,
+
+                                    price,
+
+                                    quantity,
+
+                                    created_at
+
+                                FROM order_items
+
+                                WHERE order_id = ?
+
+                                ORDER BY id ASC
+
+                            `)
+                            .bind(
+                                orderId
+                            )
+                            .all();
+
+
+                    const items =
+                        itemsResult.results ||
+                        [];
+
+
+
+                    /* =============================================
+                       NORMALIZE NUMBERS
+                    ============================================= */
+
+                    order.subtotal =
+                        Number(
+                            order.subtotal || 0
+                        );
+
+
+                    order.shipping =
+                        Number(
+                            order.shipping || 0
+                        );
+
+
+                    order.tax =
+                        Number(
+                            order.tax || 0
+                        );
+
+
+                    order.total =
+                        Number(
+                            order.total || 0
+                        );
+
+
+                    for (
+                        const item
+                        of items
+                    ) {
+
+                        item.price =
+                            Number(
+                                item.price || 0
+                            );
+
+
+                        item.quantity =
+                            Number(
+                                item.quantity || 0
+                            );
+
+
+                        item.line_total =
+                            Number(
+                                (
+                                    item.price *
+                                    item.quantity
+                                ).toFixed(2)
+                            );
+
+                    }
+
+
+
+                    /* =============================================
+                       BUILD RESPONSE
+                    ============================================= */
+
+                    order.items =
+                        items;
+
+
+                    order.item_count =
+                        items.reduce(
+                            (
+                                total,
+                                item
+                            ) =>
+                                total +
+                                Number(
+                                    item.quantity ||
+                                    0
+                                ),
+                            0
+                        );
+
+
+                    order.line_count =
+                        items.length;
+
+
+
+                    return json({
+
+                        success: true,
+
+                        order
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ADMIN GET ORDER error:",
+                        error
+                    );
+
+
+                    return errorResponse(
+                        "Failed to load order.",
+                        500
+                    );
+
+                }
+
+            }
+
+
+
+            /* =====================================================
+            ADMIN UPDATE ORDER
+            ===================================================== */
+
+            if (
+                adminOrderMatch &&
+                method === "PUT"
+            ) {
+
+                const orderId =
+                    Number(
+                        adminOrderMatch[1]
+                    );
+
+
+                let body;
+
+
+                try {
+
+                    body =
+                        await request.json();
+
+                } catch {
+
+                    return errorResponse(
+                        "Invalid JSON body.",
+                        400
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   VALIDATE ORDER ID
+                ============================================= */
+
+                if (
+                    !Number.isInteger(
+                        orderId
+                    ) ||
+                    orderId <= 0
+                ) {
+
+                    return errorResponse(
+                        "Invalid order ID.",
+                        400
+                    );
+
+                }
+
+
+
+                /* =============================================
+                   GET CURRENT ORDER
+                ============================================= */
+
+                try {
+
+                    const existingOrder =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    order_number,
+
+                                    status,
+
+                                    payment_status
+
+                                FROM orders
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+                                orderId
+                            )
+                            .first();
+
+
+                    if (!existingOrder) {
+
+                        return errorResponse(
+                            "Order not found.",
+                            404
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                       NORMALIZE INPUT
+                    ============================================= */
+
+                    let newStatus =
+                        normalizeString(
+                            body.status,
+                            30
+                        ).toLowerCase();
+
+
+                    let newPaymentStatus =
+                        normalizeString(
+                            body.payment_status,
+                            30
+                        ).toLowerCase();
+
+
+
+                    /*
+                     * Allow partial updates.
+                     */
+
+                    if (!newStatus) {
+
+                        newStatus =
+                            existingOrder.status;
+
+                    }
+
+
+                    if (!newPaymentStatus) {
+
+                        newPaymentStatus =
+                            existingOrder.payment_status;
+
+                    }
+
+
+
+                    /* =============================================
+                       VALIDATE STATUS
+                    ============================================= */
+
+                    if (
+                        !isValidOrderStatus(
+                            newStatus
+                        )
+                    ) {
+
+                        return errorResponse(
+                            "Invalid order status.",
+                            400
+                        );
+
+                    }
+
+
+                    if (
+                        !isValidPaymentStatus(
+                            newPaymentStatus
+                        )
+                    ) {
+
+                        return errorResponse(
+                            "Invalid payment status.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                       STATUS LOGIC
+                    ============================================= */
+
+                    /*
+                     * A delivered / shipped order
+                     * should normally be paid.
+                     *
+                     * We don't silently modify payment_status,
+                     * but prevent obviously invalid combinations.
+                     */
+
+                    if (
+                        (
+                            newStatus === "shipped" ||
+                            newStatus === "delivered"
+                        ) &&
+                        newPaymentStatus !== "paid"
+                    ) {
+
+                        return errorResponse(
+                            "An order must be paid before it can be marked as shipped or delivered.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /*
+                     * A refunded order should not remain
+                     * marked as paid.
+                     */
+
+                    if (
+                        newPaymentStatus === "refunded" &&
+                        newStatus === "failed"
+                    ) {
+
+                        return errorResponse(
+                            "A refunded order cannot have failed status.",
+                            400
+                        );
+
+                    }
+
+
+
+                    /* =============================================
+                       UPDATE ORDER
+                    ============================================= */
+
+                    await env.DB
+                        .prepare(`
+
+                            UPDATE orders
+
+                            SET
+
+                                status = ?,
+
+                                payment_status = ?,
+
+                                updated_at =
+                                    CURRENT_TIMESTAMP
+
+                            WHERE id = ?
+
+                        `)
+                        .bind(
+
+                            newStatus,
+
+                            newPaymentStatus,
+
+                            orderId
+
+                        )
+                        .run();
+
+
+
+                    /* =============================================
+                       GET UPDATED ORDER
+                    ============================================= */
+
+                    const updatedOrder =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    order_number,
+
+                                    customer_email,
+
+                                    customer_first_name,
+
+                                    customer_last_name,
+
+                                    shipping_address,
+
+                                    shipping_apartment,
+
+                                    shipping_city,
+
+                                    shipping_state,
+
+                                    shipping_zip,
+
+                                    shipping_country,
+
+                                    customer_phone,
+
+                                    subtotal,
+
+                                    shipping,
+
+                                    tax,
+
+                                    total,
+
+                                    currency,
+
+                                    status,
+
+                                    payment_status,
+
+                                    paypal_order_id,
+
+                                    paypal_capture_id,
+
+                                    created_at,
+
+                                    updated_at
+
+                                FROM orders
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+                                orderId
+                            )
+                            .first();
+
+
+
+                    /* =============================================
+                       GET UPDATED ITEMS
+                    ============================================= */
+
+                    const itemsResult =
+                        await env.DB
+                            .prepare(`
+
+                                SELECT
+
+                                    id,
+
+                                    order_id,
+
+                                    product_id,
+
+                                    variant_id,
+
+                                    product_name,
+
+                                    color,
+
+                                    size,
+
+                                    price,
+
+                                    quantity,
+
+                                    created_at
+
+                                FROM order_items
+
+                                WHERE order_id = ?
+
+                                ORDER BY id ASC
+
+                            `)
+                            .bind(
+                                orderId
+                            )
+                            .all();
+
+
+                    updatedOrder.items =
+                        itemsResult.results ||
+                        [];
+
+
+
+                    return json({
+
+                        success: true,
+
+                        message:
+                            "Order updated successfully.",
+
+                        order:
+                            updatedOrder
+
+                    });
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ADMIN UPDATE ORDER error:",
+                        error
+                    );
+
+
+                    return errorResponse(
+                        "Failed to update order.",
+                        500
+                    );
+
+                }
+
+            }
+
             if (
                 pathname === "/api/debug-paypal" &&
                 method === "GET"
