@@ -7437,6 +7437,36 @@
             }
 
             /* =====================================================
+            DEBUG PRINTIFY
+            ===================================================== */
+
+            if (
+                pathname === "/api/debug-printify" &&
+                method === "GET"
+            ) {
+
+                return json({
+
+                    success: true,
+
+                    shopId:
+                        env.PRINTIFY_SHOP_ID
+                            ? String(env.PRINTIFY_SHOP_ID)
+                            : null,
+
+                    tokenExists:
+                        !!env.PRINTIFY_API_TOKEN,
+
+                    tokenLength:
+                        env.PRINTIFY_API_TOKEN
+                            ? env.PRINTIFY_API_TOKEN.length
+                            : 0
+
+                });
+
+            }
+
+            /* =====================================================
             UNKNOWN API
             ===================================================== */
 
