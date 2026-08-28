@@ -5913,30 +5913,108 @@
                 /* =============================================
                    SHIPPING
                    ============================================= */
+                /* =============================================
+                ITEM COUNT
+                ============================================= */
+
+                const itemCount =
+                    validatedItems.reduce(
+                        function(totalQuantity, item) {
+
+                            return (
+                                totalQuantity +
+                                Number(
+                                    item.quantity || 0
+                                )
+                            );
+
+                        },
+                        0
+                    );
+
+
+                /* =============================================
+                SHIPPING & HANDLING
+                $5.99 PER ITEM
+                ============================================= */
 
                 const shipping =
-                    subtotal >= 50
-                        ? 0
-                        : 5.99;
+                    Number(
+                        (
+                            itemCount * 5.99
+                        ).toFixed(2)
+                    );
+
+
+                /* =============================================
+                BUNDLE DISCOUNT
+                ============================================= */
+
+                const totalBeforeDiscount =
+                    subtotal +
+                    shipping;
+
+                let discount =
+                    0;
 
 
                 /*
-                 * TAX
-                 *
-                 * Currently set to 0 for the sandbox/demo stage.
-                 * Real tax calculation should be added later.
-                 */
+                * Discount applies when the order
+                * reaches $50 before discount.
+                */
+
+                if (
+                    totalBeforeDiscount >= 50 &&
+                    itemCount >= 2
+                ) {
+
+                    if (
+                        itemCount === 2
+                    ) {
+
+                        discount =
+                            5;
+
+                    } else {
+
+                        discount =
+                            7 +
+                            (
+                                itemCount - 3
+                            ) * 2;
+
+                    }
+
+                }
+
+
+                discount =
+                    Number(
+                        discount.toFixed(2)
+                    );
+
+
+                /* =============================================
+                TAX
+                ============================================= */
 
                 const tax =
                     0;
 
 
+                /* =============================================
+                FINAL TOTAL
+                ============================================= */
+
                 const total =
-                    subtotal +
-                    shipping +
-                    tax;
-
-
+                    Number(
+                        (
+                            subtotal +
+                            shipping -
+                            discount +
+                            tax
+                        ).toFixed(2)
+                    );
 
                 /* =============================================
                    CREATE LOCAL ORDER FIRST
@@ -6303,6 +6381,15 @@
 
                                                 },
 
+                                                discount: {
+                                                        currency_code:
+                                                            "USD",
+
+                                                        value:
+                                                            formatUsd(
+                                                                discount
+                                                            )
+                                                },
 
                                                 tax_total: {
 
