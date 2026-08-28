@@ -7698,6 +7698,65 @@
                         )
                         .run();
 
+                        /* =========================================
+                        SEND ORDER CONFIRMATION EMAIL
+                        ========================================= */
+
+                        try {
+
+                            if (!order.confirmation_email_sent) {
+
+                                await sendOrderEmail(
+                                    env,
+                                    order
+                                );
+
+
+                                await env.DB
+
+                                    .prepare(`
+
+                                        UPDATE orders
+
+                                        SET
+
+                                            confirmation_email_sent = 1,
+
+                                            updated_at =
+                                                CURRENT_TIMESTAMP
+
+                                        WHERE id = ?
+
+                                    `)
+
+                                    .bind(
+                                        order.id
+                                    )
+
+                                    .run();
+
+
+                                console.log(
+
+                                    "CONFIRMATION EMAIL SENT:",
+
+                                    order.order_number
+
+                                );
+
+                            }
+
+                        } catch (emailError) {
+
+                            console.error(
+
+                                "CONFIRMATION EMAIL ERROR:",
+
+                                emailError
+
+                            );
+
+                        }
 
                     console.log(
                         "PRINTIFY ORDER CREATED:",
