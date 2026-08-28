@@ -6784,7 +6784,8 @@
                                 status,
                                 paypal_order_id,
                                 paypal_capture_id,
-                                printify_order_id
+                                printify_order_id,
+                                confirmation_email_sent
 
                             FROM orders
 
@@ -6985,31 +6986,90 @@
                     currentOrder?.printify_order_id
                 ) {
 
+                    /* =========================================
+                    CHECK + RETRY CONFIRMATION EMAIL
+                    ========================================= */
+
+                    if (
+                        !order.confirmation_email_sent
+                    ) {
+
+                        try {
+
+                            await sendOrderEmail(
+                                env,
+                                order
+                            );
+
+
+                            await env.DB
+                                .prepare(`
+                                    UPDATE orders
+                                    SET
+                                        confirmation_email_sent = 1,
+                                        updated_at =
+                                            CURRENT_TIMESTAMP
+                                    WHERE id = ?
+                                `)
+                                .bind(
+                                    order.id
+                                )
+                                .run();
+
+
+                            console.log(
+                                "ORDER CONFIRMATION EMAIL SENT:",
+                                order.order_number
+                            );
+
+                        } catch (emailError) {
+
+                            console.error(
+                                "ORDER EMAIL RETRY ERROR:",
+                                emailError
+                            );
+
+                        }
+
+                    } else {
+
+                        console.log(
+                            "ORDER EMAIL ALREADY SENT:",
+                            order.order_number
+                        );
+
+                    }
+
+
                     return json({
 
                         success: true,
 
                         orderNumber:
+
                             order.order_number,
 
                         orderId:
+
                             order.id,
 
                         paypalOrderId,
 
                         paypalCaptureId:
+
                             captureId,
 
                         printifyOrderId:
+
                             currentOrder.printify_order_id,
 
                         alreadySubmittedToPrintify:
+
                             true
 
                     });
 
                 }
-
 
                 /* =============================================
                 GET ORDER ITEMS + PRINTIFY IDs
