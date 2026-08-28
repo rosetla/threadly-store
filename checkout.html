@@ -572,6 +572,22 @@
                                 $0.00
                             </strong>
 
+                            <div
+                                class="summary-row"
+                                id="checkout-discount-row"
+                                style="display: none;"
+                            >
+
+                                <span>
+                                    Bundle Discount
+                                </span>
+
+                                <strong id="checkout-discount">
+                                    -$0.00
+                                </strong>
+
+                            </div>
+
                         </div>
 
 
@@ -1468,7 +1484,8 @@
 
             let subtotal =
                 0;
-
+            let itemCount =
+                0;
 
             let invalidProduct =
                 false;
@@ -1534,7 +1551,10 @@
 
                 subtotal +=
                     rendered.total;
-
+                itemCount +=
+                    Number(
+                        cartItem.quantity || 0
+                    );
 
                 itemsContainer.appendChild(
                     rendered.element
@@ -1597,38 +1617,118 @@
              * cost when creating the real payment session.
              */
 
+            /* =============================================
+            SHIPPING & HANDLING
+            $5.99 PER ITEM
+            ============================================= */
+
             const shipping =
-                subtotal >= 50
-                    ? 0
-                    : 5.99;
+                Number(
+                    (
+                        itemCount * 5.99
+                    ).toFixed(2)
+                );
 
 
-            const total =
+            /* =============================================
+            DISCOUNT
+            ============================================= */
+
+            const totalBeforeDiscount =
                 subtotal +
                 shipping;
 
+            let discount =
+                0;
 
+
+            if (
+                totalBeforeDiscount >= 50 &&
+                itemCount >= 2
+            ) {
+
+                if (
+                    itemCount === 2
+                ) {
+
+                    discount =
+                        5;
+
+                } else {
+
+                    discount =
+                        7 +
+                        (
+                            itemCount - 3
+                        ) * 2;
+
+                }
+
+            }
+
+
+            /* =============================================
+            TOTAL
+            ============================================= */
+
+            const total =
+                Number(
+                    (
+                        subtotal +
+                        shipping -
+                        discount
+                    ).toFixed(2)
+                );
 
             /*
              * SUMMARY
              */
-
             document.getElementById(
-                "checkout-subtotal"
+                "checkout-shipping"
             ).textContent =
                 formatMoney(
-                    subtotal
+                    shipping
                 );
 
 
             document.getElementById(
-                "checkout-shipping"
+                "shipping-method-price"
             ).textContent =
-                shipping === 0
-                    ? "FREE"
-                    : formatMoney(
-                        shipping
+                formatMoney(
+                    shipping
+                );
+
+
+            const discountRow =
+                document.getElementById(
+                    "checkout-discount-row"
+                );
+
+            const discountElement =
+                document.getElementById(
+                    "checkout-discount"
+                );
+
+
+            if (
+                discount > 0
+            ) {
+
+                discountRow.style.display =
+                    "flex";
+
+                discountElement.textContent =
+                    "-" +
+                    formatMoney(
+                        discount
                     );
+
+            } else {
+
+                discountRow.style.display =
+                    "none";
+
+            }
 
 
             document.getElementById(
@@ -1637,17 +1737,6 @@
                 formatMoney(
                     total
                 );
-
-
-            document.getElementById(
-                "shipping-method-price"
-            ).textContent =
-                shipping === 0
-                    ? "FREE"
-                    : formatMoney(
-                        shipping
-                    );
-
 
             updateCartCount();
 
