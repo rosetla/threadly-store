@@ -212,6 +212,7 @@
                     class="product-grid"
                 >
  
+                /*sản phẩm sẽ được hiển thị ở đây thông qua JavaScript*/
 
                 <!-- NO PRODUCTS MESSAGE -->
 
@@ -597,6 +598,10 @@
 
                             <p class="product-price">
                                 $${Number(product.price).toFixed(2)}
+                            </p>
+
+                            <p class="product-sold">
+                                ${Number(product.sold_count || 0)} sold
                             </p>
 
                         </div>
