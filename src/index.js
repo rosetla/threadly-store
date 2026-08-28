@@ -3018,31 +3018,61 @@
 
                                 SELECT
 
-                                    id,
+                                p.id,
 
-                                    name,
+                                p.name,
 
-                                    slug,
+                                p.slug,
 
-                                    description,
+                                p.description,
 
-                                    price,
+                                p.price,
 
-                                    image,
+                                p.image,
 
-                                    category,
+                                p.category,
 
-                                    printify_product_id,
+                                p.printify_product_id,
 
-                                    status,
+                                p.status,
 
-                                    created_at
+                                p.created_at,
 
-                                FROM products
+                                COALESCE(
 
-                                WHERE status = 'active'
+                                    SUM(
 
-                                ORDER BY id DESC
+                                        CASE
+
+                                            WHEN o.payment_status = 'paid'
+
+                                            THEN oi.quantity
+
+                                            ELSE 0
+
+                                        END
+
+                                    ),
+
+                                    0
+
+                                ) AS sold_count
+
+                            FROM products p
+
+                            LEFT JOIN order_items oi
+
+                                ON oi.product_id = p.id
+
+                            LEFT JOIN orders o
+
+                                ON o.id = oi.order_id
+
+                            WHERE p.status = 'active'
+
+                            GROUP BY p.id
+
+                            ORDER BY p.id DESC
 
                             `)
                             .all();
@@ -3121,31 +3151,61 @@
 
                                 SELECT
 
-                                    id,
+                                p.id,
 
-                                    name,
+                                p.name,
 
-                                    slug,
+                                p.slug,
 
-                                    description,
+                                p.description,
 
-                                    price,
+                                p.price,
 
-                                    image,
+                                p.image,
 
-                                    category,
+                                p.category,
 
-                                    printify_product_id,
+                                p.printify_product_id,
 
-                                    status,
+                                p.status,
 
-                                    created_at
+                                p.created_at,
 
-                                FROM products
+                                COALESCE(
 
-                                WHERE id = ?
+                                    SUM(
 
-                                AND status = 'active'
+                                        CASE
+
+                                            WHEN o.payment_status = 'paid'
+
+                                            THEN oi.quantity
+
+                                            ELSE 0
+
+                                        END
+
+                                    ),
+
+                                    0
+
+                                ) AS sold_count
+
+                            FROM products p
+
+                            LEFT JOIN order_items oi
+
+                                ON oi.product_id = p.id
+
+                            LEFT JOIN orders o
+
+                                ON o.id = oi.order_id
+
+                            WHERE p.id = ?
+
+                            AND p.status = 'active'
+
+                            GROUP BY p.id
 
                             `)
                             .bind(productId)
