@@ -461,6 +461,13 @@ input {
     font-weight: 800;
 }
 
+.product-sold {
+    margin-top: -6px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
 
 /* =========================================================
    BRAND BANNER
