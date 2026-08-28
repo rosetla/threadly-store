@@ -281,9 +281,15 @@
                         id="product-price"
                         class="product-detail-price"
                     >
-                        $29.99
+                        $0
                     </p>
 
+                    <p
+                        id="product-sold"
+                        class="product-sold"
+                    >
+                        0 sold
+                    </p>
 
                     <div class="product-description">
 
@@ -887,6 +893,14 @@
                     product.price
                 ).toFixed(2)}`;
 
+            const soldCount =
+                Number(
+                    product.sold_count
+                ) || 0;
+            document.getElementById(
+                "product-sold"
+            ).textContent =
+                `${soldCount.toLocaleString()} sold`;
 
             productImage.src =
                 product.image ||
