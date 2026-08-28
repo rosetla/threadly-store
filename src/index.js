@@ -272,7 +272,198 @@
 
         }
 
+            async function sendOrderStatusEmail(
+                env,
+                order,
+                status
+            ) {
 
+                let subject;
+                let title;
+                let message;
+
+
+                if (status === "shipped") {
+
+                    subject =
+                        `Your Threadly order has shipped 🚚 #${order.order_number}`;
+
+                    title =
+                        "Your order is on the way! 🚚";
+
+                    message =
+                        "Great news! Your order has been shipped and is now on its way to you.";
+
+                }
+
+                else if (
+
+                    status === "completed" ||
+                    status === "delivered"
+
+                ) {
+
+                    subject =
+                        `Your Threadly order is complete 🎉 #${order.order_number}`;
+
+                    title =
+                        "Your order is complete! 🎉";
+
+                    message =
+                        "Your order has been completed. Thank you for shopping with Threadly Co.!";
+
+                }
+
+                else {
+
+                    console.log(
+                        "NO EMAIL TEMPLATE FOR STATUS:",
+                        status
+                    );
+
+                    return;
+
+                }
+
+
+                const response =
+
+                    await fetch(
+
+                        "https://api.brevo.com/v3/smtp/email",
+
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json",
+
+                                "Accept":
+                                    "application/json",
+
+                                "api-key":
+                                    env.BREVO_API_KEY
+
+                            },
+
+                            body: JSON.stringify({
+
+                                sender: {
+
+                                    name:
+                                        "Threadly Co.",
+
+                                    email:
+                                        "threadlycoo@gmail.com"
+
+                                },
+
+                                to: [
+
+                                    {
+
+                                        email:
+                                            order.customer_email,
+
+                                        name:
+
+                                            [
+
+                                                order.customer_first_name,
+
+                                                order.customer_last_name
+
+                                            ]
+
+                                            .filter(Boolean)
+
+                                            .join(" ")
+
+                                            ||
+
+                                            "Customer"
+
+                                    }
+
+                                ],
+
+                                subject,
+
+                                htmlContent: `
+
+                                    <div style="font-family: Arial, sans-serif; padding: 30px;">
+
+                                        <h1>${title}</h1>
+
+                                        <p>
+
+                                            Hi ${order.customer_first_name || "there"},
+
+                                        </p>
+
+                                        <p>
+
+                                            ${message}
+
+                                        </p>
+
+                                        <p>
+
+                                            <strong>
+                                                Order Number:
+                                            </strong>
+
+                                            ${order.order_number}
+
+                                        </p>
+
+                                        <p>
+
+                                            Thank you for shopping with
+                                            <strong>Threadly Co.</strong>
+
+                                        </p>
+
+                                    </div>
+
+                                `
+
+                            })
+
+                        }
+
+                    );
+
+
+                const result =
+
+                    await response.json();
+
+
+                console.log(
+                    "ORDER STATUS EMAIL RESULT:",
+                    result
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+
+                        result?.message ||
+                        JSON.stringify(result)
+
+                    );
+
+                }
+
+
+                return result;
+
+            }
             /* =====================================================
             HELPERS
             ===================================================== */
@@ -8709,15 +8900,11 @@
 
                     try {
 
-                        const statusChanged =
-
-                            existingOrder.status !==
-                            newStatus;
-
+                        /* =========================================
+                        SHIPPED EMAIL
+                        ========================================= */
 
                         if (
-
-                            statusChanged &&
 
                             newStatus === "shipped" &&
 
@@ -8767,11 +8954,19 @@
                         }
 
 
+                        /* =========================================
+                        COMPLETED / DELIVERED EMAIL
+                        ========================================= */
+
                         if (
 
-                            statusChanged &&
+                            (
 
-                            newStatus === "delivered" &&
+                                newStatus === "completed" ||
+
+                                newStatus === "delivered"
+
+                            ) &&
 
                             !existingOrder.delivered_email_sent
 
@@ -8780,7 +8975,7 @@
                             await sendOrderStatusEmail(
                                 env,
                                 existingOrder,
-                                "delivered"
+                                "completed"
                             );
 
 
@@ -8810,7 +9005,7 @@
 
                             console.log(
 
-                                "DELIVERED EMAIL SENT:",
+                                "COMPLETED EMAIL SENT:",
 
                                 existingOrder.order_number
 
