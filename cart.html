@@ -223,16 +223,31 @@
 
                         <div class="summary-row">
 
-                            <span>
-                                Shipping
-                            </span>
+                        <span>
+                            Shipping & Handling
+                        </span>
 
-                            <strong id="cart-shipping">
-                                Calculated at checkout
-                            </strong>
+                        <strong id="cart-shipping">
+                            $0.00
+                        </strong>
 
-                        </div>
+                    </div>
 
+                    <div
+                        class="summary-row"
+                        id="cart-discount-row"
+                        style="display: none;"
+                    >
+
+                        <span>
+                            Bundle Discount
+                        </span>
+
+                        <strong id="cart-discount">
+                            -$0.00
+                        </strong>
+
+                    </div>
 
                         <div class="summary-divider"></div>
 
@@ -1081,27 +1096,91 @@
             );
 
 
+            /* =============================================
+            ITEM COUNT
+            ============================================= */
+
+            const itemCount =
+                cart.reduce(
+                    function(total, item) {
+
+                        return (
+                            total +
+                            Number(item.quantity || 0)
+                        );
+
+                    },
+                    0
+                );
+
 
             /* =============================================
-               SHIPPING
-               ============================================= */
+            SHIPPING & HANDLING
+            $5.99 PER ITEM
+            ============================================= */
 
             const shipping =
-                subtotal >= 50
-                    ? 0
-                    : 5.99;
-
+                Number(
+                    (
+                        itemCount * 5.99
+                    ).toFixed(2)
+                );
 
 
             /* =============================================
-               TOTAL
-               ============================================= */
+            DISCOUNT
+            ============================================= */
 
-            const total =
+            const totalBeforeDiscount =
                 subtotal +
                 shipping;
 
+            let discount =
+                0;
 
+
+            /*
+            * Discount only applies when the order
+            * reaches $50 before the discount.
+            */
+
+            if (
+                totalBeforeDiscount >= 50 &&
+                itemCount >= 2
+            ) {
+
+                if (
+                    itemCount === 2
+                ) {
+
+                    discount =
+                        5;
+
+                } else {
+
+                    discount =
+                        7 +
+                        (
+                            itemCount - 3
+                        ) * 2;
+
+                }
+
+            }
+
+
+            /* =============================================
+            TOTAL
+            ============================================= */
+
+            const total =
+                Number(
+                    (
+                        subtotal +
+                        shipping -
+                        discount
+                    ).toFixed(2)
+                );
 
             /* =============================================
                UPDATE SUMMARY
@@ -1118,11 +1197,41 @@
             document.getElementById(
                 "cart-shipping"
             ).textContent =
-                shipping === 0
-                    ? "FREE"
-                    : formatMoney(
-                        shipping
+                formatMoney(
+                    shipping
+                );
+
+
+            const discountRow =
+                document.getElementById(
+                    "cart-discount-row"
+                );
+
+            const discountElement =
+                document.getElementById(
+                    "cart-discount"
+                );
+
+
+            if (
+                discount > 0
+            ) {
+
+                discountRow.style.display =
+                    "flex";
+
+                discountElement.textContent =
+                    "-" +
+                    formatMoney(
+                        discount
                     );
+
+            } else {
+
+                discountRow.style.display =
+                    "none";
+
+            }
 
 
             document.getElementById(
@@ -1131,8 +1240,6 @@
                 formatMoney(
                     total
                 );
-
-
 
             /* =============================================
                UPDATE HEADER COUNT
