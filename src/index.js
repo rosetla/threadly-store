@@ -132,6 +132,147 @@
             return result;
         }
 
+
+        /* =============================================
+        ORDER STATUS EMAIL
+        ============================================= */
+
+        try {
+
+            /*
+            Only send when the status actually changes.
+            */
+
+            const statusChanged =
+
+                existingOrder.status !==
+                newStatus;
+
+
+            /* =========================================
+            SHIPPED EMAIL
+            ========================================= */
+
+            if (
+
+                statusChanged &&
+
+                newStatus === "shipped" &&
+
+                !existingOrder.shipped_email_sent
+
+            ) {
+
+                await sendOrderStatusEmail(
+                    env,
+                    existingOrder,
+                    "shipped"
+                );
+
+
+                await env.DB
+
+                    .prepare(`
+
+                        UPDATE orders
+
+                        SET
+
+                            shipped_email_sent = 1,
+
+                            updated_at =
+                                CURRENT_TIMESTAMP
+
+                        WHERE id = ?
+
+                    `)
+
+                    .bind(
+                        orderId
+                    )
+
+                    .run();
+
+
+                console.log(
+
+                    "SHIPPED EMAIL SENT:",
+
+                    existingOrder.order_number
+
+                );
+
+            }
+
+
+            /* =========================================
+            DELIVERED EMAIL
+            ========================================= */
+
+            if (
+
+                statusChanged &&
+
+                newStatus === "delivered" &&
+
+                !existingOrder.delivered_email_sent
+
+            ) {
+
+                await sendOrderStatusEmail(
+                    env,
+                    existingOrder,
+                    "delivered"
+                );
+
+
+                await env.DB
+
+                    .prepare(`
+
+                        UPDATE orders
+
+                        SET
+
+                            delivered_email_sent = 1,
+
+                            updated_at =
+                                CURRENT_TIMESTAMP
+
+                        WHERE id = ?
+
+                    `)
+
+                    .bind(
+                        orderId
+                    )
+
+                    .run();
+
+
+                console.log(
+
+                    "DELIVERED EMAIL SENT:",
+
+                    existingOrder.order_number
+
+                );
+
+            }
+
+        } catch (emailError) {
+
+            console.error(
+
+                "ORDER STATUS EMAIL ERROR:",
+
+                emailError
+
+            );
+
+        }
+
+
             /* =====================================================
             HELPERS
             ===================================================== */
@@ -8362,7 +8503,9 @@
                 try {
 
                     const existingOrder =
+
                         await env.DB
+
                             .prepare(`
 
                                 SELECT
@@ -8371,9 +8514,19 @@
 
                                     order_number,
 
+                                    customer_email,
+
+                                    customer_first_name,
+
+                                    customer_last_name,
+
                                     status,
 
-                                    payment_status
+                                    payment_status,
+
+                                    shipped_email_sent,
+
+                                    delivered_email_sent
 
                                 FROM orders
 
@@ -8550,7 +8703,132 @@
                         )
                         .run();
 
+                    /* =============================================
+                    ORDER STATUS EMAIL
+                    ============================================= */
 
+                    try {
+
+                        const statusChanged =
+
+                            existingOrder.status !==
+                            newStatus;
+
+
+                        if (
+
+                            statusChanged &&
+
+                            newStatus === "shipped" &&
+
+                            !existingOrder.shipped_email_sent
+
+                        ) {
+
+                            await sendOrderStatusEmail(
+                                env,
+                                existingOrder,
+                                "shipped"
+                            );
+
+
+                            await env.DB
+
+                                .prepare(`
+
+                                    UPDATE orders
+
+                                    SET
+
+                                        shipped_email_sent = 1,
+
+                                        updated_at =
+                                            CURRENT_TIMESTAMP
+
+                                    WHERE id = ?
+
+                                `)
+
+                                .bind(
+                                    orderId
+                                )
+
+                                .run();
+
+
+                            console.log(
+
+                                "SHIPPED EMAIL SENT:",
+
+                                existingOrder.order_number
+
+                            );
+
+                        }
+
+
+                        if (
+
+                            statusChanged &&
+
+                            newStatus === "delivered" &&
+
+                            !existingOrder.delivered_email_sent
+
+                        ) {
+
+                            await sendOrderStatusEmail(
+                                env,
+                                existingOrder,
+                                "delivered"
+                            );
+
+
+                            await env.DB
+
+                                .prepare(`
+
+                                    UPDATE orders
+
+                                    SET
+
+                                        delivered_email_sent = 1,
+
+                                        updated_at =
+                                            CURRENT_TIMESTAMP
+
+                                    WHERE id = ?
+
+                                `)
+
+                                .bind(
+                                    orderId
+                                )
+
+                                .run();
+
+
+                            console.log(
+
+                                "DELIVERED EMAIL SENT:",
+
+                                existingOrder.order_number
+
+                            );
+
+                        }
+
+                    } catch (emailError) {
+
+                        console.error(
+
+                            "ORDER STATUS EMAIL ERROR:",
+
+                            emailError
+
+                        );
+
+                    }
 
                     /* =============================================
                        GET UPDATED ORDER
