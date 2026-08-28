@@ -1489,8 +1489,6 @@
 
                     }
 
-
-
                     /*
                     Get product from Printify
                     */
@@ -1519,8 +1517,6 @@
                         );
 
                     }
-
-
 
                     /*
                     Build option maps.
@@ -1620,7 +1616,6 @@
                             ) / 100;
 
                     }
-
 
 
                     /*
@@ -1791,8 +1786,6 @@
                             result.meta.last_row_id;
 
                     }
-
-
 
                     /*
                     Remove old variants.
@@ -2366,8 +2359,6 @@
 
             }
 
-
-
             /* =====================================================
             NORMALIZE SIZES
             ===================================================== */
@@ -2548,7 +2539,6 @@
             }
 
 
-
             /* =====================================================
             PUBLIC API
             ===================================================== */
@@ -2644,8 +2634,6 @@
                 }
 
             }
-
-
 
             /* =====================================================
             GET SINGLE PRODUCT
@@ -2750,8 +2738,6 @@
 
             }
 
-
-
             /* =====================================================
             ADMIN API AUTHENTICATION
             ===================================================== */
@@ -2780,8 +2766,6 @@
                 }
 
             }
-
-
 
             /* =====================================================
             ADMIN PRODUCT ROUTE
@@ -2884,8 +2868,6 @@
 
             }
 
-
-
             /* =====================================================
             ADMIN GET SINGLE PRODUCT
             ===================================================== */
@@ -2945,8 +2927,6 @@
                 }
 
             }
-
-
 
             /* =====================================================
             ADMIN CREATE PRODUCT
@@ -3717,8 +3697,6 @@
 
                     }
 
-
-
                     /* =============================================
                     PRODUCT IMAGE
                     ============================================= */
@@ -3753,8 +3731,6 @@
                         );
 
                     }
-
-
 
                     /* =============================================
                     VARIANTS
@@ -3945,15 +3921,6 @@
 
                         }
 
-
-
-                        /*
-                        * Some Printify products may have unusual
-                        * option structures.
-                        *
-                        * Fall back to parsing the variant title.
-                        */
-
                         if (
                             !color ||
                             !size
@@ -4118,8 +4085,6 @@
 
                     }
 
-
-
                     /* =============================================
                     CREATE PRODUCT
                     ============================================= */
@@ -4198,8 +4163,6 @@
                         );
 
                     }
-
-
 
                     /* =============================================
                     CREATE VARIANTS
@@ -4472,8 +4435,6 @@
                         statements
                     );
 
-
-
                     /* =============================================
                     GET FINAL PRODUCT
                     ============================================= */
@@ -4724,8 +4685,6 @@
 
                 }
 
-
-
                 try {
 
                     const existingProduct =
@@ -4751,8 +4710,6 @@
                         );
 
                     }
-
-
 
                     /* UPDATE PRODUCT */
 
@@ -4993,8 +4950,6 @@
 
             }
 
-
-
             /* =====================================================
             ADMIN DELETE PRODUCT
             ===================================================== */
@@ -5081,8 +5036,6 @@
 
             }
 
-
-
             /* =====================================================
             ADMIN VARIANT API
             ===================================================== */
@@ -5091,7 +5044,6 @@
                 pathname.match(
                     /^\/api\/admin\/products\/(\d+)\/variants$/
                 );
-
 
 
             /* =====================================================
@@ -5168,8 +5120,6 @@
                 }
 
             }
-
-
 
             /* =====================================================
             UPDATE VARIANTS
@@ -5714,7 +5664,6 @@
                 }
 
 
-
                 /* =============================================
                    LOAD PRODUCTS FROM DATABASE
                    NEVER TRUST CLIENT PRICE
@@ -5808,8 +5757,6 @@
 
                     }
 
-
-
                     /* GET PRODUCT */
 
                     const product =
@@ -5847,7 +5794,6 @@
                         );
 
                     }
-
 
 
                     /* GET EXACT VARIANT */
@@ -6558,10 +6504,8 @@
 
             }
 
-
-
             /* =====================================================
-            CAPTURE PAYPAL PAYMENT
+            CAPTURE PAYPAL PAYMENT + SUBMIT TO PRINTIFY
             ===================================================== */
 
             if (
@@ -6570,7 +6514,6 @@
             ) {
 
                 let body;
-
 
                 try {
 
@@ -6604,30 +6547,38 @@
                 }
 
 
-
                 /* =============================================
-                   FIND LOCAL ORDER
-                   ============================================= */
+                FIND LOCAL ORDER
+                ============================================= */
 
                 const order =
                     await env.DB
                         .prepare(`
 
                             SELECT
-
                                 id,
-
                                 order_number,
-
+                                customer_email,
+                                customer_first_name,
+                                customer_last_name,
+                                shipping_address,
+                                shipping_apartment,
+                                shipping_city,
+                                shipping_state,
+                                shipping_zip,
+                                shipping_country,
+                                customer_phone,
                                 payment_status,
-
                                 status,
-
-                                paypal_order_id
+                                paypal_order_id,
+                                paypal_capture_id,
+                                printify_order_id
 
                             FROM orders
 
                             WHERE paypal_order_id = ?
+
+                            LIMIT 1
 
                         `)
                         .bind(
@@ -6646,13 +6597,13 @@
                 }
 
 
-
-                /*
-                 * Prevent duplicate capture attempts.
-                 */
+                /* =============================================
+                PREVENT DUPLICATE PROCESSING
+                ============================================= */
 
                 if (
-                    order.payment_status === "paid"
+                    order.payment_status === "paid" &&
+                    order.printify_order_id
                 ) {
 
                     return json({
@@ -6661,84 +6612,245 @@
 
                         alreadyCaptured: true,
 
+                        alreadySubmittedToPrintify: true,
+
                         orderNumber:
-                            order.order_number
+                            order.order_number,
+
+                        printifyOrderId:
+                            order.printify_order_id
 
                     });
 
                 }
 
 
-
                 /* =============================================
-                   CAPTURE FROM PAYPAL
-                   ============================================= */
+                CAPTURE PAYPAL
+                ============================================= */
 
-                try {
-
-                    const paypalResult =
-                        await capturePayPalOrder(
-                            env,
-                            paypalOrderId
-                        );
+                let captureId =
+                    order.paypal_capture_id ||
+                    null;
 
 
-                    if (
-                        paypalResult.status !==
-                        "COMPLETED"
-                    ) {
+                if (
+                    order.payment_status !== "paid"
+                ) {
+
+                    try {
+
+                        const paypalResult =
+                            await capturePayPalOrder(
+                                env,
+                                paypalOrderId
+                            );
+
+
+                        if (
+                            paypalResult.status !==
+                            "COMPLETED"
+                        ) {
+
+                            console.error(
+                                "Unexpected PayPal status:",
+                                paypalResult
+                            );
+
+                            return errorResponse(
+                                "Payment was not completed.",
+                                400
+                            );
+
+                        }
+
+
+                        /* =========================================
+                        GET CAPTURE ID
+                        ========================================= */
+
+                        const purchaseUnit =
+                            paypalResult
+                                .purchase_units
+                                ?.[0];
+
+
+                        const capture =
+                            purchaseUnit
+                                ?.payments
+                                ?.captures
+                                ?.[0];
+
+
+                        if (
+                            capture &&
+                            capture.id
+                        ) {
+
+                            captureId =
+                                capture.id;
+
+                        }
+
+
+                        /* =========================================
+                        UPDATE LOCAL ORDER
+                        ========================================= */
+
+                        await env.DB
+                            .prepare(`
+
+                                UPDATE orders
+
+                                SET
+
+                                    payment_status = 'paid',
+
+                                    status = 'processing',
+
+                                    paypal_capture_id = ?,
+
+                                    updated_at = CURRENT_TIMESTAMP
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+
+                                captureId,
+
+                                order.id
+
+                            )
+                            .run();
+
+
+                    } catch (error) {
 
                         console.error(
-                            "Unexpected PayPal status:",
-                            paypalResult
+                            "PAYPAL CAPTURE error:",
+                            error
                         );
-
 
                         return errorResponse(
-                            "Payment was not completed.",
-                            400
+                            "Unable to capture PayPal payment.",
+                            500
                         );
 
                     }
 
+                }
 
 
-                    /* =========================================
-                       GET CAPTURE ID
-                       ========================================= */
+                /* =============================================
+                CHECK IF ALREADY SUBMITTED TO PRINTIFY
+                ============================================= */
 
-                    let captureId =
-                        null;
+                const currentOrder =
+                    await env.DB
+                        .prepare(`
 
+                            SELECT
 
-                    const purchaseUnit =
-                        paypalResult
-                            .purchase_units
-                            ?.[0];
+                                id,
 
+                                printify_order_id
 
-                    const capture =
-                        purchaseUnit
-                            ?.payments
-                            ?.captures
-                            ?.[0];
+                            FROM orders
 
+                            WHERE id = ?
 
-                    if (
-                        capture &&
-                        capture.id
-                    ) {
+                            LIMIT 1
 
-                        captureId =
-                            capture.id;
-
-                    }
+                        `)
+                        .bind(
+                            order.id
+                        )
+                        .first();
 
 
+                if (
+                    currentOrder?.printify_order_id
+                ) {
 
-                    /* =========================================
-                       UPDATE LOCAL ORDER
-                       ========================================= */
+                    return json({
+
+                        success: true,
+
+                        orderNumber:
+                            order.order_number,
+
+                        orderId:
+                            order.id,
+
+                        paypalOrderId,
+
+                        paypalCaptureId:
+                            captureId,
+
+                        printifyOrderId:
+                            currentOrder.printify_order_id,
+
+                        alreadySubmittedToPrintify:
+                            true
+
+                    });
+
+                }
+
+
+                /* =============================================
+                GET ORDER ITEMS + PRINTIFY IDs
+                ============================================= */
+
+                const itemsResult =
+                    await env.DB
+                        .prepare(`
+
+                            SELECT
+
+                                oi.id,
+
+                                oi.product_id,
+
+                                oi.variant_id,
+
+                                oi.quantity,
+
+                                p.printify_product_id,
+
+                                pv.printify_variant_id
+
+                            FROM order_items oi
+
+                            INNER JOIN products p
+
+                                ON p.id = oi.product_id
+
+                            INNER JOIN product_variants pv
+
+                                ON pv.id = oi.variant_id
+
+                            WHERE oi.order_id = ?
+
+                            ORDER BY oi.id ASC
+
+                        `)
+                        .bind(
+                            order.id
+                        )
+                        .all();
+
+
+                const items =
+                    itemsResult.results ||
+                    [];
+
+
+                if (!items.length) {
+
+                    const message =
+                        "Order has no items.";
 
                     await env.DB
                         .prepare(`
@@ -6747,11 +6859,9 @@
 
                             SET
 
-                                payment_status = 'paid',
+                                printify_error = ?,
 
-                                status = 'processing',
-
-                                paypal_capture_id = ?,
+                                status = 'failed',
 
                                 updated_at = CURRENT_TIMESTAMP
 
@@ -6759,13 +6869,236 @@
 
                         `)
                         .bind(
+                            message,
+                            order.id
+                        )
+                        .run();
 
-                            captureId,
+
+                    return errorResponse(
+                        message,
+                        500
+                    );
+
+                }
+
+
+                /* =============================================
+                BUILD PRINTIFY LINE ITEMS
+                ============================================= */
+
+                const printifyLineItems =
+                    [];
+
+
+                for (
+                    const item
+                    of items
+                ) {
+
+                    if (
+                        !item.printify_product_id ||
+                        !item.printify_variant_id
+                    ) {
+
+                        const message =
+                            `Missing Printify product or variant ID for order item ${item.id}.`;
+
+
+                        await env.DB
+                            .prepare(`
+
+                                UPDATE orders
+
+                                SET
+
+                                    printify_error = ?,
+
+                                    updated_at = CURRENT_TIMESTAMP
+
+                                WHERE id = ?
+
+                            `)
+                            .bind(
+                                message,
+                                order.id
+                            )
+                            .run();
+
+
+                        return errorResponse(
+                            message,
+                            500
+                        );
+
+                    }
+
+
+                    printifyLineItems.push({
+
+                        product_id:
+                            String(
+                                item.printify_product_id
+                            ),
+
+                        variant_id:
+                            Number(
+                                item.printify_variant_id
+                            ),
+
+                        quantity:
+                            Number(
+                                item.quantity
+                            ),
+
+                        external_id:
+                            String(
+                                item.id
+                            )
+
+                    });
+
+                }
+
+
+                /* =============================================
+                BUILD PRINTIFY ORDER
+                ============================================= */
+
+                const printifyOrderData = {
+
+                    external_id:
+                        String(
+                            order.id
+                        ),
+
+                    label:
+                        order.order_number,
+
+                    line_items:
+                        printifyLineItems,
+
+                    shipping_method:
+                        1,
+
+                    send_shipping_notification:
+                        false,
+
+                    address_to: {
+
+                        first_name:
+                            order.customer_first_name,
+
+                        last_name:
+                            order.customer_last_name,
+
+                        email:
+                            order.customer_email,
+
+                        phone:
+                            order.customer_phone ||
+                            "",
+
+                        country:
+                            order.shipping_country,
+
+                        region:
+                            order.shipping_state ||
+                            "",
+
+                        address1:
+                            order.shipping_address,
+
+                        address2:
+                            order.shipping_apartment ||
+                            "",
+
+                        city:
+                            order.shipping_city,
+
+                        zip:
+                            order.shipping_zip
+
+                    }
+
+                };
+
+
+                /* =============================================
+                SUBMIT ORDER TO PRINTIFY
+                ============================================= */
+
+                try {
+
+                    console.log(
+                        "SUBMITTING ORDER TO PRINTIFY:",
+                        JSON.stringify(
+                            printifyOrderData
+                        )
+                    );
+
+
+                    const printifyResult =
+                        await createPrintifyOrder(
+                            env,
+                            printifyOrderData
+                        );
+
+
+                    if (
+                        !printifyResult ||
+                        !printifyResult.id
+                    ) {
+
+                        throw new Error(
+                            "Printify did not return an order ID."
+                        );
+
+                    }
+
+
+                    /* =========================================
+                    SAVE PRINTIFY ORDER ID
+                    ========================================= */
+
+                    await env.DB
+                        .prepare(`
+
+                            UPDATE orders
+
+                            SET
+
+                                printify_order_id = ?,
+
+                                printify_error = NULL,
+
+                                printify_submitted_at =
+                                    CURRENT_TIMESTAMP,
+
+                                status = 'processing',
+
+                                updated_at =
+                                    CURRENT_TIMESTAMP
+
+                            WHERE id = ?
+
+                        `)
+                        .bind(
+
+                            String(
+                                printifyResult.id
+                            ),
 
                             order.id
 
                         )
                         .run();
+
+
+                    console.log(
+                        "PRINTIFY ORDER CREATED:",
+                        printifyResult.id
+                    );
 
 
                     return json({
@@ -6781,7 +7114,10 @@
                         paypalOrderId,
 
                         paypalCaptureId:
-                            captureId
+                            captureId,
+
+                        printifyOrderId:
+                            printifyResult.id
 
                     });
 
@@ -6789,15 +7125,78 @@
                 } catch (error) {
 
                     console.error(
-                        "PAYPAL CAPTURE error:",
+                        "PRINTIFY SUBMISSION ERROR:",
                         error
                     );
 
 
-                    return errorResponse(
-                        "Unable to capture PayPal payment.",
-                        500
-                    );
+                    const errorMessage =
+                        error?.message ||
+                        String(error);
+
+
+                    await env.DB
+                        .prepare(`
+
+                            UPDATE orders
+
+                            SET
+
+                                printify_error = ?,
+
+                                status = 'processing',
+
+                                updated_at =
+                                    CURRENT_TIMESTAMP
+
+                            WHERE id = ?
+
+                        `)
+                        .bind(
+
+                            errorMessage
+                                .slice(0, 2000),
+
+                            order.id
+
+                        )
+                        .run();
+
+
+                    /*
+                    * IMPORTANT:
+                    *
+                    * PayPal payment was successful.
+                    * Printify submission failed.
+                    *
+                    * Do NOT return a fake "payment failed".
+                    */
+
+                    return json({
+
+                        success: true,
+
+                        paymentCaptured:
+                            true,
+
+                        printifySubmitted:
+                            false,
+
+                        orderNumber:
+                            order.order_number,
+
+                        orderId:
+                            order.id,
+
+                        paypalOrderId,
+
+                        paypalCaptureId:
+                            captureId,
+
+                        printifyError:
+                            errorMessage
+
+                    }, 202);
 
                 }
 
@@ -9163,8 +9562,6 @@
 
                     }
 
-
-
                     /* =============================================
                     PRODUCT PRICE
                     ============================================= */
@@ -9649,7 +10046,6 @@
                             500
                         );
                     }
-
 
                     /* =============================================
                     GET ALL PRODUCTS FROM PRINTIFY
