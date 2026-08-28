@@ -1681,8 +1681,16 @@
                 );
 
             /*
-             * SUMMARY
-             */
+            * SUMMARY
+            */
+
+            document.getElementById(
+                "checkout-subtotal"
+            ).textContent =
+                formatMoney(
+                    subtotal
+                );
+
             document.getElementById(
                 "checkout-shipping"
             ).textContent =
