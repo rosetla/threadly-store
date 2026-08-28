@@ -6,6 +6,131 @@
             const pathname = url.pathname;
             const method = request.method;
             
+            async function sendOrderEmail(env, order) {
+
+            const response = await fetch(
+                "https://api.brevo.com/v3/smtp/email",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "api-key": env.BREVO_API_KEY
+                    },
+
+                    body: JSON.stringify({
+
+                        sender: {
+                            name: "Threadly Co.",
+                            email: "threadlycoo@gmail.com"
+                        },
+
+                        to: [
+                            {
+                                email: order.customer_email,
+                                name: [
+                                    order.customer_first_name,
+                                    order.customer_last_name
+                                ]
+                                    .filter(Boolean)
+                                    .join(" ") || "Customer"
+                            }
+                        ],
+
+                        subject:
+                            `Order Confirmed 🎉 #${order.order_number}`,
+
+                        htmlContent: `
+                            <!DOCTYPE html>
+                            <html>
+                            <body style="
+                                font-family: Arial, sans-serif;
+                                background: #f5f5f5;
+                                padding: 40px 20px;
+                            ">
+
+                                <div style="
+                                    max-width: 600px;
+                                    margin: auto;
+                                    background: white;
+                                    padding: 40px;
+                                    border-radius: 12px;
+                                ">
+
+                                    <h1>
+                                        Thanks for your order! 🎉
+                                    </h1>
+
+                                    <p>
+                                        Hi ${
+                                            order.customer_first_name ||
+                                            "there"
+                                        },
+                                    </p>
+
+                                    <p>
+                                        We've received your payment
+                                        successfully.
+                                    </p>
+
+                                    <hr>
+
+                                    <p>
+                                        <strong>
+                                            Order Number:
+                                        </strong>
+
+                                        ${order.order_number}
+                                    </p>
+
+                                    <p>
+                                        Your order is now being processed.
+                                    </p>
+
+                                    <p>
+                                        We'll send you another email
+                                        when your order ships.
+                                    </p>
+
+                                    <br>
+
+                                    <p>
+                                        Thanks for shopping with
+                                        <strong>
+                                            Threadly Co.
+                                        </strong>
+                                        ❤️
+                                    </p>
+
+                                </div>
+
+                            </body>
+                            </html>
+                        `
+                    })
+                }
+            );
+
+            const result =
+                await response.json();
+
+            console.log(
+                "BREVO EMAIL RESULT:",
+                result
+            );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result?.message ||
+                    JSON.stringify(result)
+                );
+
+            }
+
+            return result;
+        }
 
             /* =====================================================
             HELPERS
@@ -7187,6 +7312,25 @@
                         printifyResult.id
                     );
 
+                    /* =========================================
+                    SEND ORDER CONFIRMATION EMAIL
+                    ========================================= */
+
+                    try {
+
+                        await sendOrderEmail(
+                            env,
+                            order
+                        );
+
+                    } catch (emailError) {
+
+                        console.error(
+                            "ORDER EMAIL ERROR:",
+                            emailError
+                        );
+
+                    }
 
                     return json({
 
