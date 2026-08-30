@@ -2715,7 +2715,7 @@ input {
 /* Payment icons BELOW PAY NOW */
 .pay-security-bottom {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     gap: 7px;
     margin-top: 8px;
