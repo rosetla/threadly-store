@@ -2679,6 +2679,79 @@ input {
     text-decoration: underline;
 }
 
+/* =====================================================
+   PAYMENT SECURITY ICONS
+   ===================================================== */
+
+.pay-button-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* PAY NOW button */
+#pay-button {
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+/* Security icons ABOVE PAY NOW */
+.pay-security-top {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    height: 24px;
+}
+
+.pay-security-top img {
+    display: block;
+    width: auto;
+    height: 24px;
+    object-fit: contain;
+}
+
+/* Payment icons BELOW PAY NOW */
+.pay-security-bottom {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+    height: 24px;
+}
+
+.pay-security-bottom img {
+    display: block;
+    width: auto;
+    height: 24px;
+    object-fit: contain;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+
+    .pay-security-top {
+        gap: 6px;
+        height: 21px;
+        margin-bottom: 7px;
+    }
+
+    .pay-security-top img {
+        height: 21px;
+    }
+
+    .pay-security-bottom {
+        gap: 6px;
+        height: 21px;
+        margin-top: 7px;
+    }
+
+    .pay-security-bottom img {
+        height: 21px;
+    }
+}
 
 /* =========================================================
    CHECKOUT MOBILE
@@ -2734,6 +2807,111 @@ input {
 
     .checkout-summary {
         padding: 25px 20px;
+    }
+
+}
+
+/* =====================================================
+   ORDERS
+   ===================================================== */
+
+.order-id {
+    font-weight: 700;
+}
+
+.order-email {
+    font-size: 12px;
+    opacity: .6;
+    margin-top: 4px;
+}
+
+.order-items {
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.order-total {
+    font-weight: 700;
+}
+
+.payment-paid {
+    color: #176b32;
+    font-weight: 700;
+}
+
+.payment-pending {
+    color: #765600;
+    font-weight: 700;
+}
+
+.payment-failed {
+    color: #a40000;
+    font-weight: 700;
+}
+
+.order-status-select {
+    padding: 7px 9px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font: inherit;
+    font-size: 12px;
+}
+
+.order-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.order-detail-box {
+    border: 1px solid #ddd;
+    padding: 18px;
+}
+
+.order-detail-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    opacity: .55;
+    margin-bottom: 7px;
+}
+
+.order-detail-value {
+    font-weight: 600;
+}
+
+.order-items-list {
+    border: 1px solid #ddd;
+    margin-top: 20px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-item-name {
+    font-weight: 700;
+}
+
+.order-item-meta {
+    font-size: 12px;
+    opacity: .6;
+    margin-top: 4px;
+}
+
+@media (max-width: 700px) {
+
+    .order-detail-grid {
+        grid-template-columns: 1fr;
     }
 
 }
